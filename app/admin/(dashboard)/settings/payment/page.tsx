@@ -1,7 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { CreditCard, Loader2, Save, ShieldCheck } from "lucide-react";
+import Link from "next/link";
+import { CreditCard, Loader2, Save, ShieldCheck, Zap } from "lucide-react";
 import { toast } from "sonner";
 
 import { apiFetch } from "@/lib/api-client";
@@ -190,6 +191,22 @@ export default function PaymentSettingsPage() {
                     value={form.razorpayWebhookSecret}
                     onChange={(e) => setForm({ ...form, razorpayWebhookSecret: e.target.value })}
                   />
+                </div>
+
+                <div className="sm:col-span-2 rounded-xl border border-orange-500/20 bg-orange-500/5 p-4 flex flex-wrap items-center justify-between gap-3">
+                  <div className="space-y-0.5">
+                    <div className="text-xs font-bold text-orange-500 flex items-center gap-1.5">
+                      <Zap className="size-4" /> Razorpay Smart Links & Handover QR Hub
+                    </div>
+                    <p className="text-[11px] text-muted-foreground">
+                      Issue custom payment links, collect deposits via WhatsApp, and generate dynamic handover UPI QR codes.
+                    </p>
+                  </div>
+                  <Button asChild size="sm" className="bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs">
+                    <Link href="/admin/finance/razorpay">
+                      Open Razorpay Hub →
+                    </Link>
+                  </Button>
                 </div>
               </CardContent>
             )}

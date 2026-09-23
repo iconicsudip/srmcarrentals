@@ -40,6 +40,7 @@ import {
   Undo2,
   FileText,
   Percent,
+  Zap,
   Ticket,
   BadgePercent,
   Files,
@@ -165,6 +166,7 @@ export const NAV_GROUPS: NavGroup[] = [
     icon: CreditCard,
     items: [
       { title: "Payments", href: "/admin/finance/payments", icon: CreditCard, permission: "payments.view" },
+      { title: "Razorpay Hub", href: "/admin/finance/razorpay", icon: Zap, permission: "payments.view" },
       { title: "Transactions", href: "/admin/finance/transactions", icon: ArrowLeftRight, permission: "payments.view" },
       { title: "Refunds", href: "/admin/finance/refunds", icon: Undo2, permission: "refunds.manage" },
       { title: "Invoices", href: "/admin/finance/invoices", icon: FileText, permission: "invoices.view" },

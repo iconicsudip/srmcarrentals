@@ -8,11 +8,13 @@ import {
   FileText,
   Percent,
   Undo2,
+  Zap,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const FINANCE_TABS = [
   { label: "Payments", href: "/admin/finance/payments", icon: CreditCard },
+  { label: "Razorpay & Smart Links", href: "/admin/finance/razorpay", icon: Zap },
   { label: "Transactions", href: "/admin/finance/transactions", icon: ArrowLeftRight },
   { label: "Refunds", href: "/admin/finance/refunds", icon: Undo2 },
   { label: "Invoices", href: "/admin/finance/invoices", icon: FileText },
