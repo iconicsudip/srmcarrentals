@@ -12,12 +12,13 @@ import {
   SidebarContent,
   SidebarFooter,
   SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
   SidebarRail,
 } from "@/components/ui/sidebar";
 
@@ -46,53 +47,53 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
 
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive={pathname === DASHBOARD_ITEM.href} tooltip={DASHBOARD_ITEM.title}>
-                  <Link href={DASHBOARD_ITEM.href}>
-                    <DASHBOARD_ITEM.icon />
-                    <span>{DASHBOARD_ITEM.title}</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroupContent>
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild isActive={pathname === DASHBOARD_ITEM.href} tooltip={DASHBOARD_ITEM.title}>
+                <Link href={DASHBOARD_ITEM.href}>
+                  <DASHBOARD_ITEM.icon />
+                  <span>{DASHBOARD_ITEM.title}</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+
+            {NAV_GROUPS.map((group) => {
+              const isGroupActive = group.items.some((item) => pathname.startsWith(item.href));
+
+              return (
+                <Collapsible
+                  key={group.label}
+                  asChild
+                  defaultOpen={isGroupActive}
+                  className="group/collapsible"
+                >
+                  <SidebarMenuItem>
+                    <CollapsibleTrigger asChild>
+                      <SidebarMenuButton tooltip={group.label} isActive={isGroupActive}>
+                        <group.icon />
+                        <span>{group.label}</span>
+                        <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+                      </SidebarMenuButton>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent>
+                      <SidebarMenuSub>
+                        {group.items.map((item) => (
+                          <SidebarMenuSubItem key={item.href}>
+                            <SidebarMenuSubButton asChild isActive={pathname === item.href}>
+                              <Link href={item.href}>
+                                <span>{item.title}</span>
+                              </Link>
+                            </SidebarMenuSubButton>
+                          </SidebarMenuSubItem>
+                        ))}
+                      </SidebarMenuSub>
+                    </CollapsibleContent>
+                  </SidebarMenuItem>
+                </Collapsible>
+              );
+            })}
+          </SidebarMenu>
         </SidebarGroup>
-
-        {NAV_GROUPS.map((group) => {
-          const isGroupActive = group.items.some((item) => pathname.startsWith(item.href));
-
-          return (
-            <Collapsible key={group.label} defaultOpen={isGroupActive} className="group/collapsible">
-              <SidebarGroup>
-                <SidebarGroupLabel asChild>
-                  <CollapsibleTrigger className="flex w-full items-center">
-                    <group.icon className="mr-2 size-4" />
-                    <span className="flex-1">{group.label}</span>
-                    <ChevronRight className="ml-auto size-4 transition-transform group-data-[state=open]/collapsible:rotate-90" />
-                  </CollapsibleTrigger>
-                </SidebarGroupLabel>
-                <CollapsibleContent>
-                  <SidebarGroupContent>
-                    <SidebarMenu>
-                      {group.items.map((item) => (
-                        <SidebarMenuItem key={item.href}>
-                          <SidebarMenuButton asChild isActive={pathname === item.href} tooltip={item.title}>
-                            <Link href={item.href}>
-                              <item.icon />
-                              <span>{item.title}</span>
-                            </Link>
-                          </SidebarMenuButton>
-                        </SidebarMenuItem>
-                      ))}
-                    </SidebarMenu>
-                  </SidebarGroupContent>
-                </CollapsibleContent>
-              </SidebarGroup>
-            </Collapsible>
-          );
-        })}
       </SidebarContent>
 
       <SidebarFooter>
