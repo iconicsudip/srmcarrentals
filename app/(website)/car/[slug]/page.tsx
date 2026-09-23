@@ -68,16 +68,18 @@ interface CarDetailPageProps {
   params: Promise<{ slug: string }>;
 }
 
+import { getDynamicSeoForPath, DynamicJsonLd } from "@/lib/seo/dynamic-seo";
+
 export async function generateMetadata({ params }: CarDetailPageProps): Promise<Metadata> {
   const { slug } = await params;
   const car = await getPublicCarBySlug(slug);
   if (!car) return {};
 
-  return {
-    title: `${car.name} Self Drive Car Rental in Udaipur | SRM Car Rentals`,
+  const fallback: Metadata = {
+    title: `${car.name} Self Drive Car Rental in India | SRM Car Rentals`,
     description:
       car.shortDescription ??
-      `Rent the ${car.name} self-drive in Udaipur, Jaipur & Navsari. Daily & hourly pricing, comprehensive insurance, doorstep & airport delivery.`,
+      `Rent the ${car.name} self-drive with best daily rates, comprehensive insurance, doorstep & airport delivery.`,
     alternates: { canonical: `/car/${car.slug}` },
     openGraph: {
       title: `${car.name} Self Drive Rental | SRM`,
@@ -85,6 +87,9 @@ export async function generateMetadata({ params }: CarDetailPageProps): Promise<
       images: car.images[0] ? [car.images[0].url] : undefined,
     },
   };
+
+  const resolved = await getDynamicSeoForPath(`/car/${car.slug}`, fallback);
+  return resolved.metadata;
 }
 
 function formatInr(amount: any) {
@@ -183,6 +188,7 @@ export default async function CarDetailPage({ params }: CarDetailPageProps) {
 
   return (
     <div className="min-h-screen bg-black text-white">
+      <DynamicJsonLd path={`/car/${car.slug}`} />
       {/* eslint-disable-next-line react/no-danger */}
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 

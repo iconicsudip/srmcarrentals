@@ -28,16 +28,20 @@ import {
   listActiveTours,
 } from "@/modules/website/public-content.service";
 
+import { getDynamicSeoForPath, DynamicJsonLd } from "@/lib/seo/dynamic-seo";
+
 export const revalidate = 60;
 
 export async function generateMetadata(): Promise<Metadata> {
   const company = await getCompanyContent();
-  return {
+  const fallback: Metadata = {
     title: `${company.name} — Self Drive & Chauffeur Car Rentals`,
     description: company.description || undefined,
     alternates: { canonical: "/" },
     openGraph: { title: company.name, description: company.description || undefined, type: "website" },
   };
+  const resolved = await getDynamicSeoForPath("/", fallback);
+  return resolved.metadata;
 }
 
 export default async function HomePage() {
@@ -69,8 +73,7 @@ export default async function HomePage() {
 
   return (
     <>
-      {/* eslint-disable-next-line react/no-danger */}
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <DynamicJsonLd path="/" />
 
       <HeroSection content={content.hero} locations={locations} />
       <TrustBadgeRow badges={content.trustBadges} />
