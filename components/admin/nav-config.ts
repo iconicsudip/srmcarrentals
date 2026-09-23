@@ -1,0 +1,238 @@
+import type { LucideIcon } from "lucide-react";
+import {
+  LayoutDashboard,
+  Car,
+  Tag,
+  Palette,
+  Users,
+  Gauge,
+  DoorOpen,
+  Sparkles,
+  ShieldCheck,
+  LayoutGrid,
+  CarFront,
+  Boxes,
+  Compass,
+  Fuel,
+  Cog,
+  MapPin,
+  Plane,
+  Wallet,
+  Package,
+  Clock,
+  Timer,
+  Route,
+  Hourglass,
+  CalendarRange,
+  ShieldPlus,
+  PlusSquare,
+  ClipboardList,
+  CheckCircle2,
+  CheckCheck,
+  XCircle,
+  CalendarDays,
+  CalendarCheck2,
+  UserRound,
+  IdCard,
+  UserCog,
+  CreditCard,
+  ArrowLeftRight,
+  Undo2,
+  FileText,
+  Percent,
+  Ticket,
+  BadgePercent,
+  Files,
+  Newspaper,
+  FolderTree,
+  Search,
+  Building2,
+  PlaneTakeoff,
+  Map,
+  Link2,
+  KeyRound,
+  History,
+  Settings,
+  Building,
+  Receipt,
+  Mail,
+  MessageSquare,
+  MessageCircle,
+  BellRing,
+  LayoutTemplate,
+  Star,
+  Image as ImageIcon,
+  Info,
+  PhoneCall,
+  HelpCircle,
+  ScrollText,
+} from "lucide-react";
+
+import type { Permission } from "@srm/types";
+
+export interface NavLeaf {
+  title: string;
+  href: string;
+  icon: LucideIcon;
+  permission?: Permission;
+}
+
+export interface NavGroup {
+  label: string;
+  icon: LucideIcon;
+  items: NavLeaf[];
+}
+
+export const DASHBOARD_ITEM: NavLeaf = {
+  title: "Dashboard",
+  href: "/admin/dashboard",
+  icon: LayoutDashboard,
+  permission: "dashboard.view",
+};
+
+export const NAV_GROUPS: NavGroup[] = [
+  {
+    label: "Car Rental",
+    icon: Car,
+    items: [
+      { title: "All Car Rental", href: "/admin/cars", icon: Car, permission: "cars.view" },
+      { title: "Add New Car", href: "/admin/cars/new", icon: PlusSquare, permission: "cars.create" },
+      { title: "Brands", href: "/admin/cars/brands", icon: Tag, permission: "cars.attributes.manage" },
+      { title: "Models", href: "/admin/cars/models", icon: CarFront, permission: "cars.attributes.manage" },
+      { title: "Colors", href: "/admin/cars/colors", icon: Palette, permission: "cars.attributes.manage" },
+      { title: "Seats", href: "/admin/cars/seats", icon: Users, permission: "cars.attributes.manage" },
+      { title: "Cylinders", href: "/admin/cars/cylinders", icon: Gauge, permission: "cars.attributes.manage" },
+      { title: "Doors", href: "/admin/cars/doors", icon: DoorOpen, permission: "cars.attributes.manage" },
+      { title: "Features", href: "/admin/cars/features", icon: Sparkles, permission: "cars.attributes.manage" },
+      { title: "Safety Features", href: "/admin/cars/safety-features", icon: ShieldCheck, permission: "cars.attributes.manage" },
+      { title: "Car Category", href: "/admin/cars/categories", icon: LayoutGrid, permission: "cars.attributes.manage" },
+      { title: "Car Types", href: "/admin/cars/types", icon: Boxes, permission: "cars.attributes.manage" },
+      { title: "Car Capacity", href: "/admin/cars/capacity", icon: Gauge, permission: "cars.attributes.manage" },
+      { title: "Car Steering", href: "/admin/cars/steering-types", icon: Compass, permission: "cars.attributes.manage" },
+      { title: "Car Fuel Type", href: "/admin/cars/fuel-types", icon: Fuel, permission: "cars.attributes.manage" },
+      { title: "Car Transmission", href: "/admin/cars/transmission-types", icon: Cog, permission: "cars.attributes.manage" },
+    ],
+  },
+  {
+    label: "Locations & Pricing",
+    icon: MapPin,
+    items: [
+      { title: "Locations", href: "/admin/locations", icon: MapPin, permission: "locations.manage" },
+      { title: "Airports", href: "/admin/airports", icon: Plane, permission: "airports.manage" },
+      { title: "Airport Charges", href: "/admin/airports/charges", icon: Wallet, permission: "airports.manage" },
+      { title: "Rental Packages", href: "/admin/pricing/packages", icon: Package, permission: "pricing.packages.manage" },
+      { title: "24 Hour Pricing", href: "/admin/pricing/24-hour", icon: Clock, permission: "pricing.manage" },
+      { title: "Hourly Pricing", href: "/admin/pricing/hourly", icon: Timer, permission: "pricing.manage" },
+      { title: "KM Pricing", href: "/admin/pricing/km", icon: Route, permission: "pricing.manage" },
+      { title: "Extra KM Charges", href: "/admin/pricing/extra-km", icon: Gauge, permission: "pricing.manage" },
+      { title: "Extra Hour Charges", href: "/admin/pricing/extra-hour", icon: Hourglass, permission: "pricing.manage" },
+      { title: "Seasonal Pricings", href: "/admin/pricing/seasonal", icon: CalendarRange, permission: "pricing.seasonal.manage" },
+    ],
+  },
+  {
+    label: "Services",
+    icon: ShieldPlus,
+    items: [
+      { title: "Insurances", href: "/admin/services/insurances", icon: ShieldPlus, permission: "insurances.manage" },
+      { title: "Extra Services", href: "/admin/services/extra-services", icon: Sparkles, permission: "extra_services.manage" },
+    ],
+  },
+  {
+    label: "Bookings",
+    icon: ClipboardList,
+    items: [
+      { title: "All Bookings", href: "/admin/bookings", icon: ClipboardList, permission: "bookings.view" },
+      { title: "Pending Bookings", href: "/admin/bookings/pending", icon: Hourglass, permission: "bookings.view" },
+      { title: "Confirmed Bookings", href: "/admin/bookings/confirmed", icon: CheckCircle2, permission: "bookings.view" },
+      { title: "Active Rentals", href: "/admin/bookings/active", icon: CarFront, permission: "bookings.view" },
+      { title: "Completed Bookings", href: "/admin/bookings/completed", icon: CheckCheck, permission: "bookings.view" },
+      { title: "Cancelled Bookings", href: "/admin/bookings/cancelled", icon: XCircle, permission: "bookings.view" },
+      { title: "Booking Calendar", href: "/admin/bookings/calendar", icon: CalendarDays, permission: "bookings.view" },
+      { title: "Availability Calendar", href: "/admin/bookings/availability", icon: CalendarCheck2, permission: "bookings.view" },
+    ],
+  },
+  {
+    label: "Customers & Drivers",
+    icon: UserRound,
+    items: [
+      { title: "Customers", href: "/admin/customers", icon: UserRound, permission: "customers.view" },
+      { title: "Drivers", href: "/admin/drivers", icon: IdCard, permission: "drivers.view" },
+      { title: "Driver Assignment", href: "/admin/drivers/assignment", icon: UserCog, permission: "drivers.manage" },
+    ],
+  },
+  {
+    label: "Finance",
+    icon: CreditCard,
+    items: [
+      { title: "Payments", href: "/admin/finance/payments", icon: CreditCard, permission: "payments.view" },
+      { title: "Transactions", href: "/admin/finance/transactions", icon: ArrowLeftRight, permission: "payments.view" },
+      { title: "Refunds", href: "/admin/finance/refunds", icon: Undo2, permission: "refunds.manage" },
+      { title: "Invoices", href: "/admin/finance/invoices", icon: FileText, permission: "invoices.view" },
+      { title: "Taxes", href: "/admin/finance/taxes", icon: Percent, permission: "taxes.manage" },
+    ],
+  },
+  {
+    label: "Marketing",
+    icon: Ticket,
+    items: [
+      { title: "Coupons", href: "/admin/marketing/coupons", icon: Ticket, permission: "coupons.manage" },
+      { title: "Discounts", href: "/admin/marketing/discounts", icon: BadgePercent, permission: "coupons.manage" },
+    ],
+  },
+  {
+    label: "Website Content",
+    icon: LayoutTemplate,
+    items: [
+      { title: "Homepage Content", href: "/admin/website/homepage", icon: LayoutTemplate, permission: "homepage.manage" },
+      { title: "About Us Page", href: "/admin/website/about", icon: Info, permission: "homepage.manage" },
+      { title: "Contact Page", href: "/admin/website/contact", icon: PhoneCall, permission: "homepage.manage" },
+      { title: "FAQs", href: "/admin/website/faq", icon: HelpCircle, permission: "homepage.manage" },
+      { title: "Terms & Conditions", href: "/admin/website/terms", icon: ScrollText, permission: "homepage.manage" },
+      { title: "Tour Categories", href: "/admin/website/tour-categories", icon: FolderTree, permission: "tours.manage" },
+      { title: "Tours", href: "/admin/website/tours", icon: Compass, permission: "tours.manage" },
+      { title: "Chauffeur Services", href: "/admin/website/chauffeur-services", icon: Car, permission: "chauffeur_services.manage" },
+      { title: "Testimonials", href: "/admin/website/testimonials", icon: Star, permission: "testimonials.manage" },
+      { title: "Gallery", href: "/admin/website/gallery", icon: ImageIcon, permission: "gallery.manage" },
+    ],
+  },
+  {
+    label: "CMS & SEO",
+    icon: Files,
+    items: [
+      { title: "Pages", href: "/admin/cms/pages", icon: Files, permission: "cms.manage" },
+      { title: "Blog", href: "/admin/cms/blog", icon: Newspaper, permission: "blog.manage" },
+      { title: "Blog Categories", href: "/admin/cms/blog-categories", icon: FolderTree, permission: "blog.manage" },
+      { title: "SEO Manager", href: "/admin/seo", icon: Search, permission: "seo.manage" },
+      { title: "Car SEO Pages", href: "/admin/seo/cars", icon: Car, permission: "seo.manage" },
+      { title: "Location SEO Pages", href: "/admin/seo/locations", icon: Building2, permission: "seo.manage" },
+      { title: "Airport SEO Pages", href: "/admin/seo/airports", icon: PlaneTakeoff, permission: "seo.manage" },
+      { title: "Sitemap", href: "/admin/seo/sitemap", icon: Map, permission: "seo.manage" },
+      { title: "Redirect Management", href: "/admin/seo/redirects", icon: Link2, permission: "seo.manage" },
+    ],
+  },
+  {
+    label: "User Management",
+    icon: ShieldCheck,
+    items: [
+      { title: "Admin Users", href: "/admin/users/admins", icon: ShieldCheck, permission: "users.manage" },
+      { title: "Staff", href: "/admin/users/staff", icon: Users, permission: "users.manage" },
+      { title: "Roles", href: "/admin/users/roles", icon: KeyRound, permission: "roles.manage" },
+      { title: "Permissions", href: "/admin/users/permissions", icon: KeyRound, permission: "permissions.manage" },
+      { title: "Activity Logs", href: "/admin/users/activity-logs", icon: History, permission: "activity_logs.view" },
+    ],
+  },
+  {
+    label: "Settings",
+    icon: Settings,
+    items: [
+      { title: "General Settings", href: "/admin/settings/general", icon: Settings, permission: "settings.manage" },
+      { title: "Company Settings", href: "/admin/settings/company", icon: Building, permission: "settings.manage" },
+      { title: "Tax Settings", href: "/admin/settings/tax", icon: Receipt, permission: "settings.manage" },
+      { title: "Payment Settings", href: "/admin/settings/payment", icon: CreditCard, permission: "settings.manage" },
+      { title: "Email Settings", href: "/admin/settings/email", icon: Mail, permission: "settings.manage" },
+      { title: "SMS Settings", href: "/admin/settings/sms", icon: MessageSquare, permission: "settings.manage" },
+      { title: "WhatsApp Settings", href: "/admin/settings/whatsapp", icon: MessageCircle, permission: "settings.manage" },
+      { title: "Notification Settings", href: "/admin/settings/notifications", icon: BellRing, permission: "settings.manage" },
+    ],
+  },
+];

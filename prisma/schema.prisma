@@ -1,0 +1,1340 @@
+// ============================================================================
+// SRM Car Rentals — Prisma schema
+// Single source of truth for the entire data model. Backend is Next.js Route
+// Handlers (apps/web/app/api/v1/**) talking to this schema via `lib/prisma.ts`.
+// ============================================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_DATABASE_URL")
+}
+
+// ============================================================================
+// ENUMS — kept in sync with packages/types/src/enums.ts
+// ============================================================================
+
+enum RoleName {
+  SUPER_ADMIN
+  ADMIN
+  BOOKING_MANAGER
+  STAFF
+  DRIVER
+  CUSTOMER
+}
+
+enum Status {
+  ACTIVE
+  INACTIVE
+}
+
+enum CarStatus {
+  DRAFT
+  ACTIVE
+  INACTIVE
+  MAINTENANCE
+}
+
+/// PENDING doubles as the "Temporary Hold" state created the instant a
+/// customer selects a car; it auto-expires via a BullMQ delayed job if the
+/// customer never completes payment (see BookingHoldService).
+enum BookingStatus {
+  PENDING
+  PAYMENT_PENDING
+  CONFIRMED
+  DRIVER_ASSIGNED
+  OUT_FOR_PICKUP
+  ACTIVE
+  COMPLETED
+  CANCELLED
+  REJECTED
+}
+
+enum ExtraHourRoundingMode {
+  EXACT_HOUR
+  ROUND_UP
+}
+
+enum PackageAssignmentScope {
+  ALL_CARS
+  SPECIFIC_CARS
+  CAR_CATEGORY
+  CAR_TYPE
+}
+
+enum SeasonalAdjustmentType {
+  FIXED_INCREASE
+  PERCENTAGE_INCREASE
+  FIXED_DISCOUNT
+  PERCENTAGE_DISCOUNT
+}
+
+enum InsurancePricingType {
+  FIXED
+  PERCENTAGE
+  DAILY
+}
+
+enum ServicePricingType {
+  PER_BOOKING
+  PER_DAY
+  PER_HOUR
+}
+
+enum CouponDiscountType {
+  PERCENTAGE
+  FIXED
+}
+
+enum PaymentProvider {
+  RAZORPAY
+  STRIPE
+  CASHFREE
+}
+
+enum PaymentType {
+  FULL
+  ADVANCE
+  PARTIAL
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  PARTIALLY_PAID
+  FAILED
+  REFUNDED
+}
+
+enum TransactionType {
+  PAYMENT
+  REFUND
+  PAYOUT
+}
+
+enum RefundStatus {
+  REQUESTED
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+enum InvoiceStatus {
+  DRAFT
+  ISSUED
+  PAID
+  VOID
+}
+
+enum DriverStatus {
+  AVAILABLE
+  ON_TRIP
+  OFF_DUTY
+  INACTIVE
+}
+
+enum CustomerAccountStatus {
+  ACTIVE
+  SUSPENDED
+  BANNED
+}
+
+enum TaxType {
+  PERCENTAGE
+  FIXED
+}
+
+enum BlogStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum PageStatus {
+  DRAFT
+  PUBLISHED
+}
+
+enum RobotsMeta {
+  INDEX_FOLLOW
+  NOINDEX_FOLLOW
+  INDEX_NOFOLLOW
+  NOINDEX_NOFOLLOW
+}
+
+enum SeoEntityType {
+  HOMEPAGE
+  CAR
+  CAR_CATEGORY
+  LOCATION
+  AIRPORT
+  BLOG_POST
+  PAGE
+}
+
+enum AuditAction {
+  CREATE
+  UPDATE
+  DELETE
+  LOGIN
+  LOGOUT
+  STATUS_CHANGE
+}
+
+// ============================================================================
+// AUTH / RBAC
+// ============================================================================
+
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  phone        String?
+  passwordHash String
+  firstName    String
+  lastName     String
+  avatarUrl    String?
+  roleId       String
+  role         Role      @relation(fields: [roleId], references: [id])
+  isActive     Boolean   @default(true)
+  lastLoginAt  DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  refreshTokens RefreshToken[]
+  auditLogs     AuditLog[]
+  notifications Notification[]
+  customer      Customer?
+  driver        Driver?
+  blogs         Blog[]
+
+  @@index([roleId])
+  @@map("users")
+}
+
+model RefreshToken {
+  id                   String    @id @default(cuid())
+  userId               String
+  user                 User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash            String    @unique
+  expiresAt            DateTime
+  revokedAt            DateTime?
+  replacedByTokenHash  String?
+  userAgent            String?
+  ipAddress            String?
+  createdAt            DateTime  @default(now())
+
+  @@index([userId])
+  @@map("refresh_tokens")
+}
+
+model Role {
+  id          String   @id @default(cuid())
+  name        RoleName @unique
+  label       String
+  description String?
+  isSystem    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  users       User[]
+  permissions RolePermission[]
+
+  @@map("roles")
+}
+
+model Permission {
+  id          String   @id @default(cuid())
+  key         String   @unique // e.g. "cars.create"
+  group       String // e.g. "cars"
+  description String?
+  createdAt   DateTime @default(now())
+
+  roles RolePermission[]
+
+  @@map("permissions")
+}
+
+model RolePermission {
+  id           String     @id @default(cuid())
+  roleId       String
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permissionId String
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@unique([roleId, permissionId])
+  @@map("role_permissions")
+}
+
+// ============================================================================
+// CAR CATALOG — attribute lookups (each: Create/Edit/Delete/Search/Paginate/Status)
+// ============================================================================
+
+model CarBrand {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  logoUrl   String?
+  status    Status   @default(ACTIVE)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  models CarModel[]
+  cars   Car[]
+
+  @@map("car_brands")
+}
+
+model CarModel {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  brandId   String
+  brand     CarBrand @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  status    Status   @default(ACTIVE)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  cars Car[]
+
+  @@index([brandId])
+  @@map("car_models")
+}
+
+model CarColor {
+  id        String   @id @default(cuid())
+  name      String
+  hexCode   String?
+  status    Status   @default(ACTIVE)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  carsByColor    Car[] @relation("CarColor")
+  carsByExterior Car[] @relation("CarExteriorColor")
+  carsByInterior Car[] @relation("CarInteriorColor")
+
+  @@map("car_colors")
+}
+
+model CarSeatOption {
+  id        String   @id @default(cuid())
+  count     Int      @unique
+  label     String?
+  status    Status   @default(ACTIVE)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  cars Car[]
+
+  @@map("car_seat_options")
+}
+
+model CarCylinderOption {
+  id        String   @id @default(cuid())
+  count     Int      @unique
+  status    Status   @default(ACTIVE)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  cars Car[]
+
+  @@map("car_cylinder_options")
+}
+
+model CarDoorOption {
+  id        String   @id @default(cuid())
+  count     Int      @unique
+  status    Status   @default(ACTIVE)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  cars Car[]
+
+  @@map("car_door_options")
+}
+
+model CarFeature {
+  id        String   @id @default(cuid())
+  name      String
+  icon      String?
+  status    Status   @default(ACTIVE)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  cars CarFeatureOnCar[]
+
+  @@map("car_features")
+}
+
+model SafetyFeature {
+  id        String   @id @default(cuid())
+  name      String
+  icon      String?
+  status    Status   @default(ACTIVE)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  cars CarSafetyFeatureOnCar[]
+
+  @@map("safety_features")
+}
+
+model CarCategory {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  description String?
+  imageUrl    String?
+  status      Status   @default(ACTIVE)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  cars             Car[]
+  rentalPackages   RentalPackage[]
+  seasonalPricings SeasonalPricing[]
+  seoMetadata      SeoMetadata?
+
+  @@map("car_categories")
+}
+
+model CarType {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  status    Status   @default(ACTIVE)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  cars             Car[]
+  rentalPackages   RentalPackage[]
+  seasonalPricings SeasonalPricing[]
+
+  @@map("car_types")
+}
+
+model CarCapacity {
+  id               String   @id @default(cuid())
+  label            String
+  luggageCapacity  String?
+  status           Status   @default(ACTIVE)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  cars Car[]
+
+  @@map("car_capacities")
+}
+
+model SteeringType {
+  id        String   @id @default(cuid())
+  name      String
+  status    Status   @default(ACTIVE)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  cars Car[]
+
+  @@map("steering_types")
+}
+
+model FuelType {
+  id        String   @id @default(cuid())
+  name      String
+  status    Status   @default(ACTIVE)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  cars Car[]
+
+  @@map("fuel_types")
+}
+
+model TransmissionType {
+  id        String   @id @default(cuid())
+  name      String
+  status    Status   @default(ACTIVE)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  cars Car[]
+
+  @@map("transmission_types")
+}
+
+// ============================================================================
+// CAR
+// ============================================================================
+
+model Car {
+  id               String    @id @default(cuid())
+  name             String
+  slug             String    @unique
+  shortDescription String?
+  description      String?
+  year             Int
+  status           CarStatus @default(DRAFT)
+  isFeatured       Boolean   @default(false)
+
+  brandId    String
+  brand      CarBrand @relation(fields: [brandId], references: [id])
+  modelId    String
+  model      CarModel @relation(fields: [modelId], references: [id])
+  categoryId String
+  category   CarCategory @relation(fields: [categoryId], references: [id])
+  carTypeId  String
+  carType    CarType  @relation(fields: [carTypeId], references: [id])
+
+  // specifications
+  seatOptionId       String?
+  seatOption         CarSeatOption?     @relation(fields: [seatOptionId], references: [id])
+  doorOptionId       String?
+  doorOption         CarDoorOption?     @relation(fields: [doorOptionId], references: [id])
+  cylinderOptionId   String?
+  cylinderOption     CarCylinderOption? @relation(fields: [cylinderOptionId], references: [id])
+  transmissionTypeId String?
+  transmissionType   TransmissionType?  @relation(fields: [transmissionTypeId], references: [id])
+  fuelTypeId         String?
+  fuelType           FuelType?          @relation(fields: [fuelTypeId], references: [id])
+  steeringTypeId     String?
+  steeringType       SteeringType?      @relation(fields: [steeringTypeId], references: [id])
+  carCapacityId      String?
+  carCapacity        CarCapacity?       @relation(fields: [carCapacityId], references: [id])
+
+  // appearance
+  colorId         String?
+  color           CarColor? @relation("CarColor", fields: [colorId], references: [id])
+  exteriorColorId String?
+  exteriorColor   CarColor? @relation("CarExteriorColor", fields: [exteriorColorId], references: [id])
+  interiorColorId String?
+  interiorColor   CarColor? @relation("CarInteriorColor", fields: [interiorColorId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  features             CarFeatureOnCar[]
+  safetyFeatures       CarSafetyFeatureOnCar[]
+  images               CarImage[]
+  pricing              CarPricing?
+  rentalPackageLinks   RentalPackageCar[]
+  seasonalPricings     SeasonalPricing[]
+  bookings             Booking[]
+  seoMetadata          SeoMetadata?
+  tours                Tour[]
+
+  @@index([brandId])
+  @@index([modelId])
+  @@index([categoryId])
+  @@index([carTypeId])
+  @@index([status])
+  @@map("cars")
+}
+
+model CarFeatureOnCar {
+  carId     String
+  car       Car        @relation(fields: [carId], references: [id], onDelete: Cascade)
+  featureId String
+  feature   CarFeature @relation(fields: [featureId], references: [id], onDelete: Cascade)
+
+  @@id([carId, featureId])
+  @@map("car_feature_links")
+}
+
+model CarSafetyFeatureOnCar {
+  carId           String
+  car             Car           @relation(fields: [carId], references: [id], onDelete: Cascade)
+  safetyFeatureId String
+  safetyFeature   SafetyFeature @relation(fields: [safetyFeatureId], references: [id], onDelete: Cascade)
+
+  @@id([carId, safetyFeatureId])
+  @@map("car_safety_feature_links")
+}
+
+model CarImage {
+  id         String   @id @default(cuid())
+  carId      String
+  car        Car      @relation(fields: [carId], references: [id], onDelete: Cascade)
+  url        String
+  altText    String?
+  sortOrder  Int      @default(0)
+  isFeatured Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  @@index([carId])
+  @@map("car_images")
+}
+
+// ============================================================================
+// PRICING ENGINE
+// ============================================================================
+
+/// The core per-car pricing configuration driving the 24-hour rental formula.
+model CarPricing {
+  id     String @id @default(cuid())
+  carId  String @unique
+  car    Car    @relation(fields: [carId], references: [id], onDelete: Cascade)
+
+  dailyPrice       Decimal @db.Decimal(10, 2) // 24-hour price
+  includedKmPerDay Int
+  extraKmPrice     Decimal @db.Decimal(10, 2)
+  extraHourPrice   Decimal @db.Decimal(10, 2)
+
+  /// Optional standalone hourly rental mode (rentals shorter than 24h billed
+  /// purely by the hour instead of the daily formula).
+  hourlyPrice           Decimal?              @db.Decimal(10, 2)
+  minHourlyBookingHours Int?
+
+  gracePeriodMinutes    Int                   @default(0)
+  extraHourRoundingMode ExtraHourRoundingMode @default(ROUND_UP)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("car_pricing")
+}
+
+model RentalPackage {
+  id             String                 @id @default(cuid())
+  name           String
+  slug           String                 @unique
+  durationHours  Int
+  includedKm     Int
+  basePrice      Decimal                @db.Decimal(10, 2)
+  extraKmPrice   Decimal                @db.Decimal(10, 2)
+  extraHourPrice Decimal                @db.Decimal(10, 2)
+  scope          PackageAssignmentScope @default(ALL_CARS)
+
+  carCategoryId String?
+  carCategory   CarCategory? @relation(fields: [carCategoryId], references: [id])
+  carTypeId     String?
+  carType       CarType?     @relation(fields: [carTypeId], references: [id])
+
+  status    Status   @default(ACTIVE)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  cars     RentalPackageCar[]
+  bookings Booking[]
+
+  @@map("rental_packages")
+}
+
+model RentalPackageCar {
+  packageId String
+  package   RentalPackage @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  carId     String
+  car       Car           @relation(fields: [carId], references: [id], onDelete: Cascade)
+
+  @@id([packageId, carId])
+  @@map("rental_package_cars")
+}
+
+model SeasonalPricing {
+  id              String                 @id @default(cuid())
+  name            String
+  startDate       DateTime
+  endDate         DateTime
+  adjustmentType  SeasonalAdjustmentType
+  adjustmentValue Decimal                @db.Decimal(10, 2)
+
+  appliesToAll Boolean @default(true)
+  carId        String?
+  car          Car?         @relation(fields: [carId], references: [id])
+  carCategoryId String?
+  carCategory  CarCategory? @relation(fields: [carCategoryId], references: [id])
+  carTypeId    String?
+  carType      CarType?     @relation(fields: [carTypeId], references: [id])
+
+  status    Status   @default(ACTIVE)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([startDate, endDate])
+  @@map("seasonal_pricings")
+}
+
+// ============================================================================
+// LOCATIONS & AIRPORTS
+// ============================================================================
+
+model Location {
+  id              String   @id @default(cuid())
+  name            String
+  slug            String   @unique
+  city            String
+  state           String
+  country         String
+  latitude        Decimal  @db.Decimal(9, 6)
+  longitude       Decimal  @db.Decimal(9, 6)
+  serviceRadiusKm Decimal? @db.Decimal(6, 2)
+  status          Status   @default(ACTIVE)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  airportCharges     AirportLocationCharge[]
+  pickupBookings     Booking[]                @relation("PickupLocation")
+  dropBookings       Booking[]                @relation("DropLocation")
+  seoMetadata        SeoMetadata?
+
+  @@map("locations")
+}
+
+model Airport {
+  id        String   @id @default(cuid())
+  name      String
+  code      String   @unique
+  slug      String   @unique
+  city      String
+  state     String
+  country   String
+  latitude  Decimal  @db.Decimal(9, 6)
+  longitude Decimal  @db.Decimal(9, 6)
+  status    Status   @default(ACTIVE)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  locationCharges   AirportLocationCharge[]
+  distancePricing   AirportDistancePricing?
+  pickupBookings    Booking[]                @relation("PickupAirport")
+  dropBookings      Booking[]                @relation("DropAirport")
+  seoMetadata       SeoMetadata?
+
+  @@map("airports")
+}
+
+model AirportLocationCharge {
+  id               String   @id @default(cuid())
+  airportId        String
+  airport          Airport  @relation(fields: [airportId], references: [id], onDelete: Cascade)
+  locationId       String
+  location         Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  pickupCharge     Decimal  @db.Decimal(10, 2)
+  dropCharge       Decimal  @db.Decimal(10, 2)
+  roundTripCharge  Decimal? @db.Decimal(10, 2)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@unique([airportId, locationId])
+  @@map("airport_location_charges")
+}
+
+/// Optional distance-based dynamic pricing fallback, used when no explicit
+/// AirportLocationCharge row exists for an airport<->location pair.
+model AirportDistancePricing {
+  id            String   @id @default(cuid())
+  airportId     String   @unique
+  airport       Airport  @relation(fields: [airportId], references: [id], onDelete: Cascade)
+  baseCharge    Decimal  @db.Decimal(10, 2)
+  includedKm    Decimal  @db.Decimal(6, 2)
+  extraKmPrice  Decimal  @db.Decimal(10, 2)
+  status        Status   @default(ACTIVE)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("airport_distance_pricing")
+}
+
+// ============================================================================
+// CUSTOMERS & DRIVERS
+// ============================================================================
+
+model Customer {
+  id            String                 @id @default(cuid())
+  userId        String?                @unique
+  user          User?                  @relation(fields: [userId], references: [id])
+  firstName     String
+  lastName      String
+  email         String                 @unique
+  phone         String
+  totalBookings Int                    @default(0)
+  totalSpent    Decimal                @default(0) @db.Decimal(12, 2)
+  accountStatus CustomerAccountStatus  @default(ACTIVE)
+  createdAt     DateTime               @default(now())
+  updatedAt     DateTime               @updatedAt
+
+  bookings      Booking[]
+  couponUsages  CouponUsage[]
+  invoices      Invoice[]
+
+  @@map("customers")
+}
+
+model Driver {
+  id             String       @id @default(cuid())
+  userId         String?      @unique
+  user           User?        @relation(fields: [userId], references: [id])
+  firstName      String
+  lastName       String
+  phone          String
+  email          String?
+  licenseNumber  String       @unique
+  licenseExpiry  DateTime
+  address        String?
+  status         DriverStatus @default(AVAILABLE)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  bookings Booking[]
+
+  @@map("drivers")
+}
+
+// ============================================================================
+// BOOKINGS
+// ============================================================================
+
+model Booking {
+  id                String        @id @default(cuid())
+  bookingReference  String        @unique
+
+  carId             String
+  car               Car           @relation(fields: [carId], references: [id])
+  customerId        String
+  customer          Customer      @relation(fields: [customerId], references: [id])
+
+  pickupLocationId  String?
+  pickupLocation    Location?     @relation("PickupLocation", fields: [pickupLocationId], references: [id])
+  dropLocationId    String?
+  dropLocation      Location?     @relation("DropLocation", fields: [dropLocationId], references: [id])
+  pickupAirportId   String?
+  pickupAirport     Airport?      @relation("PickupAirport", fields: [pickupAirportId], references: [id])
+  dropAirportId     String?
+  dropAirport       Airport?      @relation("DropAirport", fields: [dropAirportId], references: [id])
+  pickupIsAirport   Boolean       @default(false)
+  dropIsAirport     Boolean       @default(false)
+
+  pickupDateTime    DateTime
+  dropDateTime      DateTime
+  actualPickupAt    DateTime?
+  actualDropAt      DateTime?
+
+  status            BookingStatus @default(PENDING)
+  /// Set only while status = PENDING ("Temporary Hold"); a BullMQ delayed job
+  /// auto-releases the car if payment isn't completed by this time.
+  holdExpiresAt     DateTime?
+
+  driverId          String?
+  driver            Driver?       @relation(fields: [driverId], references: [id])
+
+  rentalPackageId   String?
+  rentalPackage     RentalPackage? @relation(fields: [rentalPackageId], references: [id])
+  insuranceId       String?
+  insurance         Insurance?    @relation(fields: [insuranceId], references: [id])
+
+  couponId          String?
+  coupon            Coupon?       @relation(fields: [couponId], references: [id])
+  couponCode        String?
+
+  estimatedKm       Decimal?      @db.Decimal(8, 2)
+  actualKm          Decimal?      @db.Decimal(8, 2)
+
+  cancelledAt       DateTime?
+  cancellationReason String?
+
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  pricingSnapshot   BookingPricingSnapshot?
+  extraServices     BookingExtraService[]
+  payments          Payment[]
+  invoice           Invoice?
+  couponUsage       CouponUsage?
+
+  @@index([carId])
+  @@index([customerId])
+  @@index([status])
+  @@index([pickupDateTime, dropDateTime])
+  @@map("bookings")
+}
+
+/// Immutable pricing snapshot captured at booking-creation time. Once
+/// written, this NEVER changes even if car/season/tax pricing changes later.
+model BookingPricingSnapshot {
+  id        String  @id @default(cuid())
+  bookingId String  @unique
+  booking   Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  dailyPrice           Decimal  @db.Decimal(10, 2)
+  hourlyPrice          Decimal? @db.Decimal(10, 2)
+  includedKmPerDay     Int
+  extraKmPrice         Decimal  @db.Decimal(10, 2)
+  extraHourPrice       Decimal  @db.Decimal(10, 2)
+  gracePeriodMinutes   Int
+
+  totalHours  Decimal @db.Decimal(8, 2)
+  fullDays    Int
+  extraHours  Decimal @db.Decimal(8, 2)
+
+  rentalPrice     Decimal @db.Decimal(10, 2)
+  extraHourCharge Decimal @db.Decimal(10, 2)
+  estimatedKm     Decimal @db.Decimal(8, 2)
+  extraKmCharge   Decimal @db.Decimal(10, 2)
+
+  airportPickupCharge Decimal @db.Decimal(10, 2) @default(0)
+  airportDropCharge   Decimal @db.Decimal(10, 2) @default(0)
+  seasonalAdjustment  Decimal @db.Decimal(10, 2) @default(0)
+  servicesTotal       Decimal @db.Decimal(10, 2) @default(0)
+  insuranceCharge     Decimal @db.Decimal(10, 2) @default(0)
+
+  discount   Decimal @db.Decimal(10, 2) @default(0)
+  couponCode String?
+
+  subtotal      Decimal @db.Decimal(10, 2)
+  taxPercentage Decimal @db.Decimal(5, 2)
+  taxAmount     Decimal @db.Decimal(10, 2)
+  grandTotal    Decimal @db.Decimal(10, 2)
+
+  createdAt DateTime @default(now())
+
+  @@map("booking_pricing_snapshots")
+}
+
+model BookingExtraService {
+  bookingId      String
+  booking        Booking      @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  extraServiceId String
+  extraService   ExtraService @relation(fields: [extraServiceId], references: [id])
+  quantity       Int          @default(1)
+  priceAtBooking Decimal      @db.Decimal(10, 2)
+
+  @@id([bookingId, extraServiceId])
+  @@map("booking_extra_services")
+}
+
+// ============================================================================
+// INSURANCE & EXTRA SERVICES
+// ============================================================================
+
+model Insurance {
+  id              String               @id @default(cuid())
+  name            String
+  description     String?
+  pricingType     InsurancePricingType
+  fixedPrice      Decimal?             @db.Decimal(10, 2)
+  percentagePrice Decimal?             @db.Decimal(5, 2)
+  dailyPrice      Decimal?             @db.Decimal(10, 2)
+  status          Status               @default(ACTIVE)
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+
+  bookings Booking[]
+
+  @@map("insurances")
+}
+
+model ExtraService {
+  id          String             @id @default(cuid())
+  name        String
+  description String?
+  price       Decimal            @db.Decimal(10, 2)
+  pricingType ServicePricingType
+  status      Status             @default(ACTIVE)
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+
+  bookings BookingExtraService[]
+
+  @@map("extra_services")
+}
+
+// ============================================================================
+// FINANCE — payments, transactions, refunds, invoices, tax
+// ============================================================================
+
+model Payment {
+  id                String          @id @default(cuid())
+  bookingId         String
+  booking           Booking         @relation(fields: [bookingId], references: [id])
+  provider          PaymentProvider
+  paymentType       PaymentType
+  amount            Decimal         @db.Decimal(10, 2)
+  currency          String          @default("INR")
+  status            PaymentStatus   @default(PENDING)
+  providerPaymentId String?
+  providerOrderId   String?
+  paidAt            DateTime?
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  transactions Transaction[]
+  refunds      Refund[]
+
+  @@index([bookingId])
+  @@map("payments")
+}
+
+model Transaction {
+  id                 String          @id @default(cuid())
+  paymentId          String
+  payment            Payment         @relation(fields: [paymentId], references: [id])
+  type               TransactionType
+  amount             Decimal         @db.Decimal(10, 2)
+  status             PaymentStatus
+  providerReference  String?
+  rawResponse        Json?
+  createdAt          DateTime        @default(now())
+
+  @@index([paymentId])
+  @@map("transactions")
+}
+
+model Refund {
+  id               String       @id @default(cuid())
+  paymentId        String
+  payment          Payment      @relation(fields: [paymentId], references: [id])
+  amount           Decimal      @db.Decimal(10, 2)
+  reason           String?
+  status           RefundStatus @default(REQUESTED)
+  providerRefundId String?
+  processedAt      DateTime?
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  @@index([paymentId])
+  @@map("refunds")
+}
+
+model Invoice {
+  id            String        @id @default(cuid())
+  bookingId     String        @unique
+  booking       Booking       @relation(fields: [bookingId], references: [id])
+  customerId    String
+  customer      Customer      @relation(fields: [customerId], references: [id])
+  invoiceNumber String        @unique
+  amount        Decimal       @db.Decimal(10, 2)
+  taxAmount     Decimal       @db.Decimal(10, 2)
+  totalAmount   Decimal       @db.Decimal(10, 2)
+  status        InvoiceStatus @default(DRAFT)
+  issuedAt      DateTime?
+  pdfUrl        String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([customerId])
+  @@map("invoices")
+}
+
+model Tax {
+  id         String   @id @default(cuid())
+  name       String
+  percentage Decimal  @db.Decimal(5, 2)
+  type       TaxType  @default(PERCENTAGE)
+  isDefault  Boolean  @default(false)
+  status     Status   @default(ACTIVE)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("taxes")
+}
+
+// ============================================================================
+// MARKETING — coupons
+// ============================================================================
+
+model Coupon {
+  id               String             @id @default(cuid())
+  code             String             @unique
+  discountType     CouponDiscountType
+  percentage       Decimal?           @db.Decimal(5, 2)
+  fixedAmount      Decimal?           @db.Decimal(10, 2)
+  maxDiscount      Decimal?           @db.Decimal(10, 2)
+  minBookingAmount Decimal?           @db.Decimal(10, 2)
+  startDate        DateTime
+  endDate          DateTime
+  usageLimit       Int?
+  usedCount        Int                @default(0)
+  status           Status             @default(ACTIVE)
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+
+  bookings Booking[]
+  usages   CouponUsage[]
+
+  @@map("coupons")
+}
+
+model CouponUsage {
+  id             String   @id @default(cuid())
+  couponId       String
+  coupon         Coupon   @relation(fields: [couponId], references: [id])
+  bookingId      String   @unique
+  booking        Booking  @relation(fields: [bookingId], references: [id])
+  customerId     String
+  customer       Customer @relation(fields: [customerId], references: [id])
+  discountAmount Decimal  @db.Decimal(10, 2)
+  createdAt      DateTime @default(now())
+
+  @@index([couponId])
+  @@index([customerId])
+  @@map("coupon_usages")
+}
+
+// ============================================================================
+// CMS & SEO
+// ============================================================================
+
+model BlogCategory {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  status    Status   @default(ACTIVE)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  blogs Blog[]
+
+  @@map("blog_categories")
+}
+
+model Blog {
+  id            String       @id @default(cuid())
+  title         String
+  slug          String       @unique
+  featuredImage String?
+  content       String
+  authorId      String
+  author        User         @relation(fields: [authorId], references: [id])
+  categoryId    String
+  category      BlogCategory @relation(fields: [categoryId], references: [id])
+  tags          String[]
+  publishDate   DateTime?
+  status        BlogStatus   @default(DRAFT)
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  seoMetadata SeoMetadata?
+
+  @@index([categoryId])
+  @@index([status])
+  @@map("blogs")
+}
+
+model Page {
+  id        String     @id @default(cuid())
+  title     String
+  slug      String     @unique
+  content   String
+  status    PageStatus @default(DRAFT)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  seoMetadata SeoMetadata?
+
+  @@map("pages")
+}
+
+/// One row of SEO metadata per addressable entity. `entityId` is null for
+/// singleton entity types (HOMEPAGE). Each concrete entity also carries a
+/// direct optional 1-1 relation for convenient joins from the admin UI.
+model SeoMetadata {
+  id                 String        @id @default(cuid())
+  entityType         SeoEntityType
+  entityId           String?
+
+  metaTitle          String?
+  metaDescription    String?
+  metaKeywords       String?
+  canonicalUrl       String?
+  robotsMeta         RobotsMeta    @default(INDEX_FOLLOW)
+  ogTitle            String?
+  ogDescription      String?
+  ogImage            String?
+  twitterCard        String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  carId         String?      @unique
+  car           Car?         @relation(fields: [carId], references: [id], onDelete: Cascade)
+  carCategoryId String?      @unique
+  carCategory   CarCategory? @relation(fields: [carCategoryId], references: [id], onDelete: Cascade)
+  locationId    String?      @unique
+  location      Location?    @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  airportId     String?      @unique
+  airport       Airport?     @relation(fields: [airportId], references: [id], onDelete: Cascade)
+  blogId        String?      @unique
+  blog          Blog?        @relation(fields: [blogId], references: [id], onDelete: Cascade)
+  pageId        String?      @unique
+  page          Page?        @relation(fields: [pageId], references: [id], onDelete: Cascade)
+
+  @@unique([entityType, entityId])
+  @@map("seo_metadata")
+}
+
+model RedirectRule {
+  id         String   @id @default(cuid())
+  fromPath   String   @unique
+  toPath     String
+  statusCode Int      @default(301)
+  status     Status   @default(ACTIVE)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("redirect_rules")
+}
+
+// ============================================================================
+// SETTINGS
+// ============================================================================
+
+/// Generic key/value settings store (general/company/tax/payment/email/sms/
+/// whatsapp/notification groups) so admin-configurable behavior never
+/// requires a code change or migration.
+model Setting {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     Json
+  group     String
+  updatedAt DateTime @updatedAt
+
+  @@index([group])
+  @@map("settings")
+}
+
+// ============================================================================
+// AUDIT & NOTIFICATIONS
+// ============================================================================
+
+model AuditLog {
+  id         String      @id @default(cuid())
+  userId     String?
+  user       User?       @relation(fields: [userId], references: [id])
+  action     AuditAction
+  entityType String
+  entityId   String?
+  changes    Json?
+  ipAddress  String?
+  userAgent  String?
+  createdAt  DateTime    @default(now())
+
+  @@index([userId])
+  @@index([entityType, entityId])
+  @@map("audit_logs")
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
+  title     String
+  message   String
+  type      String?
+  isRead    Boolean  @default(false)
+  link      String?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@map("notifications")
+}
+
+// ============================================================================
+// PUBLIC WEBSITE CONTENT — everything the marketing site renders is admin-
+// managed through these models (+ the Setting model above for free-form
+// homepage copy blocks like the hero, stats, and footer). Nothing on the
+// public site is hardcoded.
+// ============================================================================
+
+enum ServicePricingUnit {
+  PER_TRIP
+  PER_KM
+}
+
+/// A chauffeur-driven service tier (Executive Sedan, VIP Chauffeur, Priority
+/// Airport Transfer, ...) — distinct from the self-drive Car catalog because
+/// it's sold by trip/km, not by the 24-hour rental formula.
+model ChauffeurService {
+  id             String             @id @default(cuid())
+  name           String
+  slug           String             @unique
+  category       String // e.g. "Sedan", "SUV", "Premium", "Airport Transfer", "Outstation"
+  imageUrl       String?
+  idealFor       String?
+  capacityLabel  String? // e.g. "Up to 4 Passengers · 2 Bags"
+  features       String[]
+  pricePerKm     Decimal?           @db.Decimal(10, 2)
+  startingPrice  Decimal            @db.Decimal(10, 2)
+  pricingUnit    ServicePricingUnit @default(PER_TRIP)
+  badge          String? // e.g. "Premium"
+  sortOrder      Int                @default(0)
+  status         Status             @default(ACTIVE)
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+
+  @@index([status])
+  @@map("chauffeur_services")
+}
+
+model TourCategory {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  status    Status   @default(ACTIVE)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tours Tour[]
+
+  @@map("tour_categories")
+}
+
+model Tour {
+  id                String       @id @default(cuid())
+  name              String
+  slug              String       @unique
+  categoryId        String
+  category          TourCategory @relation(fields: [categoryId], references: [id])
+  imageUrl          String?
+  rating            Decimal      @default(5) @db.Decimal(2, 1)
+  durationDays      Int
+  durationNights    Int
+  description       String?
+  keyExperiences    String[]
+  assignedCarId     String?
+  assignedCar       Car?         @relation(fields: [assignedCarId], references: [id])
+  startingPrice     Decimal      @db.Decimal(10, 2)
+  sortOrder         Int          @default(0)
+  status            Status       @default(ACTIVE)
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+
+  @@index([categoryId])
+  @@index([status])
+  @@map("tours")
+}
+
+model Testimonial {
+  id           String   @id @default(cuid())
+  customerName String
+  location     String?
+  avatarUrl    String?
+  rating       Int      @default(5)
+  quote        String
+  bookedItem   String? // e.g. "BMW 3 Series Gran Limousine"
+  sortOrder    Int      @default(0)
+  status       Status   @default(ACTIVE)
+  /// "manual" = hand-entered in admin | "google" = synced from Google Reviews via RapidAPI
+  source       String   @default("manual")
+  /// Unique ID from the external reviews provider (used for upsert dedup on re-sync)
+  externalId   String?  @unique
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([status])
+  @@index([source])
+  @@map("testimonials")
+}
+
+model GalleryImage {
+  id        String   @id @default(cuid())
+  imageUrl  String
+  caption   String?
+  link      String? // e.g. an Instagram post URL
+  sortOrder Int      @default(0)
+  status    Status   @default(ACTIVE)
+  createdAt DateTime @default(now())
+
+  @@index([status])
+  @@map("gallery_images")
+}

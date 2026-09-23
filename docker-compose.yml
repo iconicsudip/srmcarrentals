@@ -1,0 +1,24 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: srm-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: srm
+      POSTGRES_PASSWORD: srm_password
+      POSTGRES_DB: srm_carrentals
+    ports:
+      # Host 5433 -> container 5432
+      - "5433:5432"
+    volumes:
+      - srm_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U srm -d srm_carrentals"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  srm_postgres_data:
