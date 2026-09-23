@@ -12,10 +12,11 @@ import {
   ChevronRight,
   Clock,
   CreditCard,
-  ExternalLink,
-  HelpCircle,
+  KeyRound,
   Loader2,
   Lock,
+  LogIn,
+  LogOut,
   MapPin,
   MessageSquare,
   Phone,
@@ -26,11 +27,13 @@ import {
   Tag,
   Truck,
   User,
+  UserCheck,
 } from "lucide-react";
 import { toast } from "sonner";
 
 import { useCart } from "@/lib/cart/cart-store";
 import { ApiRequestError, apiFetch } from "@/lib/api-client";
+import { useCurrentUser, useLogin, useLogout, useRegister } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -63,6 +66,24 @@ export default function CheckoutPage() {
   const router = useRouter();
   const { items, count, total, clear } = useCart();
 
+  // Authentication hooks
+  const { data: currentUser, isLoading: isAuthLoading } = useCurrentUser();
+  const loginMutation = useLogin();
+  const logoutMutation = useLogout();
+  const registerMutation = useRegister();
+
+  // Active authentication mode when unauthenticated: "GUEST" | "LOGIN"
+  const [authMode, setAuthMode] = React.useState<"GUEST" | "LOGIN">("GUEST");
+
+  // Inline Login form state
+  const [loginEmail, setLoginEmail] = React.useState("");
+  const [loginPassword, setLoginPassword] = React.useState("");
+  const [loginError, setLoginError] = React.useState<string | null>(null);
+
+  // Optional registration during Guest Checkout
+  const [createAccount, setCreateAccount] = React.useState(false);
+  const [accountPassword, setAccountPassword] = React.useState("");
+
   // Customer Contact State
   const [firstName, setFirstName] = React.useState("");
   const [lastName, setLastName] = React.useState("");
@@ -79,6 +100,16 @@ export default function CheckoutPage() {
 
   // Submission state
   const [isSubmitting, setIsSubmitting] = React.useState(false);
+
+  // Auto-fill form fields whenever user is authenticated
+  React.useEffect(() => {
+    if (currentUser) {
+      if (currentUser.firstName && !firstName) setFirstName(currentUser.firstName);
+      if (currentUser.lastName && !lastName) setLastName(currentUser.lastName);
+      if (currentUser.email && !email) setEmail(currentUser.email);
+      if (currentUser.phone && !phone) setPhone(currentUser.phone);
+    }
+  }, [currentUser]);
 
   // If cart is empty
   if (items.length === 0) {
@@ -100,6 +131,36 @@ export default function CheckoutPage() {
     );
   }
 
+  // Handle Inline Sign In
+  const handleInlineLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoginError(null);
+
+    if (!loginEmail.trim() || !loginPassword.trim()) {
+      setLoginError("Please enter your email and password.");
+      return;
+    }
+
+    try {
+      const res = await loginMutation.mutateAsync({
+        email: loginEmail.trim().toLowerCase(),
+        password: loginPassword,
+      });
+
+      toast.success(`Welcome back, ${res.user.firstName}! Contact details pre-filled.`);
+      setFirstName(res.user.firstName);
+      setLastName(res.user.lastName);
+      setEmail(res.user.email);
+      if (res.user.phone) setPhone(res.user.phone);
+      setLoginPassword("");
+    } catch (err) {
+      const msg = err instanceof ApiRequestError ? err.message : "Invalid email or password. Please try again.";
+      setLoginError(msg);
+      toast.error(msg);
+    }
+  };
+
+  // Handle Checkout Submission (Guest or Logged In)
   const handleSubmitCheckout = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -120,18 +181,45 @@ export default function CheckoutPage() {
     setIsSubmitting(true);
 
     try {
+      // If user chose to register an account inline during guest checkout
+      let registeredUserId = currentUser?.id;
+      if (!currentUser && createAccount) {
+        if (!accountPassword || accountPassword.length < 8) {
+          toast.error("Password must be at least 8 characters to create an account.");
+          setIsSubmitting(false);
+          return;
+        }
+
+        try {
+          const regRes = await registerMutation.mutateAsync({
+            firstName: firstName.trim(),
+            lastName: lastName.trim(),
+            email: email.trim().toLowerCase(),
+            phone: phone.trim(),
+            password: accountPassword,
+          });
+          registeredUserId = regRes.user.id;
+          toast.success("Account created and signed in!");
+        } catch (regErr) {
+          // If already exists, notify and continue booking as guest
+          const msg = regErr instanceof ApiRequestError ? regErr.message : "Account registration skipped.";
+          toast.info(msg);
+        }
+      }
+
       // Process bookings for items in the cart
-      // For single or primary item, we create the booking and redirect to the voucher
       const primaryItem = items[0];
       if (!primaryItem) throw new Error("No vehicle found in cart.");
 
       const payload = {
         carId: primaryItem.carId,
+        customerId: currentUser?.customerId,
         customer: {
           firstName: firstName.trim(),
           lastName: lastName.trim(),
           phone: phone.trim(),
           email: email.trim().toLowerCase(),
+          userId: registeredUserId,
         },
         pickupDateTime: new Date(primaryItem.pickup).toISOString(),
         dropDateTime: new Date(primaryItem.drop).toISOString(),
@@ -195,7 +283,7 @@ export default function CheckoutPage() {
             </div>
             <h1 className="mt-1 text-3xl font-black text-white tracking-tight uppercase">Checkout & Confirmation</h1>
             <p className="text-xs text-white/50 mt-1">
-              Finalize guest contact information and payment preferences to secure vehicle hold.
+              Choose frictionless Guest Checkout or Sign In to pre-fill saved member details.
             </p>
           </div>
 
@@ -213,82 +301,289 @@ export default function CheckoutPage() {
         <div className="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-12">
           {/* LEFT COLUMN: Checkout Form (8 cols) */}
           <div className="lg:col-span-7 xl:col-span-8">
-            <form onSubmit={handleSubmitCheckout} className="space-y-6">
-              {/* SECTION 1: Guest Contact Information */}
+            <div className="space-y-6">
+              {/* SECTION 1: Customer Contact & Checkout Mode (Guest vs Logged In) */}
               <div className="rounded-3xl border border-white/10 bg-neutral-900/80 p-6 backdrop-blur shadow-xl">
-                <div className="flex items-center gap-3 border-b border-white/10 pb-4">
-                  <div className="flex size-9 items-center justify-center rounded-xl bg-orange-500/15 text-orange-400">
-                    <User className="size-5" />
-                  </div>
+                {currentUser ? (
+                  /* ==============================================================
+                     LOGGED-IN MEMBER VIEW
+                     ============================================================== */
                   <div>
-                    <h2 className="text-base font-bold text-white uppercase tracking-tight">1. Guest Contact Details</h2>
-                    <p className="text-[11px] text-white/50">Voucher and trip guidelines will be sent to this WhatsApp and email.</p>
-                  </div>
-                </div>
+                    <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 pb-4">
+                      <div className="flex items-center gap-3">
+                        <div className="flex size-10 items-center justify-center rounded-2xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                          <UserCheck className="size-5" />
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <h2 className="text-base font-bold text-white uppercase tracking-tight">1. Member Contact Details</h2>
+                            <span className="rounded-full bg-emerald-500/20 px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wider text-emerald-400 border border-emerald-500/30">
+                              ✓ Verified Member
+                            </span>
+                          </div>
+                          <p className="text-[11px] text-white/60">
+                            Signed in as <strong className="text-white">{currentUser.firstName} {currentUser.lastName}</strong> ({currentUser.email})
+                          </p>
+                        </div>
+                      </div>
 
-                <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => logoutMutation.mutate()}
+                        disabled={logoutMutation.isPending}
+                        className="rounded-xl border border-white/10 bg-white/5 text-xs text-white/70 hover:bg-white/10 hover:text-white"
+                      >
+                        <LogOut className="size-3.5 mr-1.5" /> Sign Out
+                      </Button>
+                    </div>
+
+                    <div className="mt-4 rounded-2xl border border-emerald-500/20 bg-emerald-500/10 p-3 text-xs text-emerald-300 flex items-center gap-2">
+                      <Sparkles className="size-4 shrink-0 text-emerald-400" />
+                      <span>
+                        Your saved member profile is pre-filled below. This reservation will be automatically linked to your account.
+                      </span>
+                    </div>
+                  </div>
+                ) : (
+                  /* ==============================================================
+                     UNAUTHENTICATED: GUEST CHECKOUT VS LOGIN TOGGLE
+                     ============================================================== */
                   <div>
-                    <Label className="text-xs font-semibold text-white/70">First Name *</Label>
-                    <Input
-                      required
-                      placeholder="e.g. Rohan"
-                      value={firstName}
-                      onChange={(e) => setFirstName(e.target.value)}
-                      className="mt-1.5 rounded-xl border-white/10 bg-black/40 text-xs text-white placeholder:text-white/30"
-                    />
-                  </div>
+                    <div className="flex items-center justify-between border-b border-white/10 pb-4">
+                      <div className="flex items-center gap-3">
+                        <div className="flex size-9 items-center justify-center rounded-xl bg-orange-500/15 text-orange-400">
+                          <User className="size-5" />
+                        </div>
+                        <div>
+                          <h2 className="text-base font-bold text-white uppercase tracking-tight">1. Checkout Method</h2>
+                          <p className="text-[11px] text-white/50">Proceed as a guest or sign in for 1-click member checkout.</p>
+                        </div>
+                      </div>
+                    </div>
 
-                  <div>
-                    <Label className="text-xs font-semibold text-white/70">Last Name *</Label>
-                    <Input
-                      required
-                      placeholder="e.g. Sharma"
-                      value={lastName}
-                      onChange={(e) => setLastName(e.target.value)}
-                      className="mt-1.5 rounded-xl border-white/10 bg-black/40 text-xs text-white placeholder:text-white/30"
-                    />
-                  </div>
+                    {/* Mode Segmented Control */}
+                    <div className="mt-5 grid grid-cols-2 gap-2 rounded-2xl border border-white/10 bg-black/60 p-1.5">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setAuthMode("GUEST");
+                          setLoginError(null);
+                        }}
+                        className={`flex items-center justify-center gap-2 rounded-xl py-2.5 text-xs font-bold transition-all ${
+                          authMode === "GUEST"
+                            ? "bg-orange-500 text-white shadow-lg shadow-orange-500/25"
+                            : "text-white/60 hover:text-white hover:bg-white/5"
+                        }`}
+                      >
+                        <User className="size-4" />
+                        <span>Guest Checkout</span>
+                        <span className="rounded bg-black/30 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider text-orange-200">
+                          Fastest
+                        </span>
+                      </button>
 
-                  <div>
-                    <Label className="text-xs font-semibold text-white/70">WhatsApp Phone Number *</Label>
-                    <Input
-                      required
-                      type="tel"
-                      placeholder="+91 98765 43210"
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
-                      className="mt-1.5 rounded-xl border-white/10 bg-black/40 text-xs text-white placeholder:text-white/30"
-                    />
-                    <p className="mt-1 text-[10px] text-white/40">
-                      We send live booking updates, vehicle hold code, and delivery staff contact on WhatsApp.
-                    </p>
-                  </div>
+                      <button
+                        type="button"
+                        onClick={() => setAuthMode("LOGIN")}
+                        className={`flex items-center justify-center gap-2 rounded-xl py-2.5 text-xs font-bold transition-all ${
+                          authMode === "LOGIN"
+                            ? "bg-orange-500 text-white shadow-lg shadow-orange-500/25"
+                            : "text-white/60 hover:text-white hover:bg-white/5"
+                        }`}
+                      >
+                        <LogIn className="size-4" />
+                        <span>Login to Checkout</span>
+                        <span className="rounded bg-black/30 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider text-orange-200">
+                          Members
+                        </span>
+                      </button>
+                    </div>
 
-                  <div>
-                    <Label className="text-xs font-semibold text-white/70">Email Address (for GST Invoice) *</Label>
-                    <Input
-                      required
-                      type="email"
-                      placeholder="rohan@example.com"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="mt-1.5 rounded-xl border-white/10 bg-black/40 text-xs text-white placeholder:text-white/30"
-                    />
-                    <p className="mt-1 text-[10px] text-white/40">
-                      Official reservation voucher with tax invoice will be sent here.
-                    </p>
-                  </div>
-                </div>
+                    {/* INLINE LOGIN FORM */}
+                    {authMode === "LOGIN" && (
+                      <div className="mt-5 rounded-2xl border border-orange-500/20 bg-orange-500/5 p-5 animate-in fade-in zoom-in-95">
+                        <div className="flex items-center gap-2 text-xs font-bold text-orange-400">
+                          <LogIn className="size-4" /> Sign In to Your SRM Account
+                        </div>
+                        <p className="mt-1 text-[11px] text-white/60">
+                          Log in with your email and password to instantly pre-fill your saved details and link this reservation.
+                        </p>
 
-                <div className="mt-4">
-                  <Label className="text-xs font-semibold text-white/70">Flight Number / Handover Notes (Optional)</Label>
-                  <Input
-                    placeholder="e.g. Flight 6E-243 arriving Udaipur 11:30 AM / Need baby seat"
-                    value={flightNotes}
-                    onChange={(e) => setFlightNotes(e.target.value)}
-                    className="mt-1.5 rounded-xl border-white/10 bg-black/40 text-xs text-white placeholder:text-white/30"
-                  />
-                </div>
+                        <form onSubmit={handleInlineLogin} className="mt-4 space-y-3">
+                          {loginError && (
+                            <div className="flex items-center gap-2 rounded-xl border border-red-500/30 bg-red-500/10 p-3 text-xs text-red-300">
+                              <AlertCircle className="size-4 shrink-0 text-red-400" />
+                              <span>{loginError}</span>
+                            </div>
+                          )}
+
+                          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                            <div>
+                              <Label className="text-xs font-semibold text-white/70">Email Address</Label>
+                              <Input
+                                required
+                                type="email"
+                                placeholder="name@example.com"
+                                value={loginEmail}
+                                onChange={(e) => setLoginEmail(e.target.value)}
+                                className="mt-1 rounded-xl border-white/10 bg-black/60 text-xs text-white"
+                              />
+                            </div>
+
+                            <div>
+                              <Label className="text-xs font-semibold text-white/70">Password</Label>
+                              <Input
+                                required
+                                type="password"
+                                placeholder="••••••••"
+                                value={loginPassword}
+                                onChange={(e) => setLoginPassword(e.target.value)}
+                                className="mt-1 rounded-xl border-white/10 bg-black/60 text-xs text-white"
+                              />
+                            </div>
+                          </div>
+
+                          <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
+                            <button
+                              type="button"
+                              onClick={() => setAuthMode("GUEST")}
+                              className="text-xs text-orange-400/80 hover:text-orange-300 underline"
+                            >
+                              Don&apos;t have an account? Continue as Guest →
+                            </button>
+
+                            <Button
+                              type="submit"
+                              disabled={loginMutation.isPending}
+                              className="rounded-xl bg-orange-500 hover:bg-orange-600 px-5 text-xs font-bold text-white shadow-lg shadow-orange-500/20"
+                            >
+                              {loginMutation.isPending ? (
+                                <span className="flex items-center gap-1.5">
+                                  <Loader2 className="size-3.5 animate-spin" /> Signing In...
+                                </span>
+                              ) : (
+                                <span className="flex items-center gap-1.5">
+                                  <LogIn className="size-3.5" /> Sign In & Pre-fill
+                                </span>
+                              )}
+                            </Button>
+                          </div>
+                        </form>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Form fields: Rendered for Guest mode OR when logged in */}
+                {(currentUser || authMode === "GUEST") && (
+                  <div className="mt-6 space-y-4">
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                      <div>
+                        <Label className="text-xs font-semibold text-white/70">First Name *</Label>
+                        <Input
+                          required
+                          placeholder="e.g. Rohan"
+                          value={firstName}
+                          onChange={(e) => setFirstName(e.target.value)}
+                          className="mt-1.5 rounded-xl border-white/10 bg-black/40 text-xs text-white placeholder:text-white/30"
+                        />
+                      </div>
+
+                      <div>
+                        <Label className="text-xs font-semibold text-white/70">Last Name *</Label>
+                        <Input
+                          required
+                          placeholder="e.g. Sharma"
+                          value={lastName}
+                          onChange={(e) => setLastName(e.target.value)}
+                          className="mt-1.5 rounded-xl border-white/10 bg-black/40 text-xs text-white placeholder:text-white/30"
+                        />
+                      </div>
+
+                      <div>
+                        <Label className="text-xs font-semibold text-white/70">WhatsApp Phone Number *</Label>
+                        <Input
+                          required
+                          type="tel"
+                          placeholder="+91 98765 43210"
+                          value={phone}
+                          onChange={(e) => setPhone(e.target.value)}
+                          className="mt-1.5 rounded-xl border-white/10 bg-black/40 text-xs text-white placeholder:text-white/30"
+                        />
+                        <p className="mt-1 text-[10px] text-white/40">
+                          We send live booking updates, vehicle hold code, and delivery staff contact on WhatsApp.
+                        </p>
+                      </div>
+
+                      <div>
+                        <Label className="text-xs font-semibold text-white/70">Email Address (for GST Invoice) *</Label>
+                        <Input
+                          required
+                          type="email"
+                          placeholder="rohan@example.com"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          className="mt-1.5 rounded-xl border-white/10 bg-black/40 text-xs text-white placeholder:text-white/30"
+                        />
+                        <p className="mt-1 text-[10px] text-white/40">
+                          Official reservation voucher with tax invoice will be sent here.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div>
+                      <Label className="text-xs font-semibold text-white/70">Flight Number / Handover Notes (Optional)</Label>
+                      <Input
+                        placeholder="e.g. Flight 6E-243 arriving Udaipur 11:30 AM / Need baby seat"
+                        value={flightNotes}
+                        onChange={(e) => setFlightNotes(e.target.value)}
+                        className="mt-1.5 rounded-xl border-white/10 bg-black/40 text-xs text-white placeholder:text-white/30"
+                      />
+                    </div>
+
+                    {/* Optional Account Creation Toggle for Guests */}
+                    {!currentUser && (
+                      <div className="mt-4 rounded-2xl border border-white/10 bg-black/30 p-4 transition-all hover:border-white/20">
+                        <label className="flex cursor-pointer items-start gap-3">
+                          <input
+                            type="checkbox"
+                            checked={createAccount}
+                            onChange={(e) => setCreateAccount(e.target.checked)}
+                            className="mt-0.5 accent-orange-500"
+                          />
+                          <div>
+                            <span className="text-xs font-bold text-white flex items-center gap-1.5">
+                              <Sparkles className="size-3.5 text-orange-400" />
+                              Save my details & create an SRM account
+                            </span>
+                            <p className="mt-0.5 text-[11px] text-white/50">
+                              Enables 1-click reservations, easy digital voucher retrieval, and special repeat-renter discounts.
+                            </p>
+                          </div>
+                        </label>
+
+                        {createAccount && (
+                          <div className="mt-3.5 pt-3 border-t border-white/10 grid grid-cols-1 sm:grid-cols-2 gap-3 animate-in fade-in">
+                            <div className="sm:col-span-2">
+                              <Label className="text-xs font-semibold text-white/70 flex items-center gap-1">
+                                <KeyRound className="size-3 text-orange-400" /> Create Account Password *
+                              </Label>
+                              <Input
+                                type="password"
+                                placeholder="Choose a password (min 8 characters)"
+                                value={accountPassword}
+                                onChange={(e) => setAccountPassword(e.target.value)}
+                                className="mt-1 rounded-xl border-white/10 bg-black/60 text-xs text-white"
+                              />
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* SECTION 2: Payment & Reservation Method */}
@@ -405,8 +700,9 @@ export default function CheckoutPage() {
                 {/* Primary Submit Button */}
                 <div className="pt-2">
                   <Button
-                    type="submit"
-                    disabled={isSubmitting}
+                    type="button"
+                    onClick={handleSubmitCheckout}
+                    disabled={isSubmitting || (!currentUser && authMode === "LOGIN")}
                     className="w-full rounded-2xl bg-orange-500 hover:bg-orange-600 py-4 text-base font-black text-white shadow-xl shadow-orange-500/25 transition-all active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     {isSubmitting ? (
@@ -424,7 +720,7 @@ export default function CheckoutPage() {
                   </p>
                 </div>
               </div>
-            </form>
+            </div>
           </div>
 
           {/* RIGHT COLUMN: Sticky Order Summary (4 cols) */}

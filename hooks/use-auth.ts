@@ -39,3 +39,22 @@ export function useLogout() {
     },
   });
 }
+
+export function useRegister() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (input: {
+      firstName: string;
+      lastName: string;
+      email: string;
+      phone: string;
+      password: string;
+    }) =>
+      api.post<{ user: AuthenticatedUser }>("/auth/register", input, { skipAuthRedirect: true }),
+    onSuccess: (data) => {
+      queryClient.setQueryData(AUTH_ME_QUERY_KEY, data.user);
+    },
+  });
+}
+

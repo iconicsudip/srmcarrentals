@@ -12,6 +12,7 @@ export const createBookingSchema = z
         lastName: z.string().min(1),
         email: z.string().email(),
         phone: z.string().min(1),
+        userId: z.string().optional(),
       })
       .optional(),
     pickupDateTime: z.coerce.date(),

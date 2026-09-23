@@ -33,6 +33,8 @@ export interface AuthenticatedUser {
   role: string;
   permissions: string[];
   avatarUrl?: string | null;
+  phone?: string | null;
+  customerId?: string;
 }
 
 export interface LoginResponse extends AuthTokens {

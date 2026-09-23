@@ -2,11 +2,12 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { CarFront, Menu, Phone, ShoppingBag, X } from "lucide-react";
+import { CarFront, Menu, Phone, ShoppingBag, UserCheck, X } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { openCartDrawer, useCart } from "@/lib/cart/cart-store";
+import { useCurrentUser } from "@/hooks/use-auth";
 
 const NAV_LINKS = [
   { label: "Self Drive", href: "/cars" },
@@ -20,6 +21,7 @@ const NAV_LINKS = [
 export function SiteHeader({ companyName, phone }: { companyName: string; phone: string }) {
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const { count } = useCart();
+  const { data: user } = useCurrentUser();
 
   return (
     <header className="sticky top-0 z-50 border-b border-white/10 bg-black/90 backdrop-blur">
@@ -54,6 +56,15 @@ export function SiteHeader({ companyName, phone }: { companyName: string; phone:
               <Phone className="size-4 text-orange-500" />
               {phone}
             </a>
+          )}
+
+          {user && (
+            <div className="flex items-center gap-1.5 rounded-xl border border-white/10 bg-white/5 px-2.5 py-1.5 text-xs text-white">
+              <span className="flex size-5 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-400">
+                <UserCheck className="size-3" />
+              </span>
+              <span className="font-semibold text-white/90">{user.firstName}</span>
+            </div>
           )}
 
           {/* Cart Icon Button */}

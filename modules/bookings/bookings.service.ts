@@ -37,12 +37,27 @@ const BOOKING_DETAIL_INCLUDE = {
 
 async function upsertGuestCustomer(
   tx: Prisma.TransactionClient,
-  details: { firstName: string; lastName: string; email: string; phone: string },
+  details: { firstName: string; lastName: string; email: string; phone: string; userId?: string },
 ) {
+  const existingUser = details.userId
+    ? await tx.user.findUnique({ where: { id: details.userId } })
+    : await tx.user.findUnique({ where: { email: details.email.toLowerCase() } });
+
   return tx.customer.upsert({
     where: { email: details.email.toLowerCase() },
-    update: { firstName: details.firstName, lastName: details.lastName, phone: details.phone },
-    create: { ...details, email: details.email.toLowerCase() },
+    update: {
+      firstName: details.firstName,
+      lastName: details.lastName,
+      phone: details.phone,
+      ...(existingUser ? { userId: existingUser.id } : {}),
+    },
+    create: {
+      firstName: details.firstName,
+      lastName: details.lastName,
+      email: details.email.toLowerCase(),
+      phone: details.phone,
+      ...(existingUser ? { userId: existingUser.id } : {}),
+    },
   });
 }
 
@@ -82,7 +97,23 @@ export async function createBooking(input: CreateBookingInput) {
       throw new ConflictError("This car is no longer available for the selected dates");
     }
 
-    const customerId = input.customerId ?? (await upsertGuestCustomer(tx, input.customer!)).id;
+    let customerId = input.customerId;
+    if (customerId) {
+      const custExists = await tx.customer.findUnique({ where: { id: customerId } });
+      if (!custExists) {
+        const custByUser = await tx.customer.findUnique({ where: { userId: customerId } });
+        if (custByUser) {
+          customerId = custByUser.id;
+        } else if (input.customer) {
+          const cust = await upsertGuestCustomer(tx, { ...input.customer, userId: customerId });
+          customerId = cust.id;
+        }
+      }
+    }
+    if (!customerId) {
+      const cust = await upsertGuestCustomer(tx, input.customer!);
+      customerId = cust.id;
+    }
 
     let couponId: string | undefined;
     if (pricing.coupon.valid && pricing.coupon.code) {
