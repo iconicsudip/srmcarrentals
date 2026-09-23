@@ -6,12 +6,18 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   AlertCircle,
+  Building2,
   Calendar,
   CarFront,
+  Check,
   CheckCircle2,
   ChevronRight,
   Clock,
   CreditCard,
+  FileCheck2,
+  HelpCircle,
+  IdCard,
+  Info,
   KeyRound,
   Loader2,
   Lock,
@@ -21,6 +27,7 @@ import {
   MessageSquare,
   Phone,
   Plane,
+  Receipt,
   ShieldCheck,
   ShoppingBag,
   Sparkles,
@@ -28,6 +35,7 @@ import {
   Truck,
   User,
   UserCheck,
+  XCircle,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -37,6 +45,13 @@ import { useCurrentUser, useLogin, useLogout, useRegister } from "@/hooks/use-au
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import {
+  CheckoutFieldConfig,
+  CheckoutFormSettings,
+  DEFAULT_CHECKOUT_SETTINGS,
+  validateFieldValue,
+} from "@/lib/checkout/checkout-form-settings";
 
 function formatInr(amount: number) {
   return new Intl.NumberFormat("en-IN", {
@@ -75,6 +90,31 @@ export default function CheckoutPage() {
   // Active authentication mode when unauthenticated: "GUEST" | "LOGIN"
   const [authMode, setAuthMode] = React.useState<"GUEST" | "LOGIN">("GUEST");
 
+  // Dynamic Checkout Settings from Admin
+  const [formSettings, setFormSettings] = React.useState<CheckoutFormSettings>(DEFAULT_CHECKOUT_SETTINGS);
+
+  // Dynamic Form Field Values
+  const [formValues, setFormValues] = React.useState<Record<string, any>>({
+    firstName: "",
+    lastName: "",
+    phone: "",
+    email: "",
+    licenseNumber: "",
+    emergencyPhone: "",
+    flightNumber: "",
+    deliveryAddress: "",
+    gstNumber: "",
+    companyName: "",
+    handoverNotes: "",
+  });
+
+  // Real-time Validations State
+  const [errors, setErrors] = React.useState<Record<string, string>>({});
+  const [touched, setTouched] = React.useState<Record<string, boolean>>({});
+
+  // B2B GST Invoicing Accordion Toggle
+  const [enableGst, setEnableGst] = React.useState(false);
+
   // Inline Login form state
   const [loginEmail, setLoginEmail] = React.useState("");
   const [loginPassword, setLoginPassword] = React.useState("");
@@ -83,13 +123,6 @@ export default function CheckoutPage() {
   // Optional registration during Guest Checkout
   const [createAccount, setCreateAccount] = React.useState(false);
   const [accountPassword, setAccountPassword] = React.useState("");
-
-  // Customer Contact State
-  const [firstName, setFirstName] = React.useState("");
-  const [lastName, setLastName] = React.useState("");
-  const [phone, setPhone] = React.useState("");
-  const [email, setEmail] = React.useState("");
-  const [flightNotes, setFlightNotes] = React.useState("");
 
   // Payment method selection: "PICKUP" (Cash / UPI at handover) or "ONLINE"
   const [paymentMethod, setPaymentMethod] = React.useState<"PICKUP" | "ONLINE">("PICKUP");
@@ -101,15 +134,50 @@ export default function CheckoutPage() {
   // Submission state
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
+  // Load dynamic checkout configuration from Admin
+  React.useEffect(() => {
+    let cancelled = false;
+    apiFetch<CheckoutFormSettings>("/settings/checkout.form", { skipAuthRedirect: true })
+      .then((data) => {
+        if (!cancelled && data && data.fields) {
+          setFormSettings(data);
+        }
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   // Auto-fill form fields whenever user is authenticated
   React.useEffect(() => {
     if (currentUser) {
-      if (currentUser.firstName && !firstName) setFirstName(currentUser.firstName);
-      if (currentUser.lastName && !lastName) setLastName(currentUser.lastName);
-      if (currentUser.email && !email) setEmail(currentUser.email);
-      if (currentUser.phone && !phone) setPhone(currentUser.phone);
+      setFormValues((prev) => ({
+        ...prev,
+        firstName: prev.firstName || currentUser.firstName || "",
+        lastName: prev.lastName || currentUser.lastName || "",
+        email: prev.email || currentUser.email || "",
+        phone: prev.phone || currentUser.phone || "",
+      }));
     }
   }, [currentUser]);
+
+  // Handle Real-time Field Input Change & Validation
+  const handleFieldChange = (field: CheckoutFieldConfig, value: any) => {
+    setFormValues((prev) => ({ ...prev, [field.id]: value }));
+    setTouched((prev) => ({ ...prev, [field.id]: true }));
+
+    const res = validateFieldValue(field, value);
+    if (!res.valid && res.error) {
+      setErrors((prev) => ({ ...prev, [field.id]: res.error! }));
+    } else {
+      setErrors((prev) => {
+        const next = { ...prev };
+        delete next[field.id];
+        return next;
+      });
+    }
+  };
 
   // If cart is empty
   if (items.length === 0) {
@@ -148,10 +216,13 @@ export default function CheckoutPage() {
       });
 
       toast.success(`Welcome back, ${res.user.firstName}! Contact details pre-filled.`);
-      setFirstName(res.user.firstName);
-      setLastName(res.user.lastName);
-      setEmail(res.user.email);
-      if (res.user.phone) setPhone(res.user.phone);
+      setFormValues((prev) => ({
+        ...prev,
+        firstName: res.user.firstName,
+        lastName: res.user.lastName,
+        email: res.user.email,
+        phone: res.user.phone || prev.phone,
+      }));
       setLoginPassword("");
     } catch (err) {
       const msg = err instanceof ApiRequestError ? err.message : "Invalid email or password. Please try again.";
@@ -160,21 +231,45 @@ export default function CheckoutPage() {
     }
   };
 
-  // Handle Checkout Submission (Guest or Logged In)
+  // Handle Checkout Submission with Dynamic Validations
   const handleSubmitCheckout = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!hasLicense) {
+    if (formSettings.requireLicenseConfirmation && !hasLicense) {
       toast.error("Original Driving License confirmation is mandatory for self-drive vehicle release.");
       return;
     }
-    if (!agreeTerms) {
+    if (formSettings.requireTermsAgreement && !agreeTerms) {
       toast.error("Please accept the rental policy and terms of service.");
       return;
     }
 
-    if (!firstName.trim() || !lastName.trim() || !phone.trim() || !email.trim()) {
-      toast.error("Please fill in all required customer contact details.");
+    // Validate all enabled fields
+    let hasValidationError = false;
+    const newErrors: Record<string, string> = {};
+    const newTouched: Record<string, boolean> = {};
+
+    for (const field of formSettings.fields) {
+      if (!field.enabled) continue;
+
+      // Skip GST fields if GST invoice wasn't requested
+      if ((field.id === "gstNumber" || field.id === "companyName") && !enableGst) {
+        continue;
+      }
+
+      const val = formValues[field.id];
+      const validation = validateFieldValue(field, val);
+      if (!validation.valid) {
+        newErrors[field.id] = validation.error || `${field.label} is required`;
+        newTouched[field.id] = true;
+        hasValidationError = true;
+      }
+    }
+
+    if (hasValidationError) {
+      setErrors(newErrors);
+      setTouched((prev) => ({ ...prev, ...newTouched }));
+      toast.error("Please correct the highlighted form errors before proceeding.");
       return;
     }
 
@@ -192,22 +287,20 @@ export default function CheckoutPage() {
 
         try {
           const regRes = await registerMutation.mutateAsync({
-            firstName: firstName.trim(),
-            lastName: lastName.trim(),
-            email: email.trim().toLowerCase(),
-            phone: phone.trim(),
+            firstName: formValues.firstName.trim(),
+            lastName: formValues.lastName.trim(),
+            email: formValues.email.trim().toLowerCase(),
+            phone: formValues.phone.trim(),
             password: accountPassword,
           });
           registeredUserId = regRes.user.id;
           toast.success("Account created and signed in!");
         } catch (regErr) {
-          // If already exists, notify and continue booking as guest
           const msg = regErr instanceof ApiRequestError ? regErr.message : "Account registration skipped.";
           toast.info(msg);
         }
       }
 
-      // Process bookings for items in the cart
       const primaryItem = items[0];
       if (!primaryItem) throw new Error("No vehicle found in cart.");
 
@@ -215,10 +308,10 @@ export default function CheckoutPage() {
         carId: primaryItem.carId,
         customerId: currentUser?.customerId,
         customer: {
-          firstName: firstName.trim(),
-          lastName: lastName.trim(),
-          phone: phone.trim(),
-          email: email.trim().toLowerCase(),
+          firstName: formValues.firstName.trim(),
+          lastName: formValues.lastName.trim(),
+          phone: formValues.phone.trim(),
+          email: formValues.email.trim().toLowerCase(),
           userId: registeredUserId,
         },
         pickupDateTime: new Date(primaryItem.pickup).toISOString(),
@@ -254,6 +347,8 @@ export default function CheckoutPage() {
     }
   };
 
+  const isAirportDelivery = items.some((i) => i.deliveryType === "AIRPORT");
+
   return (
     <div className="min-h-screen bg-black text-white">
       {/* Top Breadcrumb */}
@@ -283,7 +378,7 @@ export default function CheckoutPage() {
             </div>
             <h1 className="mt-1 text-3xl font-black text-white tracking-tight uppercase">Checkout & Confirmation</h1>
             <p className="text-xs text-white/50 mt-1">
-              Choose frictionless Guest Checkout or Sign In to pre-fill saved member details.
+              Finalize driver contact details, verification requirements, and payment preferences.
             </p>
           </div>
 
@@ -476,72 +571,190 @@ export default function CheckoutPage() {
                   </div>
                 )}
 
-                {/* Form fields: Rendered for Guest mode OR when logged in */}
+                {/* DYNAMIC FORM FIELDS WITH REAL-TIME VALIDATION */}
                 {(currentUser || authMode === "GUEST") && (
                   <div className="mt-6 space-y-4">
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                      <div>
-                        <Label className="text-xs font-semibold text-white/70">First Name *</Label>
-                        <Input
-                          required
-                          placeholder="e.g. Rohan"
-                          value={firstName}
-                          onChange={(e) => setFirstName(e.target.value)}
-                          className="mt-1.5 rounded-xl border-white/10 bg-black/40 text-xs text-white placeholder:text-white/30"
-                        />
-                      </div>
+                      {formSettings.fields
+                        .filter(
+                          (f) =>
+                            f.enabled &&
+                            f.id !== "gstNumber" &&
+                            f.id !== "companyName" &&
+                            f.id !== "handoverNotes",
+                        )
+                        .map((field) => {
+                          const val = formValues[field.id] || "";
+                          const hasError = Boolean(errors[field.id]);
+                          const isSuccess = touched[field.id] && !hasError && Boolean(val);
+                          const isAirportHighlight = field.id === "flightNumber" && isAirportDelivery;
 
-                      <div>
-                        <Label className="text-xs font-semibold text-white/70">Last Name *</Label>
-                        <Input
-                          required
-                          placeholder="e.g. Sharma"
-                          value={lastName}
-                          onChange={(e) => setLastName(e.target.value)}
-                          className="mt-1.5 rounded-xl border-white/10 bg-black/40 text-xs text-white placeholder:text-white/30"
-                        />
-                      </div>
+                          return (
+                            <div
+                              key={field.id}
+                              className={
+                                field.id === "flightNumber" || field.id === "deliveryAddress"
+                                  ? "sm:col-span-2"
+                                  : ""
+                              }
+                            >
+                              <div className="flex items-center justify-between">
+                                <Label className="text-xs font-semibold text-white/80 flex items-center gap-1.5">
+                                  {field.label}
+                                  {field.required ? (
+                                    <span className="text-orange-400 font-bold">*</span>
+                                  ) : (
+                                    <span className="text-white/40 text-[10px] font-normal">(Optional)</span>
+                                  )}
+                                </Label>
 
-                      <div>
-                        <Label className="text-xs font-semibold text-white/70">WhatsApp Phone Number *</Label>
-                        <Input
-                          required
-                          type="tel"
-                          placeholder="+91 98765 43210"
-                          value={phone}
-                          onChange={(e) => setPhone(e.target.value)}
-                          className="mt-1.5 rounded-xl border-white/10 bg-black/40 text-xs text-white placeholder:text-white/30"
-                        />
-                        <p className="mt-1 text-[10px] text-white/40">
-                          We send live booking updates, vehicle hold code, and delivery staff contact on WhatsApp.
-                        </p>
-                      </div>
+                                {isAirportHighlight && (
+                                  <span className="rounded bg-orange-500/20 px-1.5 py-0.2 text-[9px] font-bold text-orange-400 flex items-center gap-1">
+                                    <Plane className="size-2.5" /> Airport Pickup Selected
+                                  </span>
+                                )}
 
-                      <div>
-                        <Label className="text-xs font-semibold text-white/70">Email Address (for GST Invoice) *</Label>
-                        <Input
-                          required
-                          type="email"
-                          placeholder="rohan@example.com"
-                          value={email}
-                          onChange={(e) => setEmail(e.target.value)}
-                          className="mt-1.5 rounded-xl border-white/10 bg-black/40 text-xs text-white placeholder:text-white/30"
-                        />
-                        <p className="mt-1 text-[10px] text-white/40">
-                          Official reservation voucher with tax invoice will be sent here.
-                        </p>
-                      </div>
+                                {isSuccess && (
+                                  <span className="text-[10px] text-emerald-400 font-semibold flex items-center gap-0.5">
+                                    <Check className="size-3" /> Valid
+                                  </span>
+                                )}
+                              </div>
+
+                              <div className="relative mt-1.5">
+                                <Input
+                                  type={field.type === "tel" ? "tel" : field.type === "email" ? "email" : "text"}
+                                  placeholder={field.placeholder || `Enter ${field.label}`}
+                                  value={val}
+                                  onChange={(e) => handleFieldChange(field, e.target.value)}
+                                  onBlur={() => handleFieldChange(field, val)}
+                                  className={`rounded-xl border bg-black/40 text-xs text-white placeholder:text-white/30 transition-all ${
+                                    hasError
+                                      ? "border-red-500/80 focus-visible:ring-red-500/30"
+                                      : isSuccess
+                                      ? "border-emerald-500/60 focus-visible:ring-emerald-500/30"
+                                      : "border-white/10 hover:border-white/20"
+                                  }`}
+                                />
+                              </div>
+
+                              {hasError ? (
+                                <p className="mt-1 text-[11px] text-red-400 flex items-center gap-1 animate-in fade-in">
+                                  <AlertCircle className="size-3 shrink-0" /> {errors[field.id]}
+                                </p>
+                              ) : (
+                                field.helpText && (
+                                  <p className="mt-1 text-[10px] text-white/40">{field.helpText}</p>
+                                )
+                              )}
+                            </div>
+                          );
+                        })}
                     </div>
 
-                    <div>
-                      <Label className="text-xs font-semibold text-white/70">Flight Number / Handover Notes (Optional)</Label>
-                      <Input
-                        placeholder="e.g. Flight 6E-243 arriving Udaipur 11:30 AM / Need baby seat"
-                        value={flightNotes}
-                        onChange={(e) => setFlightNotes(e.target.value)}
-                        className="mt-1.5 rounded-xl border-white/10 bg-black/40 text-xs text-white placeholder:text-white/30"
-                      />
-                    </div>
+                    {/* B2B GST Invoicing Toggle & Fields */}
+                    {formSettings.enableGstBilling && (
+                      <div className="rounded-2xl border border-white/10 bg-black/30 p-4 transition-all">
+                        <label className="flex cursor-pointer items-start gap-3">
+                          <input
+                            type="checkbox"
+                            checked={enableGst}
+                            onChange={(e) => setEnableGst(e.target.checked)}
+                            className="mt-0.5 accent-orange-500"
+                          />
+                          <div>
+                            <span className="text-xs font-bold text-white flex items-center gap-1.5">
+                              <Receipt className="size-3.5 text-orange-400" />
+                              Need GST Invoice for Business Tax Credit (Input ITC)?
+                            </span>
+                            <p className="mt-0.5 text-[11px] text-white/50">
+                              Claim 18% GST input credit on your corporate car rental invoice.
+                            </p>
+                          </div>
+                        </label>
+
+                        {enableGst && (
+                          <div className="mt-4 pt-3 border-t border-white/10 grid grid-cols-1 sm:grid-cols-2 gap-3 animate-in fade-in">
+                            <div>
+                              <div className="flex items-center justify-between">
+                                <Label className="text-xs font-semibold text-white/80">Company GSTIN *</Label>
+                                {touched["gstNumber"] && !errors["gstNumber"] && formValues.gstNumber && (
+                                  <span className="text-[10px] text-emerald-400 font-semibold flex items-center gap-0.5">
+                                    <Check className="size-3" /> Valid GSTIN
+                                  </span>
+                                )}
+                              </div>
+                              <Input
+                                placeholder="e.g. 08AAAAA0000A1Z5"
+                                value={formValues.gstNumber}
+                                onChange={(e) =>
+                                  handleFieldChange(
+                                    {
+                                      id: "gstNumber",
+                                      label: "Company GSTIN",
+                                      required: true,
+                                      enabled: true,
+                                      isSystem: true,
+                                      type: "text",
+                                      validationRule: "gstin",
+                                      category: "business",
+                                    },
+                                    e.target.value.toUpperCase(),
+                                  )
+                                }
+                                className={`mt-1 rounded-xl border bg-black/60 text-xs text-white uppercase ${
+                                  errors["gstNumber"] ? "border-red-500" : "border-white/10"
+                                }`}
+                              />
+                              {errors["gstNumber"] && (
+                                <p className="mt-1 text-[10px] text-red-400">{errors["gstNumber"]}</p>
+                              )}
+                            </div>
+
+                            <div>
+                              <Label className="text-xs font-semibold text-white/80">Company Legal Name *</Label>
+                              <Input
+                                placeholder="e.g. Acme Technologies Pvt Ltd"
+                                value={formValues.companyName}
+                                onChange={(e) =>
+                                  handleFieldChange(
+                                    {
+                                      id: "companyName",
+                                      label: "Company Name",
+                                      required: true,
+                                      enabled: true,
+                                      isSystem: true,
+                                      type: "text",
+                                      validationRule: "none",
+                                      category: "business",
+                                    },
+                                    e.target.value,
+                                  )
+                                }
+                                className="mt-1 rounded-xl border-white/10 bg-black/60 text-xs text-white"
+                              />
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Special Handover Notes */}
+                    {formSettings.fields.find((f) => f.id === "handoverNotes" && f.enabled) && (
+                      <div>
+                        <Label className="text-xs font-semibold text-white/80">
+                          Handover Notes / Special Requests (Optional)
+                        </Label>
+                        <Input
+                          placeholder="e.g. Flight 6E-243 arriving Udaipur 11:30 AM / Need baby child seat"
+                          value={formValues.handoverNotes}
+                          onChange={(e) =>
+                            setFormValues((prev) => ({ ...prev, handoverNotes: e.target.value }))
+                          }
+                          className="mt-1.5 rounded-xl border-white/10 bg-black/40 text-xs text-white placeholder:text-white/30"
+                        />
+                      </div>
+                    )}
 
                     {/* Optional Account Creation Toggle for Guests */}
                     {!currentUser && (
@@ -672,29 +885,33 @@ export default function CheckoutPage() {
                 </div>
 
                 <div className="space-y-3 pt-1">
-                  <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-white/5 bg-black/30 p-3 text-xs text-white/80 transition hover:bg-black/50">
-                    <input
-                      type="checkbox"
-                      checked={hasLicense}
-                      onChange={(e) => setHasLicense(e.target.checked)}
-                      className="mt-0.5 accent-orange-500"
-                    />
-                    <span>
-                      <strong className="text-white">Original Driving License (LMV):</strong> I hold an original valid Indian Driving License (minimum 1 year old) and will present it alongside Government ID (Aadhaar/Passport) at vehicle handover.
-                    </span>
-                  </label>
+                  {formSettings.requireLicenseConfirmation && (
+                    <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-white/5 bg-black/30 p-3 text-xs text-white/80 transition hover:bg-black/50">
+                      <input
+                        type="checkbox"
+                        checked={hasLicense}
+                        onChange={(e) => setHasLicense(e.target.checked)}
+                        className="mt-0.5 accent-orange-500"
+                      />
+                      <span>
+                        <strong className="text-white">Original Driving License (LMV):</strong> I hold an original valid Indian Driving License (minimum 1 year old) and will present it alongside Government ID (Aadhaar/Passport) at vehicle handover.
+                      </span>
+                    </label>
+                  )}
 
-                  <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-white/5 bg-black/30 p-3 text-xs text-white/80 transition hover:bg-black/50">
-                    <input
-                      type="checkbox"
-                      checked={agreeTerms}
-                      onChange={(e) => setAgreeTerms(e.target.checked)}
-                      className="mt-0.5 accent-orange-500"
-                    />
-                    <span>
-                      <strong className="text-white">Rental Policy & Safety Limit:</strong> I agree to SRM&apos;s rental agreement, speed limit compliance (80 km/h), and understand that a refundable security deposit (₹3,000–₹5,000) is collected at vehicle pickup.
-                    </span>
-                  </label>
+                  {formSettings.requireTermsAgreement && (
+                    <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-white/5 bg-black/30 p-3 text-xs text-white/80 transition hover:bg-black/50">
+                      <input
+                        type="checkbox"
+                        checked={agreeTerms}
+                        onChange={(e) => setAgreeTerms(e.target.checked)}
+                        className="mt-0.5 accent-orange-500"
+                      />
+                      <span>
+                        <strong className="text-white">Rental Policy & Safety Limit:</strong> I agree to SRM&apos;s rental agreement, speed limit compliance (80 km/h), driver age requirements (min {formSettings.minimumDriverAge}+ years), and understand that a refundable security deposit (₹3,000–₹5,000) is collected at vehicle pickup.
+                      </span>
+                    </label>
+                  )}
                 </div>
 
                 {/* Primary Submit Button */}

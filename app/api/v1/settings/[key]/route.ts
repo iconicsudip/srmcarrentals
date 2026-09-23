@@ -10,7 +10,12 @@ type Ctx = { params: Promise<{ key: string }> };
 /** "homepage.*" and "pages.*" settings (marketing copy and page content)
  * are safe to expose without auth — everything else stays admin-only. */
 function isPublicKey(key: string): boolean {
-  return key.startsWith("homepage.") || key.startsWith("pages.");
+  return (
+    key.startsWith("homepage.") ||
+    key.startsWith("pages.") ||
+    key.startsWith("checkout.") ||
+    key.startsWith("system.checkout")
+  );
 }
 
 /**

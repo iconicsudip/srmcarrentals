@@ -27,6 +27,7 @@ import {
   ShieldPlus,
   PlusSquare,
   ClipboardList,
+  ClipboardCheck,
   CheckCircle2,
   CheckCheck,
   XCircle,
@@ -229,6 +230,7 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       { title: "General Settings", href: "/admin/settings/general", icon: Settings, permission: "settings.manage" },
       { title: "Company Settings", href: "/admin/settings/company", icon: Building, permission: "settings.manage" },
+      { title: "Checkout Form", href: "/admin/settings/checkout", icon: ClipboardCheck, permission: "settings.manage" },
       { title: "Tax Settings", href: "/admin/settings/tax", icon: Receipt, permission: "settings.manage" },
       { title: "Payment Settings", href: "/admin/settings/payment", icon: CreditCard, permission: "settings.manage" },
       { title: "Email Settings", href: "/admin/settings/email", icon: Mail, permission: "settings.manage" },

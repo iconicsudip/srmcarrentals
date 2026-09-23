@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import {
   BellRing,
   Building,
+  ClipboardCheck,
   CreditCard,
   Mail,
   MessageCircle,
@@ -17,6 +18,7 @@ import { cn } from "@/lib/utils";
 const SETTINGS_TABS = [
   { label: "General", href: "/admin/settings/general", icon: Settings },
   { label: "Company", href: "/admin/settings/company", icon: Building },
+  { label: "Checkout Form", href: "/admin/settings/checkout", icon: ClipboardCheck },
   { label: "Tax", href: "/admin/settings/tax", icon: Receipt },
   { label: "Payment", href: "/admin/settings/payment", icon: CreditCard },
   { label: "Email", href: "/admin/settings/email", icon: Mail },
