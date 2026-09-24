@@ -74,8 +74,8 @@ export function CartDrawer({ phone = "+91 9414551250" }: { phone?: string }) {
             `   • Dates: ${formatDate(item.pickup)} to ${formatDate(item.drop)} (${item.durationText})\n` +
             `   • Handover: ${item.locationName}\n` +
             (item.insurance ? `   • Protection: ${item.insurance.name} (₹${item.insurance.price})\n` : "") +
-            (item.extraServices.length > 0
-              ? `   • Add-ons: ${item.extraServices.map((a) => a.name).join(", ")}\n`
+            ((item.extraServices?.length ?? 0) > 0
+              ? `   • Add-ons: ${item.extraServices?.map((a) => a.name).join(", ")}\n`
               : "") +
             `   • Item Total: ₹${item.total.toLocaleString("en-IN")}\n`,
         )
@@ -195,7 +195,7 @@ export function CartDrawer({ phone = "+91 9414551250" }: { phone?: string }) {
                 </div>
 
                 {/* Protection / Addons pill */}
-                {(item.insurance || item.extraServices.length > 0) && (
+                {(item.insurance || (item.extraServices?.length ?? 0) > 0) && (
                   <div className="flex flex-wrap items-center gap-1 text-[10px] text-white/50 pt-1">
                     {item.insurance && (
                       <span className="inline-flex items-center gap-1 rounded bg-white/5 px-1.5 py-0.5 border border-white/10">
@@ -203,7 +203,7 @@ export function CartDrawer({ phone = "+91 9414551250" }: { phone?: string }) {
                         {item.insurance.name}
                       </span>
                     )}
-                    {item.extraServices.map((a) => (
+                    {item.extraServices?.map((a) => (
                       <span
                         key={a.id}
                         className="rounded bg-white/5 px-1.5 py-0.5 border border-white/10"
