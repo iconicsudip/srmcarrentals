@@ -8,20 +8,34 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { openCartDrawer, useCart } from "@/lib/cart/cart-store";
 import { useCurrentUser } from "@/hooks/use-auth";
+import type { AvailableServicesConfig } from "@/modules/settings/site-content.schemas";
 
-const NAV_LINKS = [
-  { label: "Self Drive", href: "/cars" },
-  { label: "Taxi", href: "/car-rental" },
-  { label: "Tours", href: "/tours" },
-  { label: "About", href: "/about-us" },
-  { label: "T&C", href: "/terms-and-conditions" },
-  { label: "Contact", href: "/contact-us" },
-];
-
-export function SiteHeader({ companyName, phone }: { companyName: string; phone: string }) {
+export function SiteHeader({
+  companyName,
+  phone,
+  services = { cars: true, taxi: true, tours: true },
+}: {
+  companyName: string;
+  phone: string;
+  services?: AvailableServicesConfig;
+}) {
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const { count } = useCart();
   const { data: user } = useCurrentUser();
+
+  const filteredNavLinks = React.useMemo(() => {
+    return [
+      services.cars ? { label: "Self Drive", href: "/cars" } : null,
+      services.taxi ? { label: "Taxi", href: "/car-rental" } : null,
+      services.tours ? { label: "Tours", href: "/tours" } : null,
+      { label: "Blog", href: "/blog" },
+      { label: "About", href: "/about-us" },
+      { label: "T&C", href: "/terms-and-conditions" },
+      { label: "Contact", href: "/contact-us" },
+    ].filter(Boolean) as { label: string; href: string }[];
+  }, [services]);
+
+  const bookNowHref = services.cars ? "/cars" : services.taxi ? "/car-rental" : "/tours";
 
   return (
     <header className="sticky top-0 z-50 border-b border-white/10 bg-black/90 backdrop-blur">
@@ -39,7 +53,7 @@ export function SiteHeader({ companyName, phone }: { companyName: string; phone:
         </Link>
 
         <nav className="hidden items-center gap-8 lg:flex">
-          {NAV_LINKS.map((link) => (
+          {filteredNavLinks.map((link) => (
             <Link
               key={link.label}
               href={link.href}
@@ -83,7 +97,7 @@ export function SiteHeader({ companyName, phone }: { companyName: string; phone:
           </button>
 
           <Button asChild className="bg-orange-500 font-semibold text-white hover:bg-orange-600">
-            <Link href="/cars">Book Now →</Link>
+            <Link href={bookNowHref}>Book Now →</Link>
           </Button>
         </div>
 
@@ -116,7 +130,7 @@ export function SiteHeader({ companyName, phone }: { companyName: string; phone:
 
       <div className={cn("border-t border-white/10 lg:hidden", mobileOpen ? "block" : "hidden")}>
         <nav className="flex flex-col gap-1 px-4 py-3">
-          {NAV_LINKS.map((link) => (
+          {filteredNavLinks.map((link) => (
             <Link
               key={link.label}
               href={link.href}
@@ -127,7 +141,7 @@ export function SiteHeader({ companyName, phone }: { companyName: string; phone:
             </Link>
           ))}
           <Button asChild className="mt-2 bg-orange-500 font-semibold text-white hover:bg-orange-600">
-            <Link href="/cars">Book Now</Link>
+            <Link href={bookNowHref}>Book Now</Link>
           </Button>
         </nav>
       </div>

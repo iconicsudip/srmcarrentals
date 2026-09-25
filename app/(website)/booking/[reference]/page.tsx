@@ -77,15 +77,16 @@ export default async function BookingConfirmationPage({ params }: BookingConfirm
   const isPending = booking.status === "PENDING" || booking.status === "PAYMENT_PENDING";
 
   const totalAmountFormatted = formatInr(pricing?.grandTotal ?? 0);
+  const whatsappNumber = (company?.socialLinks?.whatsapp || company?.phone || "919414551250").replace(/[^0-9]/g, "");
 
   const whatsappMessage = encodeURIComponent(
     `Hello SRM Car Rentals! 👋\nI have just booked a self-drive car on your website.\n\n` +
-      `📌 *Booking Ref*: ${booking.bookingReference}\n` +
-      `🚗 *Vehicle*: ${car?.brand?.name ?? ""} ${car?.model?.name ?? car?.name ?? "Car"}\n` +
-      `📅 *Pickup*: ${formatDate(booking.pickupDateTime)}\n` +
-      `📅 *Drop*: ${formatDate(booking.dropDateTime)}\n` +
-      `💰 *Total Amount*: ${totalAmountFormatted}\n\n` +
-      `Please confirm my reservation and share driver/pickup guidelines!`,
+    `📌 *Booking Ref*: ${booking.bookingReference}\n` +
+    `🚗 *Vehicle*: ${car?.brand?.name ?? ""} ${car?.model?.name ?? car?.name ?? "Car"}\n` +
+    `📅 *Pickup*: ${formatDate(booking.pickupDateTime)}\n` +
+    `📅 *Drop*: ${formatDate(booking.dropDateTime)}\n` +
+    `💰 *Total Amount*: ${totalAmountFormatted}\n\n` +
+    `Please confirm my reservation and share driver/pickup guidelines!`,
   );
 
   const pickupLocationName = booking.pickupAirport
@@ -124,7 +125,7 @@ export default async function BookingConfirmationPage({ params }: BookingConfirm
             {/* Support Actions */}
             <div className="flex flex-wrap items-center gap-2.5">
               <a
-                href={`https://wa.me/919414551250?text=${whatsappMessage}`}
+                href={`https://wa.me/${whatsappNumber}?text=${whatsappMessage}`}
                 target="_blank"
                 rel="noreferrer"
                 className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-bold text-white shadow-lg shadow-emerald-600/20 transition-all hover:bg-emerald-500"
@@ -360,7 +361,7 @@ export default async function BookingConfirmationPage({ params }: BookingConfirm
               {/* Primary Dispatch Buttons */}
               <div className="mt-6 flex flex-col gap-2.5">
                 <a
-                  href={`https://wa.me/919414551250?text=${whatsappMessage}`}
+                  href={`https://wa.me/${whatsappNumber}?text=${whatsappMessage}`}
                   target="_blank"
                   rel="noreferrer"
                   className="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 py-3.5 text-center text-sm font-bold text-white shadow-lg shadow-emerald-600/25 transition-all hover:bg-emerald-500"

@@ -15,6 +15,7 @@ import {
   X,
 } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { TripSchedulePicker } from "@/components/website/datetime-picker";
 
 interface FilterOption {
   slug?: string;
@@ -50,51 +51,6 @@ function defaultDateTime(hoursFromNow: number): string {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:00`;
 }
 
-function parseLocalDT(value: string, fallbackHours = 24) {
-  if (!value) {
-    const d = new Date(Date.now() + fallbackHours * 3_600_000);
-    const pad = (n: number) => String(n).padStart(2, "0");
-    const datePart = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-    return { datePart, hour12: "09", minute: "00", period: "AM" };
-  }
-
-  try {
-    const d = new Date(value);
-    if (!isNaN(d.getTime())) {
-      const pad = (n: number) => String(n).padStart(2, "0");
-      const datePart = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-      const h24 = d.getHours();
-      const rawMin = d.getMinutes();
-      const roundedMin = Math.round(rawMin / 15) * 15;
-      const finalMin = pad(roundedMin >= 60 ? 45 : roundedMin);
-      const period = h24 >= 12 ? "PM" : "AM";
-      const hour12 = pad(h24 === 0 ? 12 : h24 > 12 ? h24 - 12 : h24);
-      return { datePart, hour12, minute: finalMin, period };
-    }
-  } catch {
-    // fallback
-  }
-
-  const [datePart = "", timePart = ""] = value.split("T");
-  const [h = "09", m = "00"] = timePart.split(":");
-  const hNum = parseInt(h, 10) || 9;
-  const pad = (n: number) => String(n).padStart(2, "0");
-  return {
-    datePart,
-    hour12: pad(hNum === 0 ? 12 : hNum > 12 ? hNum - 12 : hNum),
-    minute: m.slice(0, 2) || "00",
-    period: hNum >= 12 ? "PM" : "AM",
-  };
-}
-
-function buildLocalDT(datePart: string, hour12: string, minute: string, period: string) {
-  let h = parseInt(hour12, 10);
-  if (period === "AM" && h === 12) h = 0;
-  if (period === "PM" && h !== 12) h += 12;
-  const pad = (n: number) => String(n).padStart(2, "0");
-  return `${datePart}T${pad(h)}:${minute}`;
-}
-
 function calculateDuration(pickupDT: string, dropDT: string): { label: string; isValid: boolean; days: number; hours: number } {
   const start = new Date(pickupDT).getTime();
   const end = new Date(dropDT).getTime();
@@ -127,92 +83,6 @@ function formatChipDates(pickupDT: string, dropDT: string): string {
   } catch {
     return "";
   }
-}
-
-const HOURS = Array.from({ length: 12 }, (_, i) => String(i + 1).padStart(2, "0"));
-const MINUTES = ["00", "15", "30", "45"];
-const selectTimeCls =
-  "rounded-lg border border-white/10 bg-black/60 px-1.5 py-1.5 text-[11px] text-white outline-none focus:border-orange-500 appearance-none cursor-pointer";
-
-function DateTimePickerField({
-  label,
-  value,
-  onChange,
-  minDate,
-  icon,
-}: {
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-  minDate?: string;
-  icon?: React.ReactNode;
-}) {
-  const { datePart, hour12, minute, period } = parseLocalDT(value);
-
-  const update = (d: string, h: string, min: string, p: string) => {
-    onChange(buildLocalDT(d, h, min, p));
-  };
-
-  return (
-    <div className="flex flex-col gap-1.5">
-      <span className="text-[10px] font-bold tracking-wider text-white/50 uppercase flex items-center gap-1.5">
-        {icon}
-        {label}
-      </span>
-      <div className="rounded-xl border border-white/10 bg-black/40 p-2.5 flex flex-col gap-2">
-        {/* Date picker */}
-        <div className="flex items-center gap-2">
-          <Calendar className="size-3.5 shrink-0 text-orange-400" />
-          <input
-            type="date"
-            value={datePart}
-            min={minDate}
-            onChange={(e) => update(e.target.value, hour12, minute, period)}
-            className="flex-1 rounded-lg border border-white/10 bg-black/60 px-2 py-1.5 text-xs text-white outline-none focus:border-orange-500 [color-scheme:dark]"
-          />
-        </div>
-        {/* Time picker */}
-        <div className="flex items-center gap-1">
-          <Clock className="size-3.5 shrink-0 text-orange-400/80 mr-0.5" />
-          <select
-            value={hour12}
-            onChange={(e) => update(datePart, e.target.value, minute, period)}
-            className={`${selectTimeCls} flex-1 text-center font-medium`}
-          >
-            {HOURS.map((h) => (
-              <option key={h} value={h} className="bg-neutral-900 text-white">
-                {h}
-              </option>
-            ))}
-          </select>
-          <span className="text-white/40 text-xs font-bold">:</span>
-          <select
-            value={minute}
-            onChange={(e) => update(datePart, hour12, e.target.value, period)}
-            className={`${selectTimeCls} flex-1 text-center font-medium`}
-          >
-            {MINUTES.map((m) => (
-              <option key={m} value={m} className="bg-neutral-900 text-white">
-                {m}
-              </option>
-            ))}
-          </select>
-          <select
-            value={period}
-            onChange={(e) => update(datePart, hour12, minute, e.target.value)}
-            className={`${selectTimeCls} font-bold text-orange-400 flex-1 text-center`}
-          >
-            <option value="AM" className="bg-neutral-900 text-white">
-              AM
-            </option>
-            <option value="PM" className="bg-neutral-900 text-white">
-              PM
-            </option>
-          </select>
-        </div>
-      </div>
-    </div>
-  );
 }
 
 // ─── Collapsible Filter Section ──────────────────────────────────────────────
@@ -397,9 +267,6 @@ export function CarsFilterBar({
     updateParam("search", searchInput);
   }
 
-  const todayStr = new Date().toISOString().split("T")[0];
-  const pickupDatePart = parseLocalDT(pickupValue).datePart;
-
   return (
     <aside className="flex flex-col gap-5 rounded-2xl border border-white/10 bg-neutral-900 p-5 lg:sticky lg:top-24 lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto lg:overscroll-contain pr-2 [scrollbar-width:thin] [scrollbar-color:rgba(249,115,22,0.3)_transparent]">
       {/* Header */}
@@ -528,35 +395,24 @@ export function CarsFilterBar({
           </div>
         )}
 
-        {/* Pickup Date & Time */}
-        <DateTimePickerField
-          label="Pickup Date & Time"
-          value={pickupValue}
-          minDate={todayStr}
-          onChange={(v) => setPickupValue(v)}
-          icon={<Calendar className="size-3 text-orange-400" />}
-        />
-
-        {/* Drop Date & Time */}
-        <DateTimePickerField
-          label="Drop-off Date & Time"
-          value={dropValue}
-          minDate={pickupDatePart || todayStr}
-          onChange={(v) => setDropValue(v)}
-          icon={<Clock className="size-3 text-orange-400" />}
-        />
-
-        {/* Duration Preview */}
-        {duration.isValid ? (
-          <div className="flex items-center justify-between rounded-lg bg-orange-500/15 border border-orange-500/25 px-2.5 py-1.5 text-[11px]">
-            <span className="font-semibold text-white/70">Trip Duration</span>
-            <span className="font-bold text-orange-400">{duration.label}</span>
-          </div>
-        ) : (
-          <div className="rounded-lg bg-red-500/10 border border-red-500/20 px-2.5 py-1.5 text-[10px] text-red-400 font-medium text-center">
-            Drop time must be after pickup time
-          </div>
-        )}
+        {/* Unified Trip Schedule Picker */}
+        <div className="flex flex-col gap-1.5">
+          <span className="text-[10px] font-bold tracking-wider text-white/50 uppercase flex items-center gap-1.5">
+            <Calendar className="size-3 text-orange-400" />
+            Trip Dates & Times
+          </span>
+          <TripSchedulePicker
+            pickup={pickupValue}
+            drop={dropValue}
+            minHours={24}
+            maxDays={10}
+            compact
+            onChange={({ pickup, drop }) => {
+              setPickupValue(pickup);
+              setDropValue(drop);
+            }}
+          />
+        </div>
 
         {/* Apply Schedule Button */}
         {datesChangedFromUrl ? (

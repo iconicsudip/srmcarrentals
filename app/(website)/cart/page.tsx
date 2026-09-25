@@ -17,6 +17,8 @@ import {
 
 import { useCart } from "@/lib/cart/cart-store";
 import { Button } from "@/components/ui/button";
+import { apiFetch } from "@/lib/api-client";
+import type { CompanyContent } from "@/modules/settings/site-content.schemas";
 
 function formatInr(amount: number) {
   return new Intl.NumberFormat("en-IN", {
@@ -44,26 +46,47 @@ function formatDate(iso: string) {
 
 export default function CartPage() {
   const { items, count, total, removeItem, clear } = useCart();
-  const phone = "+91 9414551250";
-  const whatsappNumber = phone.replace(/[^0-9]/g, "");
+  const [phone, setPhone] = React.useState("+91 9414551250");
+  const [whatsapp, setWhatsapp] = React.useState("919414551250");
+
+  React.useEffect(() => {
+    let cancelled = false;
+    apiFetch<CompanyContent>("/settings/homepage.company", { skipAuthRedirect: true })
+      .then((data) => {
+        if (!cancelled && data) {
+          if (data.phone) setPhone(data.phone);
+          if (data.socialLinks?.whatsapp) {
+            setWhatsapp(data.socialLinks.whatsapp.replace(/[^0-9]/g, ""));
+          } else if (data.phone) {
+            setWhatsapp(data.phone.replace(/[^0-9]/g, ""));
+          }
+        }
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const whatsappNumber = whatsapp || phone.replace(/[^0-9]/g, "");
 
   const whatsappText = encodeURIComponent(
     `Hello SRM Car Rentals,\n\nI want to confirm my booking from the website cart:\n\n` +
-      items
-        .map(
-          (item, i) =>
-            `${i + 1}. *${item.carName}*\n` +
-            `   • Mode: ${item.rentalMode === "HOURLY" ? "Hourly Rental" : "Daily 24h"}\n` +
-            `   • Dates: ${formatDate(item.pickup)} to ${formatDate(item.drop)} (${item.durationText})\n` +
-            `   • Handover: ${item.locationName}\n` +
-            (item.insurance ? `   • Protection: ${item.insurance.name} (₹${item.insurance.price})\n` : "") +
-            (item.extraServices.length > 0
-              ? `   • Add-ons: ${item.extraServices.map((a) => a.name).join(", ")}\n`
-              : "") +
-            `   • Item Total: ₹${item.total.toLocaleString("en-IN")}\n`,
-        )
-        .join("\n") +
-      `\n*Total Payable:* ₹${total.toLocaleString("en-IN")}\n\nPlease share booking confirmation & payment details!`,
+    items
+      .map(
+        (item, i) =>
+          `${i + 1}. *${item.carName}*\n` +
+          `   • Mode: ${item.rentalMode === "HOURLY" ? "Hourly Rental" : "Daily 24h"}\n` +
+          `   • Dates: ${formatDate(item.pickup)} to ${formatDate(item.drop)} (${item.durationText})\n` +
+          `   • Handover: ${item.locationName}\n` +
+          (item.insurance ? `   • Protection: ${item.insurance.name} (₹${item.insurance.price})\n` : "") +
+          (item.extraServices.length > 0
+            ? `   • Add-ons: ${item.extraServices.map((a) => a.name).join(", ")}\n`
+            : "") +
+          `   • Item Total: ₹${item.total.toLocaleString("en-IN")}\n`,
+      )
+      .join("\n") +
+    `\n*Total Payable:* ₹${total.toLocaleString("en-IN")}\n\nPlease share booking confirmation & payment details!`,
   );
   const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${whatsappText}`;
 

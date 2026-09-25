@@ -18,6 +18,7 @@ import {
   getFaqPageContent,
   getFleetCounts,
   getHomepageContent,
+  getAvailableServices,
   listActiveBrandsWithCarCounts,
   listActiveCars,
   listActiveCategories,
@@ -45,7 +46,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function HomePage() {
-  const [content, company, faqContent, cars, categories, brands, chauffeurServices, tours, testimonials, gallery, locations, counts] =
+  const [content, company, faqContent, cars, categories, brands, chauffeurServices, tours, testimonials, gallery, locations, counts, services] =
     await Promise.all([
       getHomepageContent(),
       getCompanyContent(),
@@ -59,6 +60,7 @@ export default async function HomePage() {
       listActiveGalleryImages(8),
       listActiveLocations(),
       getFleetCounts(),
+      getAvailableServices(),
     ]);
 
   const jsonLd = {
@@ -75,17 +77,17 @@ export default async function HomePage() {
     <>
       <DynamicJsonLd path="/" />
 
-      <HeroSection content={content.hero} locations={locations} />
+      <HeroSection content={content.hero} locations={locations} services={services} />
       <TrustBadgeRow badges={content.trustBadges} />
-      <CategoryCardsSection counts={counts} />
-      <FleetSection cars={cars} categories={categories} totalCount={counts.carCount} />
-      <ChauffeurSection services={chauffeurServices} />
-      <BrandFleetSection cars={cars} brands={brands} totalCount={counts.carCount} />
-      <ToursSection tours={tours} />
+      <CategoryCardsSection counts={counts} services={services} />
+      {services.cars && <FleetSection cars={cars} categories={categories} totalCount={counts.carCount} />}
+      {services.taxi && <ChauffeurSection services={chauffeurServices} phone={company.phone} />}
+      {services.cars && <BrandFleetSection cars={cars} brands={brands} totalCount={counts.carCount} />}
+      {services.tours && <ToursSection tours={tours} />}
       <PhilosophySection content={content.philosophy} />
       <VideoShowcaseSection content={content.videoShowcase} />
       <WhyChooseUsSection content={content.whyChooseUs} />
-      <FaqSection data={faqContent} />
+      <FaqSection data={faqContent} phone={company.phone} />
       <TestimonialsSection testimonials={testimonials} />
       <GallerySection images={gallery} company={company} />
       <B2bSection content={content.b2b} phone={company.phone} />

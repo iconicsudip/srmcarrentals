@@ -179,10 +179,10 @@ export default async function CarDetailPage({ params }: CarDetailPageProps) {
     image: car.images[0]?.url,
     offers: car.pricing
       ? {
-          "@type": "Offer",
-          price: car.pricing.dailyPrice,
-          priceCurrency: "INR",
-        }
+        "@type": "Offer",
+        price: car.pricing.dailyPrice,
+        priceCurrency: "INR",
+      }
       : undefined,
   };
 

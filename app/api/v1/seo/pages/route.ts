@@ -55,6 +55,7 @@ export const GET = withErrorHandling(async () => {
   const corePages: DiscoverablePage[] = [
     { path: "/", title: "Homepage", group: "Core Pages", entityType: "HOMEPAGE", isDynamic: false },
     { path: "/cars", title: "All Cars & Fleet Catalog", group: "Core Pages", isDynamic: false },
+    { path: "/car-rental", title: "Chauffeur & Taxi Rental", group: "Core Pages", isDynamic: false },
     { path: "/locations", title: "Rental Locations Hub", group: "Core Pages", isDynamic: false },
     { path: "/airports", title: "Airport Transfers Hub", group: "Core Pages", isDynamic: false },
     { path: "/tours", title: "Tour Packages", group: "Core Pages", isDynamic: false },
@@ -64,6 +65,8 @@ export const GET = withErrorHandling(async () => {
     { path: "/terms-and-conditions", title: "Terms and Conditions", group: "Core Pages", isDynamic: false },
     { path: "/privacy-policy", title: "Privacy Policy", group: "Core Pages", isDynamic: false },
     { path: "/cancellation-policy", title: "Cancellation & Refund Policy", group: "Core Pages", isDynamic: false },
+    { path: "/cart", title: "Reservation Cart", group: "Core Pages", isDynamic: false },
+    { path: "/checkout", title: "Checkout & Verification", group: "Core Pages", isDynamic: false },
     { path: "/blog", title: "Blog Hub", group: "Core Pages", isDynamic: false },
   ];
 

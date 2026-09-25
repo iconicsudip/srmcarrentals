@@ -54,6 +54,7 @@ import {
   Link2,
   KeyRound,
   History,
+  Layers,
   Settings,
   Building,
   Receipt,
@@ -229,6 +230,7 @@ export const NAV_GROUPS: NavGroup[] = [
     icon: Settings,
     items: [
       { title: "General Settings", href: "/admin/settings/general", icon: Settings, permission: "settings.manage" },
+      { title: "Available Services", href: "/admin/settings/services", icon: Layers, permission: "settings.manage" },
       { title: "Company Settings", href: "/admin/settings/company", icon: Building, permission: "settings.manage" },
       { title: "Checkout Form", href: "/admin/settings/checkout", icon: ClipboardCheck, permission: "settings.manage" },
       { title: "Tax Settings", href: "/admin/settings/tax", icon: Receipt, permission: "settings.manage" },

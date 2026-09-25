@@ -3,6 +3,9 @@
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import { Calendar, Clock, MapPin, Search, Sparkles, CheckCircle2, Tag, Headphones } from "lucide-react";
+import { TripSchedulePicker } from "@/components/website/datetime-picker";
+
+import type { AvailableServicesConfig } from "@/modules/settings/site-content.schemas";
 
 interface LocationOption {
   id: string;
@@ -12,6 +15,7 @@ interface LocationOption {
 interface BookingWidgetProps {
   locations: LocationOption[];
   defaultMode?: "self-drive" | "chauffeur";
+  services?: AvailableServicesConfig;
 }
 
 function defaultDateTimeStr(hoursFromNow: number): string {
@@ -43,9 +47,16 @@ function formatDisplayDateTime(value: string): { date: string; time: string } {
   }
 }
 
-export function BookingWidget({ locations, defaultMode = "self-drive" }: BookingWidgetProps) {
+export function BookingWidget({
+  locations,
+  defaultMode = "self-drive",
+  services = { cars: true, taxi: true, tours: true },
+}: BookingWidgetProps) {
   const router = useRouter();
-  const [mode, setMode] = React.useState<"self-drive" | "chauffeur">(defaultMode);
+  const initialMode = services.cars ? "self-drive" : "chauffeur";
+  const [mode, setMode] = React.useState<"self-drive" | "chauffeur">(
+    defaultMode === "self-drive" && !services.cars ? "chauffeur" : defaultMode,
+  );
   const [locationId, setLocationId] = React.useState<string>(locations[0]?.id ?? "");
   const [dropAddress, setDropAddress] = React.useState("Doorstep Delivery (Hotel / Home)");
   const [pickupDateTime, setPickupDateTime] = React.useState(defaultDateTimeStr(24));
@@ -74,34 +85,38 @@ export function BookingWidget({ locations, defaultMode = "self-drive" }: Booking
   const selectedLocation = locations.find((l) => l.id === locationId);
 
   return (
-    <div className="mx-auto w-full max-w-7xl rounded-2xl border border-white/10 bg-neutral-950/95 shadow-2xl backdrop-blur">
+    <div className="relative z-20 mx-auto w-full max-w-7xl rounded-2xl border border-white/10 bg-neutral-950/95 shadow-2xl backdrop-blur">
       {/* Top bar: tabs + hint */}
       <div className="flex items-center justify-between px-5 pt-4 pb-3">
         <div className="flex w-fit rounded-full bg-white/5 p-1">
-          <button
-            type="button"
-            id="booking-widget-tab-self-drive"
-            onClick={() => setMode("self-drive")}
-            className={`rounded-full px-5 py-2 text-xs font-bold tracking-wide transition-all ${
-              mode === "self-drive"
-                ? "bg-orange-500 text-white shadow-md shadow-orange-500/30"
-                : "text-white/50 hover:text-white"
-            }`}
-          >
-            SELF DRIVE
-          </button>
-          <button
-            type="button"
-            id="booking-widget-tab-chauffeur"
-            onClick={() => setMode("chauffeur")}
-            className={`rounded-full px-5 py-2 text-xs font-bold tracking-wide transition-all ${
-              mode === "chauffeur"
-                ? "bg-orange-500 text-white shadow-md shadow-orange-500/30"
-                : "text-white/50 hover:text-white"
-            }`}
-          >
-            TAXI / CHAUFFEUR
-          </button>
+          {services.cars && (
+            <button
+              type="button"
+              id="booking-widget-tab-self-drive"
+              onClick={() => setMode("self-drive")}
+              className={`rounded-full px-5 py-2 text-xs font-bold tracking-wide transition-all ${
+                mode === "self-drive"
+                  ? "bg-orange-500 text-white shadow-md shadow-orange-500/30"
+                  : "text-white/50 hover:text-white"
+              }`}
+            >
+              SELF DRIVE
+            </button>
+          )}
+          {services.taxi && (
+            <button
+              type="button"
+              id="booking-widget-tab-chauffeur"
+              onClick={() => setMode("chauffeur")}
+              className={`rounded-full px-5 py-2 text-xs font-bold tracking-wide transition-all ${
+                mode === "chauffeur"
+                  ? "bg-orange-500 text-white shadow-md shadow-orange-500/30"
+                  : "text-white/50 hover:text-white"
+              }`}
+            >
+              TAXI / CHAUFFEUR
+            </button>
+          )}
         </div>
 
         <span className="hidden items-center gap-1.5 text-xs text-white/40 sm:flex">
@@ -113,11 +128,10 @@ export function BookingWidget({ locations, defaultMode = "self-drive" }: Booking
       {/* Form fields */}
       <form onSubmit={handleSearch} className="px-5 pb-4">
         <div
-          className={`grid items-end gap-3 ${
-            mode === "chauffeur"
-              ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_auto_auto_auto]"
-              : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1.4fr_auto_auto_auto]"
-          }`}
+          className={`grid items-end gap-3 ${mode === "chauffeur"
+            ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1.1fr_1.1fr_2fr_auto]"
+            : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1.3fr_2fr_auto]"
+            }`}
         >
           {/* Pickup Location */}
           <div className="flex flex-col gap-1">
@@ -130,7 +144,7 @@ export function BookingWidget({ locations, defaultMode = "self-drive" }: Booking
                 id="booking-widget-pickup-location"
                 value={locationId}
                 onChange={(e) => setLocationId(e.target.value)}
-                className="h-11 w-full appearance-none rounded-xl border border-white/10 bg-white/5 pl-9 pr-4 text-sm text-white outline-none focus:border-orange-500/50 focus:bg-white/8"
+                className="h-11 w-full appearance-none rounded-xl border border-white/10 bg-white/5 pl-9 pr-4 text-sm text-white outline-none focus:border-orange-500/50 focus:bg-white/8 cursor-pointer"
               >
                 {locations.map((loc) => (
                   <option key={loc.id} value={loc.id} className="bg-neutral-900 text-white">
@@ -161,96 +175,22 @@ export function BookingWidget({ locations, defaultMode = "self-drive" }: Booking
             </div>
           )}
 
-          {/* Pickup Date & Time */}
+          {/* Unified Trip Schedule Date & Time Picker */}
           <div className="flex flex-col gap-1">
             <label className="text-[10px] font-semibold tracking-widest text-white/40 uppercase">
-              Pickup Date &amp; Time
+              Trip Schedule &amp; Dates
             </label>
-            <div className="flex h-11 overflow-hidden rounded-xl border border-white/10 bg-white/5">
-              {/* Date part */}
-              <button
-                type="button"
-                onClick={() => pickupRef.current?.showPicker?.()}
-                className="flex items-center gap-2 border-r border-white/10 px-3 text-sm text-white hover:bg-white/5"
-              >
-                <Calendar className="size-3.5 shrink-0 text-orange-500" />
-                <span className="whitespace-nowrap">{pickupDisplay.date || "DD/MM/YYYY"}</span>
-              </button>
-              {/* Time part */}
-              <button
-                type="button"
-                onClick={() => pickupTimeRef.current?.showPicker?.()}
-                className="flex flex-1 items-center gap-2 px-3 text-sm text-white hover:bg-white/5"
-              >
-                <Clock className="size-3.5 shrink-0 text-white/40" />
-                <span className="whitespace-nowrap">{pickupDisplay.time || "HH:MM"}</span>
-              </button>
-            </div>
-            {/* Hidden datetime-local inputs */}
-            <input
-              ref={pickupRef}
-              type="date"
-              value={pickupDateTime.slice(0, 10)}
-              onChange={(e) =>
-                setPickupDateTime((prev) => e.target.value + prev.slice(10))
-              }
-              className="sr-only"
-              tabIndex={-1}
-            />
-            <input
-              ref={pickupTimeRef}
-              type="time"
-              value={pickupDateTime.slice(11)}
-              onChange={(e) =>
-                setPickupDateTime((prev) => prev.slice(0, 11) + e.target.value)
-              }
-              className="sr-only"
-              tabIndex={-1}
-            />
-          </div>
-
-          {/* Drop Date & Time */}
-          <div className="flex flex-col gap-1">
-            <label className="text-[10px] font-semibold tracking-widest text-white/40 uppercase">
-              Drop Date &amp; Time
-            </label>
-            <div className="flex h-11 overflow-hidden rounded-xl border border-white/10 bg-white/5">
-              <button
-                type="button"
-                onClick={() => dropRef.current?.showPicker?.()}
-                className="flex items-center gap-2 border-r border-white/10 px-3 text-sm text-white hover:bg-white/5"
-              >
-                <Calendar className="size-3.5 shrink-0 text-orange-500" />
-                <span className="whitespace-nowrap">{dropDisplay.date || "DD/MM/YYYY"}</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => dropTimeRef.current?.showPicker?.()}
-                className="flex flex-1 items-center gap-2 px-3 text-sm text-white hover:bg-white/5"
-              >
-                <Clock className="size-3.5 shrink-0 text-white/40" />
-                <span className="whitespace-nowrap">{dropDisplay.time || "HH:MM"}</span>
-              </button>
-            </div>
-            <input
-              ref={dropRef}
-              type="date"
-              value={dropDateTime.slice(0, 10)}
-              onChange={(e) =>
-                setDropDateTime((prev) => e.target.value + prev.slice(10))
-              }
-              className="sr-only"
-              tabIndex={-1}
-            />
-            <input
-              ref={dropTimeRef}
-              type="time"
-              value={dropDateTime.slice(11)}
-              onChange={(e) =>
-                setDropDateTime((prev) => prev.slice(0, 11) + e.target.value)
-              }
-              className="sr-only"
-              tabIndex={-1}
+            <TripSchedulePicker
+              pickup={pickupDateTime}
+              drop={dropDateTime}
+              onChange={({ pickup, drop }) => {
+                setPickupDateTime(pickup);
+                setDropDateTime(drop);
+              }}
+              minHours={mode === "chauffeur" ? 1 : 24}
+              maxDays={10}
+              rentalMode={mode === "chauffeur" ? "HOURLY" : "DAILY"}
+              compact
             />
           </div>
 

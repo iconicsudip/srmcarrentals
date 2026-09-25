@@ -1,6 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { PERMISSIONS, RoleName } from "@srm/types";
+import { seedAllSeo } from "./seed-seo";
 
 const prisma = new PrismaClient();
 
@@ -394,6 +395,9 @@ async function main() {
       create: { slug: p.slug, title: p.title, content: p.content, status: "PUBLISHED" },
     });
   }
+
+  // Seed all SEO & AEO metadata
+  await seedAllSeo();
 
   console.log("Done.");
 }

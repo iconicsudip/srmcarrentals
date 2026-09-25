@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Clock, Mail, MapPin, Phone, ShieldCheck, Star, TentTree } from "lucide-react";
+import { Clock, Mail, MapPin, MessageSquare, Phone, ShieldCheck, Star, TentTree } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -94,6 +94,28 @@ export default async function TourDetailPage({ params }: TourDetailPageProps) {
             <p className="mb-4 text-xs text-white/40">per package</p>
 
             <div className="flex flex-col gap-2">
+              {(() => {
+                const whatsappNumber = (company.socialLinks?.whatsapp || company.phone || "919414551250").replace(/[^0-9]/g, "");
+                const whatsappMessage = encodeURIComponent(
+                  `Hello SRM Car Rentals! 👋\n\nI am interested in booking the tour package:\n\n` +
+                  `• *Tour*: ${tour.name}\n` +
+                  `• *Duration*: ${tour.durationDays} Days / ${tour.durationNights} Nights\n` +
+                  `• *Category*: ${tour.category.name}\n` +
+                  `• *Starting Price*: ₹${Number(tour.startingPrice).toLocaleString("en-IN")}\n\n` +
+                  `Please share the full itinerary, vehicle assigned, and availability details!`,
+                );
+                return (
+                  <Button asChild className="bg-emerald-600 font-bold text-white hover:bg-emerald-500">
+                    <a
+                      href={`https://wa.me/${whatsappNumber}?text=${whatsappMessage}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <MessageSquare className="size-4" /> Book via WhatsApp
+                    </a>
+                  </Button>
+                );
+              })()}
               {company.phone && (
                 <Button asChild className="bg-orange-500 font-bold text-white hover:bg-orange-600">
                   <a href={`tel:${company.phone.replace(/\s/g, "")}`}>

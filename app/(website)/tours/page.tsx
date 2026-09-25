@@ -2,27 +2,35 @@ import type { Metadata } from "next";
 
 import { BookingWidget } from "@/components/website/booking-widget";
 import { ToursSection } from "@/components/website/tours-section";
-import { listActiveTours, listActiveLocations } from "@/modules/website/public-content.service";
+import { listActiveTours, listActiveLocations, getAvailableServices } from "@/modules/website/public-content.service";
+import { getDynamicSeoForPath, DynamicJsonLd } from "@/lib/seo/dynamic-seo";
 
-export const metadata: Metadata = {
-  title: "Curated Tours & Expeditions",
-  description: "Handcrafted multi-day tours pairing our premium fleet with local insider knowledge.",
-  alternates: { canonical: "/tours" },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const fallback: Metadata = {
+    title: "Curated Tours & Expeditions | SRM Car Rentals",
+    description: "Handcrafted multi-day tours pairing our premium fleet with local insider knowledge.",
+    alternates: { canonical: "/tours" },
+  };
+  const resolved = await getDynamicSeoForPath("/tours", fallback);
+  return resolved.metadata;
+}
 
 export default async function ToursPage() {
-  const [tours, locations] = await Promise.all([
+  const [tours, locations, services] = await Promise.all([
     listActiveTours(100),
     listActiveLocations(),
+    getAvailableServices(),
   ]);
 
   return (
     <div>
+      <DynamicJsonLd path="/tours" />
       {/* Booking Widget — self-drive mode for finding a car to pair with a tour */}
       <div className="border-b border-white/5 bg-neutral-950 px-4 py-6 sm:px-6 lg:px-8">
         <BookingWidget
           locations={locations.map((l) => ({ id: l.id, name: l.name }))}
           defaultMode="self-drive"
+          services={services}
         />
       </div>
 

@@ -1,19 +1,25 @@
 import type { Metadata } from "next";
 import { FaqSection } from "@/components/website/faq-section";
-import { getFaqPageContent } from "@/modules/website/public-content.service";
+import { getCompanyContent, getFaqPageContent } from "@/modules/website/public-content.service";
+import { getDynamicSeoForPath, DynamicJsonLd } from "@/lib/seo/dynamic-seo";
 
-export const metadata: Metadata = {
-  title: "Frequently Asked Questions | SRM Car Rentals",
-  description: "Get answers to common questions about renting a self-drive car with SRM Car Rentals in Udaipur, Jaipur, and Navsari. Security deposits, fuel policy, documents, and cancellation.",
-  alternates: { canonical: "/faq" },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const fallback: Metadata = {
+    title: "Frequently Asked Questions | SRM Car Rentals",
+    description: "Get answers to common questions about renting a self-drive car with SRM Car Rentals in Udaipur, Jaipur, and Navsari.",
+    alternates: { canonical: "/faq" },
+  };
+  const resolved = await getDynamicSeoForPath("/faq", fallback);
+  return resolved.metadata;
+}
 
 export default async function FaqPage() {
-  const faqContent = await getFaqPageContent();
+  const [faqContent, company] = await Promise.all([getFaqPageContent(), getCompanyContent()]);
 
   return (
     <div className="min-h-screen bg-neutral-950 py-12">
-      <FaqSection data={faqContent} />
+      <DynamicJsonLd path="/faq" />
+      <FaqSection data={faqContent} phone={company.phone} />
     </div>
   );
 }

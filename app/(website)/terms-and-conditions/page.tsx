@@ -3,13 +3,18 @@ import Image from "next/image";
 import Link from "next/link";
 import { AlertCircle, FileText, MessageSquare, Scale } from "lucide-react";
 import { getTermsPageContent } from "@/modules/website/public-content.service";
+import { getDynamicSeoForPath, DynamicJsonLd } from "@/lib/seo/dynamic-seo";
 
-export const metadata: Metadata = {
-  title: "Terms & Conditions | SRM Car Rentals",
-  description:
-    "Read the complete terms and conditions for self-drive car rentals at SRM Car Rentals. Cancellation policy, fuel policy, speed limits and more.",
-  alternates: { canonical: "/terms-and-conditions" },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const fallback: Metadata = {
+    title: "Terms & Conditions | SRM Car Rentals",
+    description:
+      "Read the complete terms and conditions for self-drive car rentals at SRM Car Rentals. Cancellation policy, fuel policy, speed limits and more.",
+    alternates: { canonical: "/terms-and-conditions" },
+  };
+  const resolved = await getDynamicSeoForPath("/terms-and-conditions", fallback);
+  return resolved.metadata;
+}
 
 const SECTION_ICONS = [Scale, FileText, AlertCircle, MessageSquare, Scale, FileText, AlertCircle, MessageSquare];
 
@@ -19,6 +24,7 @@ export default async function TermsAndConditionsPage() {
 
   return (
     <div className="min-h-screen bg-neutral-950">
+      <DynamicJsonLd path="/terms-and-conditions" />
       {/* ── Hero ── */}
       <section className="relative overflow-hidden">
         <div className="pointer-events-none absolute inset-0" aria-hidden>

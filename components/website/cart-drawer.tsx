@@ -19,12 +19,13 @@ import {
 import { useCart } from "@/lib/cart/cart-store";
 import { Button } from "@/components/ui/button";
 
-function formatInr(amount: number) {
+function formatInr(amount: number | undefined | null) {
+  const safe = Number.isFinite(amount) ? (amount as number) : 0;
   return new Intl.NumberFormat("en-IN", {
     style: "currency",
     currency: "INR",
     maximumFractionDigits: 0,
-  }).format(amount);
+  }).format(safe);
 }
 
 function formatDate(iso: string) {
@@ -77,10 +78,10 @@ export function CartDrawer({ phone = "+91 9414551250" }: { phone?: string }) {
             ((item.extraServices?.length ?? 0) > 0
               ? `   • Add-ons: ${item.extraServices?.map((a) => a.name).join(", ")}\n`
               : "") +
-            `   • Item Total: ₹${item.total.toLocaleString("en-IN")}\n`,
+            `   • Item Total: ₹${(item.total ?? 0).toLocaleString("en-IN")}\n`,
         )
         .join("\n") +
-      `\n*Total Payable:* ₹${total.toLocaleString("en-IN")}\n\nPlease share handover steps & confirmation!`,
+      `\n*Total Payable:* ₹${(total ?? 0).toLocaleString("en-IN")}\n\nPlease share handover steps & confirmation!`,
   );
   const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${whatsappText}`;
 

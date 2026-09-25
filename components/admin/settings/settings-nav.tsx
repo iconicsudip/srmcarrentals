@@ -7,6 +7,7 @@ import {
   Building,
   ClipboardCheck,
   CreditCard,
+  Layers,
   Mail,
   MessageCircle,
   MessageSquare,
@@ -17,6 +18,7 @@ import { cn } from "@/lib/utils";
 
 const SETTINGS_TABS = [
   { label: "General", href: "/admin/settings/general", icon: Settings },
+  { label: "Available Services", href: "/admin/settings/services", icon: Layers },
   { label: "Company", href: "/admin/settings/company", icon: Building },
   { label: "Checkout Form", href: "/admin/settings/checkout", icon: ClipboardCheck },
   { label: "Tax", href: "/admin/settings/tax", icon: Receipt },

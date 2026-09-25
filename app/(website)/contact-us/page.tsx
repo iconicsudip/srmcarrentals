@@ -3,13 +3,18 @@ import Image from "next/image";
 import Link from "next/link";
 import { Clock, Mail, MapPin, MessageSquare, Phone } from "lucide-react";
 import { getContactPageContent } from "@/modules/website/public-content.service";
+import { getDynamicSeoForPath, DynamicJsonLd } from "@/lib/seo/dynamic-seo";
 
-export const metadata: Metadata = {
-  title: "Contact SRM Car Rentals | Udaipur, Jaipur, Navsari",
-  description:
-    "Contact SRM Car Rentals for self-drive bookings in Udaipur, Jaipur, and Navsari. Call or WhatsApp us for instant support.",
-  alternates: { canonical: "/contact-us" },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const fallback: Metadata = {
+    title: "Contact SRM Car Rentals | Udaipur, Jaipur, Navsari",
+    description:
+      "Contact SRM Car Rentals for self-drive bookings in Udaipur, Jaipur, and Navsari. Call or WhatsApp us for instant support.",
+    alternates: { canonical: "/contact-us" },
+  };
+  const resolved = await getDynamicSeoForPath("/contact-us", fallback);
+  return resolved.metadata;
+}
 
 const METHOD_ICONS: Record<string, React.ElementType> = {
   phone: Phone,
@@ -24,6 +29,7 @@ export default async function ContactUsPage() {
 
   return (
     <div className="min-h-screen bg-neutral-950">
+      <DynamicJsonLd path="/contact-us" />
       {/* ── Hero ── */}
       <section className="relative overflow-hidden">
         <div className="pointer-events-none absolute inset-0" aria-hidden>
@@ -132,11 +138,10 @@ export default async function ContactUsPage() {
               {branches.map((b) => (
                 <div
                   key={b.city}
-                  className={`flex flex-col justify-between rounded-2xl border p-8 ${
-                    b.isHQ
-                      ? "border-orange-500/30 bg-orange-500/5 shadow-lg shadow-orange-950/30"
-                      : "border-white/10 bg-neutral-900"
-                  }`}
+                  className={`flex flex-col justify-between rounded-2xl border p-8 ${b.isHQ
+                    ? "border-orange-500/30 bg-orange-500/5 shadow-lg shadow-orange-950/30"
+                    : "border-white/10 bg-neutral-900"
+                    }`}
                 >
                   <div>
                     <div className="flex items-center justify-between">

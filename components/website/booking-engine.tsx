@@ -4,7 +4,6 @@ import * as React from "react";
 import { useSearchParams } from "next/navigation";
 import {
   AlertCircle,
-  Calendar,
   CheckCircle2,
   Clock,
   Loader2,
@@ -24,94 +23,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-// ─── Custom DateTimePicker ───────────────────────────────────────────────────
-// Converts an ISO-like "YYYY-MM-DDTHH:mm" string to/from
-// a styled date input + hour/minute/period select row.
-
-function parseLocalDT(value: string) {
-  const [datePart = "", timePart = ""] = value.split("T");
-  const [h = "09", m = "00"] = timePart.split(":");
-  const hour24 = parseInt(h, 10);
-  const period = hour24 >= 12 ? "PM" : "AM";
-  const hour12 = hour24 === 0 ? 12 : hour24 > 12 ? hour24 - 12 : hour24;
-  return { datePart, hour12: String(hour12).padStart(2, "0"), minute: m, period };
-}
-
-function buildLocalDT(datePart: string, hour12: string, minute: string, period: string) {
-  let h = parseInt(hour12, 10);
-  if (period === "AM" && h === 12) h = 0;
-  if (period === "PM" && h !== 12) h += 12;
-  return `${datePart}T${String(h).padStart(2, "0")}:${minute}`;
-}
-
-function DateTimePicker({
-  label,
-  value,
-  onChange,
-  minDate,
-}: {
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-  minDate?: string;
-}) {
-  const { datePart, hour12, minute, period } = parseLocalDT(value);
-
-  const update = (d: string, h: string, min: string, p: string) =>
-    onChange(buildLocalDT(d, h, min, p));
-
-  const selectCls =
-    "rounded-lg border border-white/10 bg-black/50 px-2 py-2 text-xs text-white outline-none focus:border-orange-500 appearance-none cursor-pointer";
-
-  const HOURS = Array.from({ length: 12 }, (_, i) => String(i + 1).padStart(2, "0"));
-  const MINUTES = ["00", "15", "30", "45"];
-
-  return (
-    <div className="flex flex-col gap-1.5">
-      <Label className="text-xs font-semibold text-white/55">{label}</Label>
-      <div className="rounded-xl border border-white/10 bg-black/40 p-2.5 flex flex-col gap-2">
-        {/* Date picker */}
-        <div className="flex items-center gap-2">
-          <Calendar className="size-3.5 shrink-0 text-orange-400" />
-          <input
-            type="date"
-            value={datePart}
-            min={minDate}
-            onChange={(e) => update(e.target.value, hour12, minute, period)}
-            className="flex-1 rounded-lg border border-white/10 bg-black/50 px-2 py-2 text-xs text-white outline-none focus:border-orange-500 [color-scheme:dark]"
-          />
-        </div>
-        {/* Time picker */}
-        <div className="flex items-center gap-2">
-          <Clock className="size-3.5 shrink-0 text-orange-400" />
-          <select
-            value={hour12}
-            onChange={(e) => update(datePart, e.target.value, minute, period)}
-            className={selectCls}
-          >
-            {HOURS.map((h) => <option key={h} value={h} className="bg-neutral-900">{h}</option>)}
-          </select>
-          <span className="text-white/40 text-xs font-bold">:</span>
-          <select
-            value={minute}
-            onChange={(e) => update(datePart, hour12, e.target.value, period)}
-            className={selectCls}
-          >
-            {MINUTES.map((m) => <option key={m} value={m} className="bg-neutral-900">{m}</option>)}
-          </select>
-          <select
-            value={period}
-            onChange={(e) => update(datePart, hour12, minute, e.target.value)}
-            className={`${selectCls} font-bold text-orange-400`}
-          >
-            <option value="AM" className="bg-neutral-900">AM</option>
-            <option value="PM" className="bg-neutral-900">PM</option>
-          </select>
-        </div>
-      </div>
-    </div>
-  );
-}
+import { TripSchedulePicker } from "@/components/website/datetime-picker";
 
 export interface BookingEngineProps {
   carId: string;
@@ -137,10 +49,31 @@ function formatInr(amount: number | string | null | undefined) {
   }).format(Number(amount));
 }
 
-function defaultDateTime(hoursFromNow: number): string {
-  const d = new Date(Date.now() + hoursFromNow * 3_600_000);
-  d.setMinutes(0, 0, 0);
+/** Current local datetime snapped to next 15-min boundary as "YYYY-MM-DDTHH:mm" */
+function nowMinDateTime(): string {
+  const d = new Date();
+  const snappedMins = Math.ceil(d.getMinutes() / 15) * 15;
+  if (snappedMins >= 60) {
+    d.setHours(d.getHours() + 1, 0, 0, 0);
+  } else {
+    d.setMinutes(snappedMins, 0, 0);
+  }
   return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+}
+
+/** Add hours to a "YYYY-MM-DDTHH:mm" string and return the same format */
+function addHoursToISO(iso: string, hours: number): string {
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return iso;
+  d.setTime(d.getTime() + hours * 3_600_000);
+  return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+}
+
+/** Add days to a "YYYY-MM-DD" string */
+function addDaysToDate(dateISO: string, days: number): string {
+  const d = new Date(`${dateISO}T00:00:00`);
+  d.setDate(d.getDate() + days);
+  return d.toISOString().slice(0, 10);
 }
 
 function calculateDurationText(pickup: string, drop: string): { text: string; hours: number; days: number } {
@@ -187,7 +120,7 @@ export function BookingEngine({
   const [rentalMode, setRentalMode] = React.useState<"DAILY" | "HOURLY">("DAILY");
 
   // Schedule dates
-  const [pickup, setPickup] = React.useState(() => {
+  const [pickup, setPickupRaw] = React.useState(() => {
     if (qPickup) {
       try {
         const d = new Date(qPickup);
@@ -197,10 +130,10 @@ export function BookingEngine({
       } catch {}
       if (qPickup.includes("T")) return qPickup.slice(0, 16);
     }
-    return defaultDateTime(24);
+    return addHoursToISO(nowMinDateTime(), 24); // default: 24h from now
   });
 
-  const [drop, setDrop] = React.useState(() => {
+  const [drop, setDropRaw] = React.useState(() => {
     if (qDrop) {
       try {
         const d = new Date(qDrop);
@@ -210,8 +143,34 @@ export function BookingEngine({
       } catch {}
       if (qDrop.includes("T")) return qDrop.slice(0, 16);
     }
-    return defaultDateTime(rentalMode === "HOURLY" ? 32 : 48);
+    return addHoursToISO(nowMinDateTime(), rentalMode === "HOURLY" ? 32 : 48);
   });
+
+  // Derived constraints
+  const nowMin = nowMinDateTime();
+  const dropMinDateTime = addHoursToISO(pickup, 24);          // drop must be >= pickup + 24h
+  const dropMaxDate = addDaysToDate(pickup.slice(0, 10), 10); // drop must be <= pickup + 10 days
+
+  // When pickup changes: enforce drop is within [pickup+24h, pickup+10d]
+  const handlePickupChange = (newPickup: string) => {
+    setPickupRaw(newPickup);
+    const minDrop = addHoursToISO(newPickup, 24);
+    const maxDrop = addHoursToISO(newPickup, 24 * 10);
+    setDropRaw((prev) => {
+      if (prev < minDrop) return minDrop;
+      if (prev > maxDrop) return maxDrop;
+      return prev;
+    });
+  };
+
+  // When drop changes: clamp to [pickup+24h, pickup+10d]
+  const handleDropChange = (newDrop: string) => {
+    const minDrop = addHoursToISO(pickup, 24);
+    const maxDrop = addHoursToISO(pickup, 24 * 10);
+    if (newDrop < minDrop) setDropRaw(minDrop);
+    else if (newDrop > maxDrop) setDropRaw(maxDrop);
+    else setDropRaw(newDrop);
+  };
 
   // Locations
   const [deliveryType, setDeliveryType] = React.useState<"BRANCH" | "AIRPORT" | "DOORSTEP">("BRANCH");
@@ -281,9 +240,9 @@ export function BookingEngine({
   const handleModeToggle = (mode: "DAILY" | "HOURLY") => {
     setRentalMode(mode);
     if (mode === "HOURLY") {
-      setDrop(defaultDateTime(32)); // 8 hours
+      setDropRaw(addHoursToISO(pickup, 8)); // 8 hours from pickup
     } else {
-      setDrop(defaultDateTime(48)); // 24 hours
+      setDropRaw(addHoursToISO(pickup, 24)); // 24 hours from pickup
     }
   };
 
@@ -371,7 +330,8 @@ export function BookingEngine({
     const chosenExtras = extraServices.filter((e) => selectedExtraIds.includes(e.id));
 
     const unitPrice = rentalMode === "HOURLY" ? Number(hourlyPrice || 500) : dailyPrice;
-    const finalTotal = pricingResult?.total ?? unitPrice;
+    const rawTotal = pricingResult?.total;
+    const finalTotal = Number.isFinite(rawTotal) ? (rawTotal as number) : unitPrice;
 
     addToCart({
       carId,
@@ -471,29 +431,19 @@ export function BookingEngine({
 
       {/* TRIP & DELIVERY OPTIONS */}
       <div className="mt-5 flex flex-col gap-4">
-        {/* ── Pickup Date & Time ── */}
-        <DateTimePicker
-          label="Pickup Date & Time"
-          value={pickup}
-          onChange={setPickup}
-          minDate={new Date().toISOString().slice(0, 10)}
+        {/* ── UNIFIED TRIP SCHEDULE PICKER (Single Range & Time Picker) ── */}
+        <TripSchedulePicker
+          pickup={pickup}
+          drop={drop}
+          onChange={({ pickup: newP, drop: newD }) => {
+            setPickupRaw(newP);
+            setDropRaw(newD);
+          }}
+          minDateTime={nowMin}
+          minHours={rentalMode === "HOURLY" ? 1 : 24}
+          maxDays={10}
+          rentalMode={rentalMode}
         />
-
-        {/* ── Drop Date & Time ── */}
-        <DateTimePicker
-          label="Drop Date & Time"
-          value={drop}
-          onChange={setDrop}
-          minDate={pickup.slice(0, 10)}
-        />
-
-        {/* Duration Badge + Availability Status */}
-        <div className="flex items-center justify-between rounded-xl border border-white/5 bg-white/5 px-3 py-2 text-xs">
-          <span className="flex items-center gap-1.5 text-white/60">
-            <Clock className="size-3.5 text-orange-400" /> Duration:
-          </span>
-          <span className="font-bold text-white">{duration.text}</span>
-        </div>
 
         {/* Real-time availability indicator */}
         {(availLoading || isAvailable !== null) && (

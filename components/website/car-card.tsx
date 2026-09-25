@@ -127,7 +127,7 @@ function parseDurationDays(pickupStr?: string | null, dropStr?: string | null): 
   }
 }
 
-export function CarCard({
+function CarCardInner({
   car,
   variant = "wide",
   showBasePriceOnly = false,
@@ -508,5 +508,13 @@ export function CarCard({
         </div>
       </div>
     </div>
+  );
+}
+
+export function CarCard(props: CarCardProps) {
+  return (
+    <React.Suspense fallback={null}>
+      <CarCardInner {...props} />
+    </React.Suspense>
   );
 }

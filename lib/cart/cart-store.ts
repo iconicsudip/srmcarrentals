@@ -41,7 +41,17 @@ export function getCartItems(): CartItem[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return [];
-    return JSON.parse(raw) as CartItem[];
+    const parsed = JSON.parse(raw) as CartItem[];
+    // Strip out stale/malformed items (missing total, NaN total, or unparseable dates)
+    return parsed.filter(
+      (item) =>
+        item &&
+        typeof item.carId === "string" &&
+        typeof item.total === "number" &&
+        Number.isFinite(item.total) &&
+        !isNaN(new Date(item.pickup).getTime()) &&
+        !isNaN(new Date(item.drop).getTime()),
+    );
   } catch {
     return [];
   }
@@ -59,8 +69,11 @@ export function saveCartItems(items: CartItem[]): void {
 
 export function addToCart(item: Omit<CartItem, "id" | "createdAt">): CartItem {
   const current = getCartItems();
+  // Sanitize: ensure total is always a finite number
+  const safeTotal = Number.isFinite(item.total) ? item.total : 0;
   const newItem: CartItem = {
     ...item,
+    total: safeTotal,
     id: `cart_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
     createdAt: Date.now(),
   };
@@ -113,7 +126,10 @@ export function useCart() {
     };
   }, []);
 
-  const total = React.useMemo(() => items.reduce((sum, item) => sum + item.total, 0), [items]);
+  const total = React.useMemo(
+    () => items.reduce((sum, item) => sum + (item.total ?? 0), 0),
+    [items],
+  );
   const count = items.length;
 
   return {

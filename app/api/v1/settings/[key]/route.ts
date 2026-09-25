@@ -14,7 +14,9 @@ function isPublicKey(key: string): boolean {
     key.startsWith("homepage.") ||
     key.startsWith("pages.") ||
     key.startsWith("checkout.") ||
-    key.startsWith("system.checkout")
+    key.startsWith("system.checkout") ||
+    key === "system.services" ||
+    key.startsWith("services.")
   );
 }
 

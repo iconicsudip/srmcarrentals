@@ -3,13 +3,18 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Award, Car, MapPin, Phone, Shield, Target, Users } from "lucide-react";
 import { getAboutPageContent } from "@/modules/website/public-content.service";
+import { getDynamicSeoForPath, DynamicJsonLd } from "@/lib/seo/dynamic-seo";
 
-export const metadata: Metadata = {
-  title: "About SRM Car Rentals | Self-Drive & Chauffeur Cars in Rajasthan",
-  description:
-    "SRM Car Rentals offers trusted self-drive car rental services across Rajasthan with premium cars available in Udaipur, Jaipur and Navsari. Affordable, flexible, customer-first.",
-  alternates: { canonical: "/about-us" },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const fallback: Metadata = {
+    title: "About SRM Car Rentals | Self-Drive & Chauffeur Cars in Rajasthan",
+    description:
+      "SRM Car Rentals offers trusted self-drive car rental services across Rajasthan with premium cars available in Udaipur, Jaipur and Navsari. Affordable, flexible, customer-first.",
+    alternates: { canonical: "/about-us" },
+  };
+  const resolved = await getDynamicSeoForPath("/about-us", fallback);
+  return resolved.metadata;
+}
 
 export default async function AboutUsPage() {
   const content = await getAboutPageContent();
@@ -19,6 +24,7 @@ export default async function AboutUsPage() {
 
   return (
     <div className="min-h-screen bg-neutral-950">
+      <DynamicJsonLd path="/about-us" />
       {/* ── Hero ── */}
       <section className="relative overflow-hidden">
         {/* Background image */}

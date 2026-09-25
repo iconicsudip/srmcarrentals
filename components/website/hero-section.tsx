@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Compass, Sparkles } from "lucide-react";
 
-import type { HomepageContent } from "@/modules/settings/site-content.schemas";
+import type { HomepageContent, AvailableServicesConfig } from "@/modules/settings/site-content.schemas";
 import { resolveIcon } from "@/lib/icon-map";
 import { stripTrailingPunctuation } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -11,16 +11,18 @@ import { BookingWidget } from "@/components/website/booking-widget";
 export function HeroSection({
   content,
   locations,
+  services,
 }: {
   content: HomepageContent["hero"];
   locations: { id: string; name: string }[];
+  services?: AvailableServicesConfig;
 }) {
   const cleanTitle = stripTrailingPunctuation(content.title);
   const titleParts = content.highlightWord ? cleanTitle.split(content.highlightWord) : [cleanTitle, ""];
   const heroImageSrc = content.backgroundImageUrl || "/images/hero-car-bg.jpg";
 
   return (
-    <section className="relative overflow-hidden bg-neutral-950">
+    <section className="relative bg-neutral-950">
       {/* ── Background Hero Image & Ambient Cinematic Flares ── */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none select-none">
         <Image
@@ -36,7 +38,7 @@ export function HeroSection({
         <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-neutral-950/45 to-neutral-950" />
         <div className="absolute inset-0 bg-gradient-to-t from-neutral-950 via-neutral-950/60 to-transparent" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-orange-500/15 via-transparent to-black/60" />
-        
+
         {/* Ambient Warm Halo behind the center */}
         <div className="absolute top-[40%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[650px] h-[320px] bg-orange-500/15 rounded-full blur-[130px] animate-pulse-slow" />
       </div>
@@ -92,7 +94,7 @@ export function HeroSection({
       </div>
 
       <div className="relative mx-auto max-w-7xl px-4 pb-16 sm:px-6 lg:px-8">
-        <BookingWidget locations={locations} />
+        <BookingWidget locations={locations} services={services} />
       </div>
     </section>
   );

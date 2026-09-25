@@ -45,8 +45,16 @@ export interface ChauffeurServiceData {
   badge: string | null;
 }
 
-export function ChauffeurSection({ services }: { services: ChauffeurServiceData[] }) {
+export function ChauffeurSection({
+  services,
+  phone = "+91 9414551250",
+}: {
+  services: ChauffeurServiceData[];
+  phone?: string;
+}) {
   if (services.length === 0) return null;
+
+  const whatsappNumber = phone.replace(/[^0-9]/g, "");
 
   return (
     <section id="chauffeur" className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
@@ -146,12 +154,26 @@ export function ChauffeurSection({ services }: { services: ChauffeurServiceData[
                     </div>
                   </div>
 
-                  <Link
-                    href={`/car-rental?service=${service.slug}`}
-                    className="flex items-center gap-2 rounded-xl bg-orange-500 px-5 py-2.5 text-sm font-bold text-white shadow-md shadow-orange-500/25 transition hover:bg-orange-600 active:scale-95"
-                  >
-                    BOOK TAXI →
-                  </Link>
+                  {(() => {
+                    const whatsappMsg = encodeURIComponent(
+                      `Hello SRM Car Rentals! 👋\n\nI want to book a Chauffeur Taxi:\n\n` +
+                      `• *Service*: ${service.name}\n` +
+                      `• *Category*: ${service.category}\n` +
+                      `• *Capacity*: ${capacity}\n` +
+                      `• *Starting Tariff*: ₹${Number(service.startingPrice).toLocaleString("en-IN")} / ${service.pricingUnit === "PER_KM" ? "km" : "trip"}\n\n` +
+                      `Please share vehicle availability, driver handover, and booking details!`,
+                    );
+                    return (
+                      <a
+                        href={`https://wa.me/${whatsappNumber}?text=${whatsappMsg}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 rounded-xl bg-orange-500 px-5 py-2.5 text-sm font-bold text-white shadow-md shadow-orange-500/25 transition hover:bg-orange-600 active:scale-95"
+                      >
+                        BOOK TAXI →
+                      </a>
+                    );
+                  })()}
                 </div>
               </div>
             </div>

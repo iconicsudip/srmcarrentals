@@ -62,6 +62,38 @@ export async function deletePage(id: string) {
   await prisma.page.delete({ where: { id } });
 }
 
-export function getPublishedPageBySlug(slug: string) {
-  return prisma.page.findUnique({ where: { slug, status: "PUBLISHED" } });
+const FALLBACK_PAGES: Record<string, { title: string; slug: string; content: string }> = {
+  "privacy-policy": {
+    title: "Privacy Policy",
+    slug: "privacy-policy",
+    content: `At SRM Car Rentals, accessible from our website, one of our main priorities is the privacy of our visitors. This Privacy Policy document contains types of information that is collected and recorded by SRM Car Rentals and how we use it.
+
+If you have additional questions or require more information about our Privacy Policy, do not hesitate to contact us.
+
+Information We Collect:
+When you register for an Account or book a vehicle, we may ask for your contact information, including items such as name, company name, address, email address, telephone number, and driving license details for verification.
+
+How We Use Your Information:
+We use the information we collect in various ways, including to:
+• Provide, operate, and maintain our car rental services
+• Improve, personalize, and expand our offerings
+• Understand and analyze how you use our website
+• Communicate with you, either directly or through our customer service team, for customer support, updates, and booking confirmations
+• Send you booking updates, digital invoices, and KYC verification notices
+• Prevent fraudulent transactions and protect vehicle security
+
+Security of Your Data:
+We value your trust in providing us your Personal Information, thus we strive to use commercially acceptable means of protecting it. No method of transmission over the internet, or method of electronic storage is 100% secure, but we implement industry-standard 256-bit encryption.`,
+  },
+};
+
+export async function getPublishedPageBySlug(slug: string) {
+  try {
+    const page = await prisma.page.findUnique({ where: { slug, status: "PUBLISHED" } });
+    if (page) return page;
+    return FALLBACK_PAGES[slug] ?? null;
+  } catch (err) {
+    console.warn(`[getPublishedPageBySlug] DB unavailable for slug "${slug}":`, (err as Error).message);
+    return FALLBACK_PAGES[slug] ?? null;
+  }
 }

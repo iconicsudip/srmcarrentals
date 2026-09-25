@@ -190,6 +190,13 @@ export const termsPageContentSchema = z.object({
 });
 export type TermsPageContent = z.infer<typeof termsPageContentSchema>;
 
+export const availableServicesSchema = z.object({
+  cars: z.boolean().default(true),
+  taxi: z.boolean().default(true),
+  tours: z.boolean().default(true),
+});
+export type AvailableServicesConfig = z.infer<typeof availableServicesSchema>;
+
 export const SITE_CONTENT_SCHEMAS: Record<string, z.ZodType<unknown>> = {
   "homepage.content": homepageContentSchema,
   "homepage.company": companyContentSchema,
@@ -197,4 +204,6 @@ export const SITE_CONTENT_SCHEMAS: Record<string, z.ZodType<unknown>> = {
   "pages.contact": contactPageContentSchema,
   "pages.faq": faqPageContentSchema,
   "pages.terms": termsPageContentSchema,
+  "system.services": availableServicesSchema,
 };
+

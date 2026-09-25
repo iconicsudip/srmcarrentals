@@ -76,15 +76,13 @@ function FaqItem({
       >
         <span className="text-sm font-bold text-white pr-4">{faq.question}</span>
         <ChevronDown
-          className={`size-4 shrink-0 text-orange-400 transition-transform duration-200 ${
-            isOpen ? "rotate-180" : ""
-          }`}
+          className={`size-4 shrink-0 text-orange-400 transition-transform duration-200 ${isOpen ? "rotate-180" : ""
+            }`}
         />
       </button>
       <div
-        className={`grid transition-all duration-200 ease-in-out ${
-          isOpen ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
-        }`}
+        className={`grid transition-all duration-200 ease-in-out ${isOpen ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
+          }`}
       >
         <div className="overflow-hidden">
           <p className="border-t border-white/5 px-5 pb-5 pt-3 text-xs leading-relaxed text-white/60">
@@ -96,8 +94,15 @@ function FaqItem({
   );
 }
 
-export function FaqSection({ data }: { data?: FaqPageContent }) {
+export function FaqSection({
+  data,
+  phone = "+91 9414551250",
+}: {
+  data?: FaqPageContent;
+  phone?: string;
+}) {
   const [openId, setOpenId] = React.useState<string | null>("what-is-srm");
+  const whatsappNumber = phone.replace(/[^0-9]/g, "");
 
   const badge = data?.badge || "FAQ";
   const title = data?.title || "FREQUENTLY ASKED QUESTIONS.";
@@ -171,7 +176,7 @@ export function FaqSection({ data }: { data?: FaqPageContent }) {
 
           <div className="flex flex-wrap items-center gap-2.5">
             <a
-              href="https://wa.me/919414551250?text=Hello%20SRM%20Car%20Rentals!%20I%20have%20a%20question%20about%20booking."
+              href={`https://wa.me/${whatsappNumber}?text=${encodeURIComponent("Hello SRM Car Rentals! I have a question about booking.")}`}
               target="_blank"
               rel="noreferrer"
               className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-4 py-2 text-xs font-bold text-white transition-all hover:bg-emerald-500"
@@ -179,10 +184,10 @@ export function FaqSection({ data }: { data?: FaqPageContent }) {
               <MessageSquare className="size-3.5" /> WhatsApp Desk
             </a>
             <a
-              href="tel:+919414551250"
+              href={`tel:${phone.replace(/\s/g, "")}`}
               className="inline-flex items-center gap-1.5 rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold text-white hover:bg-white/10"
             >
-              <Phone className="size-3.5 text-orange-400" /> +91 9414551250
+              <Phone className="size-3.5 text-orange-400" /> {phone}
             </a>
           </div>
         </div>

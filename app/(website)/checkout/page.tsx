@@ -143,7 +143,7 @@ export default function CheckoutPage() {
           setFormSettings(data);
         }
       })
-      .catch(() => {});
+      .catch(() => { });
     return () => {
       cancelled = true;
     };
@@ -466,11 +466,10 @@ export default function CheckoutPage() {
                           setAuthMode("GUEST");
                           setLoginError(null);
                         }}
-                        className={`flex items-center justify-center gap-2 rounded-xl py-2.5 text-xs font-bold transition-all ${
-                          authMode === "GUEST"
-                            ? "bg-orange-500 text-white shadow-lg shadow-orange-500/25"
-                            : "text-white/60 hover:text-white hover:bg-white/5"
-                        }`}
+                        className={`flex items-center justify-center gap-2 rounded-xl py-2.5 text-xs font-bold transition-all ${authMode === "GUEST"
+                          ? "bg-orange-500 text-white shadow-lg shadow-orange-500/25"
+                          : "text-white/60 hover:text-white hover:bg-white/5"
+                          }`}
                       >
                         <User className="size-4" />
                         <span>Guest Checkout</span>
@@ -482,11 +481,10 @@ export default function CheckoutPage() {
                       <button
                         type="button"
                         onClick={() => setAuthMode("LOGIN")}
-                        className={`flex items-center justify-center gap-2 rounded-xl py-2.5 text-xs font-bold transition-all ${
-                          authMode === "LOGIN"
-                            ? "bg-orange-500 text-white shadow-lg shadow-orange-500/25"
-                            : "text-white/60 hover:text-white hover:bg-white/5"
-                        }`}
+                        className={`flex items-center justify-center gap-2 rounded-xl py-2.5 text-xs font-bold transition-all ${authMode === "LOGIN"
+                          ? "bg-orange-500 text-white shadow-lg shadow-orange-500/25"
+                          : "text-white/60 hover:text-white hover:bg-white/5"
+                          }`}
                       >
                         <LogIn className="size-4" />
                         <span>Login to Checkout</span>
@@ -628,13 +626,12 @@ export default function CheckoutPage() {
                                   value={val}
                                   onChange={(e) => handleFieldChange(field, e.target.value)}
                                   onBlur={() => handleFieldChange(field, val)}
-                                  className={`rounded-xl border bg-black/40 text-xs text-white placeholder:text-white/30 transition-all ${
-                                    hasError
-                                      ? "border-red-500/80 focus-visible:ring-red-500/30"
-                                      : isSuccess
+                                  className={`rounded-xl border bg-black/40 text-xs text-white placeholder:text-white/30 transition-all ${hasError
+                                    ? "border-red-500/80 focus-visible:ring-red-500/30"
+                                    : isSuccess
                                       ? "border-emerald-500/60 focus-visible:ring-emerald-500/30"
                                       : "border-white/10 hover:border-white/20"
-                                  }`}
+                                    }`}
                                 />
                               </div>
 
@@ -702,9 +699,8 @@ export default function CheckoutPage() {
                                     e.target.value.toUpperCase(),
                                   )
                                 }
-                                className={`mt-1 rounded-xl border bg-black/60 text-xs text-white uppercase ${
-                                  errors["gstNumber"] ? "border-red-500" : "border-white/10"
-                                }`}
+                                className={`mt-1 rounded-xl border bg-black/60 text-xs text-white uppercase ${errors["gstNumber"] ? "border-red-500" : "border-white/10"
+                                  }`}
                               />
                               {errors["gstNumber"] && (
                                 <p className="mt-1 text-[10px] text-red-400">{errors["gstNumber"]}</p>
@@ -814,11 +810,10 @@ export default function CheckoutPage() {
                 <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
                   {/* Option A: Pay on Pickup (Recommended) */}
                   <label
-                    className={`relative flex cursor-pointer flex-col justify-between rounded-2xl border p-4 transition-all ${
-                      paymentMethod === "PICKUP"
-                        ? "border-orange-500 bg-orange-500/10 shadow-lg shadow-orange-500/10"
-                        : "border-white/10 bg-black/30 hover:border-white/20"
-                    }`}
+                    className={`relative flex cursor-pointer flex-col justify-between rounded-2xl border p-4 transition-all ${paymentMethod === "PICKUP"
+                      ? "border-orange-500 bg-orange-500/10 shadow-lg shadow-orange-500/10"
+                      : "border-white/10 bg-black/30 hover:border-white/20"
+                      }`}
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex items-center gap-2">
@@ -843,11 +838,10 @@ export default function CheckoutPage() {
 
                   {/* Option B: Online Advance */}
                   <label
-                    className={`relative flex cursor-pointer flex-col justify-between rounded-2xl border p-4 transition-all ${
-                      paymentMethod === "ONLINE"
-                        ? "border-orange-500 bg-orange-500/10 shadow-lg shadow-orange-500/10"
-                        : "border-white/10 bg-black/30 hover:border-white/20"
-                    }`}
+                    className={`relative flex cursor-pointer flex-col justify-between rounded-2xl border p-4 transition-all ${paymentMethod === "ONLINE"
+                      ? "border-orange-500 bg-orange-500/10 shadow-lg shadow-orange-500/10"
+                      : "border-white/10 bg-black/30 hover:border-white/20"
+                      }`}
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex items-center gap-2">

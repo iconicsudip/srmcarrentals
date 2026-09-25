@@ -1,7 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { Loader2, Save } from "lucide-react";
+import Link from "next/link";
+import { Car, CarFront, Compass, Layers, Loader2, Save } from "lucide-react";
 import { toast } from "sonner";
 
 import { apiFetch } from "@/lib/api-client";
@@ -15,6 +16,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 export default function GeneralSettingsPage() {
   const [loading, setLoading] = React.useState(true);
   const [saving, setSaving] = React.useState(false);
+
+  const [services, setServices] = React.useState({
+    cars: true,
+    taxi: true,
+    tours: true,
+  });
 
   const [form, setForm] = React.useState({
     siteName: "SRM Car Rentals",
@@ -33,14 +40,23 @@ export default function GeneralSettingsPage() {
 
   React.useEffect(() => {
     let cancelled = false;
-    apiFetch<Record<string, any>>("/settings/system.general", { skipAuthRedirect: true })
-      .then((data) => {
-        if (!cancelled && data && typeof data === "object") {
-          setForm((prev) => ({ ...prev, ...data }));
+    Promise.all([
+      apiFetch<Record<string, any>>("/settings/system.general", { skipAuthRedirect: true }).catch(() => null),
+      apiFetch<Record<string, any>>("/settings/system.services", { skipAuthRedirect: true }).catch(() => null),
+    ])
+      .then(([generalData, servicesData]) => {
+        if (!cancelled) {
+          if (generalData && typeof generalData === "object") {
+            setForm((prev) => ({ ...prev, ...generalData }));
+          }
+          if (servicesData && typeof servicesData === "object") {
+            setServices({
+              cars: servicesData.cars ?? true,
+              taxi: servicesData.taxi ?? true,
+              tours: servicesData.tours ?? true,
+            });
+          }
         }
-      })
-      .catch(() => {
-        // Fall back to initial defaults if not saved yet
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
