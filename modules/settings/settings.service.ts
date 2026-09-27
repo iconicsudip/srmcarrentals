@@ -3,8 +3,8 @@ import type { AvailableServicesConfig } from "./site-content.schemas";
 
 export const DEFAULT_AVAILABLE_SERVICES: AvailableServicesConfig = {
   cars: true,
-  taxi: true,
-  tours: true,
+  taxi: false,
+  tours: false,
 };
 
 function groupOf(key: string): string {
@@ -35,8 +35,8 @@ export async function getAvailableServices(): Promise<AvailableServicesConfig> {
   const row = await getSetting<Partial<AvailableServicesConfig>>("system.services");
   return {
     cars: row?.cars ?? true,
-    taxi: row?.taxi ?? true,
-    tours: row?.tours ?? true,
+    taxi: row?.taxi ?? false,
+    tours: row?.tours ?? false,
   };
 }
 
