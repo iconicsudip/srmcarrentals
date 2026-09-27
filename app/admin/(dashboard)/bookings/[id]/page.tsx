@@ -129,6 +129,7 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
                 {Number(s.extraKmCharge) > 0 && <Row label="Extra KM Charge" value={s.extraKmCharge} />}
                 {Number(s.airportPickupCharge) > 0 && <Row label="Airport Pickup Charge" value={s.airportPickupCharge} />}
                 {Number(s.airportDropCharge) > 0 && <Row label="Airport Drop Charge" value={s.airportDropCharge} />}
+                {Number((s as any).locationDropCharge) > 0 && <Row label="Drop Location Charge" value={(s as any).locationDropCharge} />}
                 {Number(s.seasonalAdjustment) !== 0 && <Row label="Seasonal Adjustment" value={s.seasonalAdjustment} />}
                 {Number(s.servicesTotal) > 0 && <Row label="Extra Services" value={s.servicesTotal} />}
                 {Number(s.insuranceCharge) > 0 && <Row label="Insurance" value={s.insuranceCharge} />}

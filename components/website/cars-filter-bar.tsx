@@ -384,11 +384,15 @@ export function CarsFilterBar({
                 <option value={ALL} className="bg-neutral-900 text-white">
                   All Locations (Any Branch)
                 </option>
-                {locations.map((loc) => (
-                  <option key={loc.id} value={loc.id} className="bg-neutral-900 text-white">
-                    {loc.name} {loc.city ? `(${loc.city})` : ""}
-                  </option>
-                ))}
+                {locations.map((loc) => {
+                  const charge = Number((loc as any).dropCharge ?? 0);
+                  const priceLabel = charge > 0 ? ` — ₹${charge.toLocaleString("en-IN")} Drop` : "";
+                  return (
+                    <option key={loc.id} value={loc.id} className="bg-neutral-900 text-white">
+                      {loc.name} {loc.city ? `(${loc.city})` : ""}{priceLabel}
+                    </option>
+                  );
+                })}
               </select>
               <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 size-3.5 text-white/40" />
             </div>

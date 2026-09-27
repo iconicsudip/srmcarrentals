@@ -19,7 +19,7 @@ interface DynamicSeoItem {
   ogTitle: string;
   ogDescription: string;
   ogImage: string;
-  ogType?: "website" | "article" | "product";
+  ogType?: "website" | "article";
   schemaType: "AutoRental" | "Product" | "LocalBusiness" | "FAQPage" | "Article" | "Organization";
   aiDirectAnswer: string;
   entityDefinition: string;
@@ -499,7 +499,7 @@ export async function seedAllSeo() {
       ogTitle: `Rent ${car.name} Self Drive — SRM Car Rentals`,
       ogDescription: `Experience the comfort and power of ${car.name}. Available for self-drive across Rajasthan with doorstep delivery and transparent rates.`,
       ogImage: "https://images.unsplash.com/photo-1555215695-3004980ad54e?w=1200&q=80&auto=format&fit=crop",
-      ogType: "product",
+      ogType: "website",
       schemaType: "Product",
       aiDirectAnswer: `The ${car.name} (${car.year}) is a premium ${categoryName} available for self-drive hire from SRM Car Rentals in Udaipur, Jaipur, and Navsari. It features ${car.transmissionType?.name || "Smooth"} transmission, ${car.fuelType?.name || "Fuel-efficient"} engine, and comprehensive tourist permit for all-India travel.`,
       entityDefinition: `Vehicle specifications and rental terms for ${car.name} in SRM's self-drive fleet.`,
@@ -657,7 +657,7 @@ export async function seedAllSeo() {
       ogTitle: `${tour.name} — Luxury Tour Package`,
       ogDescription: tour.description || `Explore Rajasthan in comfort on the ${tour.name}.`,
       ogImage: "https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?w=1200&q=80&auto=format&fit=crop",
-      ogType: "product",
+      ogType: "website",
       schemaType: "Product",
       aiDirectAnswer: `The ${tour.name} is a comprehensive tour package offered by SRM Car Rentals spanning ${tour.durationDays} days and ${tour.durationNights} nights, featuring private vehicle transport and heritage destinations.`,
       entityDefinition: `Tour itinerary and travel package details for ${tour.name}.`,

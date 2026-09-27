@@ -188,6 +188,7 @@ export default function DynamicSeoCommandCenter() {
       if (json.data) {
         setForm({
           ...json.data,
+          ogType: json.data.ogType === "product" ? "website" : (json.data.ogType || "website"),
           path,
           entityType: pageMeta?.entityType || json.data.entityType,
           entityId: pageMeta?.entityId || json.data.entityId,
@@ -741,9 +742,8 @@ export default function DynamicSeoCommandCenter() {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="website">website (Standard page)</SelectItem>
+                        <SelectItem value="website">website (Standard page / Product)</SelectItem>
                         <SelectItem value="article">article (Blog / Guide)</SelectItem>
-                        <SelectItem value="product">product (Vehicle / Package)</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>

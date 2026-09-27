@@ -32,6 +32,7 @@ async function main() {
       country: "India",
       latitude: 26.9124,
       longitude: 75.7873,
+      dropCharge: 500,
       status: "ACTIVE",
     },
   });
@@ -47,6 +48,7 @@ async function main() {
       country: "India",
       latitude: 20.9467,
       longitude: 72.952,
+      dropCharge: 800,
       status: "ACTIVE",
     },
   });

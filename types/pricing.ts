@@ -80,6 +80,7 @@ export interface PricingCalculateResponse {
   duration: PricingDuration;
   rental: PricingRentalBreakdown;
   airport: PricingAirportBreakdown;
+  locationDropCharge: number;
   seasonal: PricingSeasonalBreakdown;
   services: PricingServiceLineItem[];
   insurance: PricingInsuranceBreakdown | null;
@@ -108,6 +109,7 @@ export interface BookingPricingSnapshot {
   extraKmCharge: number;
   airportPickupCharge: number;
   airportDropCharge: number;
+  locationDropCharge: number;
   seasonalAdjustment: number;
   servicesTotal: number;
   insuranceCharge: number;

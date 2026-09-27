@@ -32,9 +32,10 @@ export interface BookingEngineProps {
   carImage?: string;
   dailyPrice: number;
   hourlyPrice?: number | null;
+  fuelType?: string;
   includedKmPerDay: number;
   phone: string;
-  locations: { id: string; name: string; city: string; state: string }[];
+  locations: { id: string; name: string; city: string; state: string; dropCharge?: any }[];
   airports: { id: string; name: string; code: string; city: string }[];
   insurances: { id: string; name: string; dailyPrice?: any; fixedPrice?: any; description?: string | null }[];
   extraServices: { id: string; name: string; price: any; pricingType: string; description?: string | null }[];
@@ -102,6 +103,7 @@ export function BookingEngine({
   carImage,
   dailyPrice,
   hourlyPrice,
+  fuelType,
   includedKmPerDay,
   phone,
   locations,
@@ -180,6 +182,11 @@ export function BookingEngine({
     }
     return locations[0]?.id ?? "";
   });
+  const [differentDropLocation, setDifferentDropLocation] = React.useState(false);
+  const [selectedDropLocationId, setSelectedDropLocationId] = React.useState<string>(() => {
+    return locations[0]?.id ?? "";
+  });
+  const effectiveDropLocationId = differentDropLocation ? selectedDropLocationId : selectedLocationId;
   const [selectedAirportId, setSelectedAirportId] = React.useState<string>(airports[0]?.id ?? "");
 
   // Distance estimation
@@ -261,7 +268,7 @@ export function BookingEngine({
           pickupDateTime: new Date(pickup).toISOString(),
           dropDateTime: new Date(drop).toISOString(),
           pickupLocationId: deliveryType === "BRANCH" ? selectedLocationId : undefined,
-          dropLocationId: deliveryType === "BRANCH" ? selectedLocationId : undefined,
+          dropLocationId: deliveryType === "BRANCH" ? effectiveDropLocationId : undefined,
           pickupIsAirport: deliveryType === "AIRPORT",
           dropIsAirport: deliveryType === "AIRPORT",
           pickupAirportId: deliveryType === "AIRPORT" ? selectedAirportId : undefined,
@@ -285,6 +292,7 @@ export function BookingEngine({
     drop,
     deliveryType,
     selectedLocationId,
+    effectiveDropLocationId,
     selectedAirportId,
     estimatedKm,
     selectedInsuranceId,
@@ -325,6 +333,7 @@ export function BookingEngine({
     }
 
     const selectedBranch = locations.find((l) => l.id === selectedLocationId);
+    const dropBranch = locations.find((l) => l.id === effectiveDropLocationId);
     const selectedAirport = airports.find((a) => a.id === selectedAirportId);
     const selectedInsurance = insurances.find((i) => i.id === selectedInsuranceId);
     const chosenExtras = extraServices.filter((e) => selectedExtraIds.includes(e.id));
@@ -332,6 +341,17 @@ export function BookingEngine({
     const unitPrice = rentalMode === "HOURLY" ? Number(hourlyPrice || 500) : dailyPrice;
     const rawTotal = pricingResult?.total;
     const finalTotal = Number.isFinite(rawTotal) ? (rawTotal as number) : unitPrice;
+
+    const locDisplayName =
+      deliveryType === "BRANCH"
+        ? differentDropLocation && dropBranch && dropBranch.id !== selectedBranch?.id
+          ? `${selectedBranch?.name ?? "Branch"} → ${dropBranch.name}`
+          : selectedBranch
+            ? `${selectedBranch.name} (${selectedBranch.city})`
+            : "City Branch"
+        : selectedAirport
+          ? `${selectedAirport.name} (${selectedAirport.code})`
+          : "Airport Terminal";
 
     addToCart({
       carId,
@@ -347,16 +367,10 @@ export function BookingEngine({
       durationHours: duration.hours,
       durationDays: duration.days,
       deliveryType,
-      locationName:
-        deliveryType === "BRANCH"
-          ? selectedBranch
-            ? `${selectedBranch.name} (${selectedBranch.city})`
-            : "City Branch"
-          : selectedAirport
-            ? `${selectedAirport.name} (${selectedAirport.code})`
-            : "Airport Terminal",
+      locationName: locDisplayName,
       pickupLocationId: deliveryType === "BRANCH" ? selectedLocationId : undefined,
-      dropLocationId: deliveryType === "BRANCH" ? selectedLocationId : undefined,
+      dropLocationId: deliveryType === "BRANCH" ? effectiveDropLocationId : undefined,
+      locationDropCharge: pricingResult?.locationDropCharge ?? 0,
       pickupAirportId: deliveryType === "AIRPORT" ? selectedAirportId : undefined,
       dropAirportId: deliveryType === "AIRPORT" ? selectedAirportId : undefined,
       insurance: selectedInsurance
@@ -378,6 +392,11 @@ export function BookingEngine({
         (rentalMode === "HOURLY" ? Number(hourlyPrice || 500) : dailyPrice),
       tax: pricingResult?.totalTax ?? 0,
       total: finalTotal,
+      fuelType: fuelType || "Diesel",
+      includedKm: pricingResult?.rental?.includedKm ?? (duration.days || 1) * 240,
+      extraKmPrice: pricingResult?.rental?.extraKmPrice ?? 10,
+      securityDeposit: 5000,
+      city: selectedBranch?.city ?? "Udaipur",
     });
 
     toast.success(`${carName} added to your cart!`);
@@ -506,19 +525,85 @@ export function BookingEngine({
 
         {/* Dropdown for Branch or Airport */}
         {deliveryType === "BRANCH" ? (
-          <div>
-            <Label className="text-xs text-white/60">Select Branch Office</Label>
-            <select
-              value={selectedLocationId}
-              onChange={(e) => setSelectedLocationId(e.target.value)}
-              className="mt-1 w-full rounded-xl border border-white/10 bg-black/50 p-2.5 text-xs text-white outline-none focus:border-orange-500"
-            >
-              {locations.map((loc) => (
-                <option key={loc.id} value={loc.id} className="bg-neutral-900 text-white">
-                  {loc.name} ({loc.city})
-                </option>
-              ))}
-            </select>
+          <div className="space-y-3">
+            <div>
+              <div className="flex items-center justify-between">
+                <Label className="text-xs text-white/60">
+                  {differentDropLocation ? "Pickup Branch Office" : "Branch Office (Pickup & Drop)"}
+                </Label>
+                {!differentDropLocation && (
+                  <span className={`text-[11px] font-semibold ${Number(locations.find((l) => l.id === selectedLocationId)?.dropCharge ?? 0) > 0 ? "text-orange-400" : "text-emerald-400"}`}>
+                    {Number(locations.find((l) => l.id === selectedLocationId)?.dropCharge ?? 0) > 0
+                      ? `Drop Fee: ₹${Number(locations.find((l) => l.id === selectedLocationId)?.dropCharge).toLocaleString("en-IN")}`
+                      : "Free Drop (₹0)"}
+                  </span>
+                )}
+              </div>
+              <select
+                value={selectedLocationId}
+                onChange={(e) => {
+                  setSelectedLocationId(e.target.value);
+                  if (!differentDropLocation) {
+                    setSelectedDropLocationId(e.target.value);
+                  }
+                }}
+                className="mt-1 w-full rounded-xl border border-white/10 bg-black/50 p-2.5 text-xs text-white outline-none focus:border-orange-500 cursor-pointer"
+              >
+                {locations.map((loc) => {
+                  const charge = Number(loc.dropCharge ?? 0);
+                  const priceLabel = charge > 0 ? ` — ₹${charge.toLocaleString("en-IN")} Drop Fee` : " — Free Drop (₹0)";
+                  return (
+                    <option key={loc.id} value={loc.id} className="bg-neutral-900 text-white">
+                      {loc.name} ({loc.city}){priceLabel}
+                    </option>
+                  );
+                })}
+              </select>
+            </div>
+
+            <label className="flex items-center gap-2 cursor-pointer text-xs text-white/70 hover:text-white select-none">
+              <input
+                type="checkbox"
+                checked={differentDropLocation}
+                onChange={(e) => {
+                  const checked = e.target.checked;
+                  setDifferentDropLocation(checked);
+                  if (!checked) {
+                    setSelectedDropLocationId(selectedLocationId);
+                  }
+                }}
+                className="rounded border-white/20 bg-black/40 accent-orange-500"
+              />
+              <span>Drop-off at a different branch office</span>
+            </label>
+
+            {differentDropLocation && (
+              <div>
+                <div className="flex items-center justify-between">
+                  <Label className="text-xs text-white/60">Drop-off Branch Office</Label>
+                  <span className={`text-[11px] font-semibold ${Number(locations.find((l) => l.id === selectedDropLocationId)?.dropCharge ?? 0) > 0 ? "text-orange-400" : "text-emerald-400"}`}>
+                    {Number(locations.find((l) => l.id === selectedDropLocationId)?.dropCharge ?? 0) > 0
+                      ? `Drop Fee: ₹${Number(locations.find((l) => l.id === selectedDropLocationId)?.dropCharge).toLocaleString("en-IN")}`
+                      : "Free Drop (₹0)"}
+                  </span>
+                </div>
+                <select
+                  value={selectedDropLocationId}
+                  onChange={(e) => setSelectedDropLocationId(e.target.value)}
+                  className="mt-1 w-full rounded-xl border border-white/10 bg-black/50 p-2.5 text-xs text-white outline-none focus:border-orange-500 cursor-pointer"
+                >
+                  {locations.map((loc) => {
+                    const charge = Number(loc.dropCharge ?? 0);
+                    const priceLabel = charge > 0 ? ` — ₹${charge.toLocaleString("en-IN")} Drop Fee` : " — Free Drop (₹0)";
+                    return (
+                      <option key={loc.id} value={loc.id} className="bg-neutral-900 text-white">
+                        {loc.name} ({loc.city}){priceLabel}
+                      </option>
+                    );
+                  })}
+                </select>
+              </div>
+            )}
           </div>
         ) : (
           <div>
@@ -674,6 +759,13 @@ export function BookingEngine({
                 <div className="flex justify-between text-white/70">
                   <span>Airport Delivery Fee</span>
                   <span>{formatInr(pricingResult.airport.pickupCharge + pricingResult.airport.dropCharge)}</span>
+                </div>
+              )}
+
+              {pricingResult.locationDropCharge > 0 && (
+                <div className="flex justify-between text-white/70">
+                  <span>Drop Location Fee</span>
+                  <span>{formatInr(pricingResult.locationDropCharge)}</span>
                 </div>
               )}
 

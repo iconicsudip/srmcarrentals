@@ -669,6 +669,7 @@ model Location {
   latitude        Decimal  @db.Decimal(9, 6)
   longitude       Decimal  @db.Decimal(9, 6)
   serviceRadiusKm Decimal? @db.Decimal(6, 2)
+  dropCharge      Decimal  @default(0) @db.Decimal(10, 2)
   status          Status   @default(ACTIVE)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
@@ -874,6 +875,7 @@ model BookingPricingSnapshot {
 
   airportPickupCharge Decimal @db.Decimal(10, 2) @default(0)
   airportDropCharge   Decimal @db.Decimal(10, 2) @default(0)
+  locationDropCharge  Decimal @db.Decimal(10, 2) @default(0)
   seasonalAdjustment  Decimal @db.Decimal(10, 2) @default(0)
   servicesTotal       Decimal @db.Decimal(10, 2) @default(0)
   insuranceCharge     Decimal @db.Decimal(10, 2) @default(0)

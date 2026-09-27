@@ -520,7 +520,10 @@ export function TripSchedulePicker({
   const durationLabel = React.useMemo(() => {
     if (totalHours <= 0) return "Invalid range";
     if (totalDays > 0) {
-      return remHours > 0 ? `${totalDays}d ${remHours}h (${totalHours} hrs)` : `${totalDays} Day${totalDays > 1 ? "s" : ""} (${totalHours} hrs)`;
+      if (remHours > 0) {
+        return `${totalDays}d ${remHours}h (${totalHours}h)`;
+      }
+      return `${totalDays} Day${totalDays > 1 ? "s" : ""} (${totalHours}h)`;
     }
     return `${totalHours} Hour${totalHours > 1 ? "s" : ""}`;
   }, [totalHours, totalDays, remHours]);
@@ -595,21 +598,25 @@ export function TripSchedulePicker({
         <button
           type="button"
           onClick={() => setOpen((o) => !o)}
-          className={`flex w-full items-center justify-between gap-2 rounded-xl border px-3 py-2 text-left text-xs transition-all ${
+          className={`flex h-11 sm:h-12 w-full items-center justify-between gap-2.5 rounded-xl border px-3 sm:px-4 text-left text-xs sm:text-sm transition-all cursor-pointer ${
             open
-              ? "border-orange-500 bg-orange-500/10 shadow-lg shadow-orange-500/15"
-              : "border-white/10 bg-black/50 hover:border-white/20 hover:bg-white/5"
+              ? "border-orange-500 bg-orange-500/10 shadow-lg shadow-orange-500/15 ring-1 ring-orange-500/50"
+              : "border-white/10 bg-white/5 hover:border-orange-500/40 hover:bg-white/8 text-white"
           }`}
         >
-          <div className="flex items-center gap-2 min-w-0">
+          <div className="flex items-center gap-2.5 min-w-0">
             <Calendar className="size-4 shrink-0 text-orange-400" />
-            <div className="min-w-0">
-              <div className="truncate text-xs font-semibold text-white">
-                {pickupDispDate} ({pickupDispTime}) → {dropDispDate} ({dropDispTime})
-              </div>
+            <div className="min-w-0 flex items-center gap-1.5 sm:gap-2">
+              <span className="truncate text-xs sm:text-sm font-semibold text-white">
+                {pickupDispDate} <span className="text-white/60 font-normal">({pickupDispTime})</span>
+              </span>
+              <span className="text-orange-400 text-xs shrink-0">→</span>
+              <span className="truncate text-xs sm:text-sm font-semibold text-white">
+                {dropDispDate} <span className="text-white/60 font-normal">({dropDispTime})</span>
+              </span>
             </div>
           </div>
-          <span className="shrink-0 rounded-md bg-orange-500/20 px-1.5 py-0.5 text-[10px] font-bold text-orange-400">
+          <span className="shrink-0 rounded-lg border border-orange-500/30 bg-orange-500/15 px-2.5 py-1 text-[11px] font-bold text-orange-400 whitespace-nowrap">
             {durationLabel}
           </span>
         </button>
@@ -623,53 +630,53 @@ export function TripSchedulePicker({
           }`}
         >
           {/* Header */}
-          <div className="flex items-center justify-between border-b border-white/8 pb-3">
-            <div className="flex items-center gap-2">
-              <span className="flex size-6 items-center justify-center rounded-lg bg-orange-500/15 text-orange-400">
+          <div className="flex items-center justify-between gap-2 border-b border-white/10 pb-3">
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-orange-500/15 text-orange-400">
                 <Calendar className="size-3.5" />
               </span>
-              <span className="text-xs font-black uppercase tracking-wider text-white">
-                {label ?? (rentalMode === "HOURLY" ? "Hourly Rental Schedule" : "24h Daily Trip Schedule")}
+              <span className="truncate text-xs font-bold uppercase tracking-wider text-white">
+                {label ?? (rentalMode === "HOURLY" ? "Hourly Rental" : "Trip Schedule")}
               </span>
             </div>
-            <span className="rounded-full border border-orange-500/30 bg-orange-500/15 px-2.5 py-0.5 text-[11px] font-bold text-orange-400">
+            <span className="shrink-0 rounded-full border border-orange-500/30 bg-orange-500/15 px-2.5 py-0.5 text-[11px] font-bold text-orange-400 whitespace-nowrap">
               {durationLabel}
             </span>
           </div>
 
           {/* Dual Date Strip */}
-          <div className="mt-3.5 grid grid-cols-2 gap-3 divide-x divide-white/8">
+          <div className="mt-3.5 grid grid-cols-2 gap-3 divide-x divide-white/10">
             {/* Pickup */}
-            <div>
-              <span className="text-[10px] font-bold tracking-widest text-orange-400 uppercase">
-                Pickup Schedule
+            <div className="min-w-0">
+              <span className="text-[10px] font-bold tracking-wider text-orange-400 uppercase whitespace-nowrap block">
+                Pickup
               </span>
-              <div className="mt-1 text-sm font-black text-white">{pickupDispDate}</div>
+              <div className="mt-1 text-sm font-black text-white truncate">{pickupDispDate}</div>
               <div className="mt-0.5 flex items-center gap-1.5 text-xs text-white/60">
-                <Clock className="size-3 text-orange-400" />
-                <span>{pickupDispTime}</span>
+                <Clock className="size-3 text-orange-400 shrink-0" />
+                <span className="truncate">{pickupDispTime}</span>
               </div>
             </div>
 
             {/* Drop */}
-            <div className="pl-3">
-              <span className="text-[10px] font-bold tracking-widest text-orange-400 uppercase">
-                Drop-off Schedule
+            <div className="pl-3 min-w-0">
+              <span className="text-[10px] font-bold tracking-wider text-orange-400 uppercase whitespace-nowrap block">
+                Drop-off
               </span>
-              <div className="mt-1 text-sm font-black text-white">{dropDispDate}</div>
+              <div className="mt-1 text-sm font-black text-white truncate">{dropDispDate}</div>
               <div className="mt-0.5 flex items-center gap-1.5 text-xs text-white/60">
-                <Clock className="size-3 text-orange-400" />
-                <span>{dropDispTime}</span>
+                <Clock className="size-3 text-orange-400 shrink-0" />
+                <span className="truncate">{dropDispTime}</span>
               </div>
             </div>
           </div>
 
           {/* Footer note */}
-          <div className="mt-3 flex items-center justify-between border-t border-white/8 pt-2.5 text-[10px] text-white/40">
-            <span>
+          <div className="mt-3 flex items-center justify-between gap-2 border-t border-white/10 pt-2.5 text-[10px] text-white/40">
+            <span className="truncate">
               {rentalMode === "HOURLY" ? "Flexible hourly package" : "Min 24 hrs • Max 10 days"}
             </span>
-            <span className="flex items-center gap-1 font-semibold text-orange-400 group-hover:text-orange-300">
+            <span className="shrink-0 flex items-center gap-1 font-semibold text-orange-400 group-hover:text-orange-300">
               Change dates & times <ArrowRight className="size-3" />
             </span>
           </div>

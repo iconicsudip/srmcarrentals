@@ -310,6 +310,13 @@ export default async function BookingConfirmationPage({ params }: BookingConfirm
                   </div>
                 )}
 
+                {pricing?.locationDropCharge != null && Number(pricing.locationDropCharge) > 0 && (
+                  <div className="flex justify-between text-white/70">
+                    <span>Drop Location Fee</span>
+                    <span>{formatInr(pricing.locationDropCharge)}</span>
+                  </div>
+                )}
+
                 {pricing?.insuranceCharge != null && Number(pricing.insuranceCharge) > 0 && (
                   <div className="flex justify-between text-white/70">
                     <span>Protection Plan</span>

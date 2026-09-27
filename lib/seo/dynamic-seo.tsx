@@ -12,6 +12,28 @@ export interface ResolvedSeo {
   };
 }
 
+const VALID_OG_TYPES = new Set<string>([
+  "website",
+  "article",
+  "book",
+  "profile",
+  "music.song",
+  "music.album",
+  "music.playlist",
+  "music.radio_station",
+  "video.movie",
+  "video.episode",
+  "video.tv_show",
+  "video.other",
+]);
+
+export function sanitizeOgType(type?: string): "website" | "article" | "book" | "profile" {
+  if (type && VALID_OG_TYPES.has(type)) {
+    return type as any;
+  }
+  return "website";
+}
+
 export async function getDynamicSeoForPath(path: string, fallback?: Metadata): Promise<ResolvedSeo> {
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://srmcarrentals.in";
   const canonicalUrl = `${appUrl}${path === "/" ? "" : path}`;
@@ -45,7 +67,7 @@ export async function getDynamicSeoForPath(path: string, fallback?: Metadata): P
           description: cfg.ogDescription || cfg.metaDescription || fallback?.description || undefined,
           url: cfg.canonicalUrl || canonicalUrl,
           images: cfg.ogImage ? [{ url: cfg.ogImage }] : undefined,
-          type: (cfg.ogType as any) || "website",
+          type: sanitizeOgType(cfg.ogType),
         },
         twitter: {
           card: (cfg.twitterCard as any) || "summary_large_image",

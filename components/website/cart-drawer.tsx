@@ -212,6 +212,11 @@ export function CartDrawer({ phone = "+91 9414551250" }: { phone?: string }) {
                         +{a.name}
                       </span>
                     ))}
+                    {(item.locationDropCharge ?? 0) > 0 && (
+                      <span className="rounded bg-orange-500/10 px-1.5 py-0.5 border border-orange-500/20 text-orange-400">
+                        +₹{Number(item.locationDropCharge).toLocaleString("en-IN")} Drop Fee
+                      </span>
+                    )}
                   </div>
                 )}
               </div>

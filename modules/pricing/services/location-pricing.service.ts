@@ -18,5 +18,7 @@ export async function resolveLocations(pickupLocationId?: string, dropLocationId
   if (pickupLocationId && !pickupLocation) throw new NotFoundError("Pickup location not found");
   if (dropLocationId && !dropLocation) throw new NotFoundError("Drop location not found");
 
-  return { pickupLocation, dropLocation };
+  const dropCharge = dropLocation?.dropCharge ? Number(dropLocation.dropCharge) : 0;
+
+  return { pickupLocation, dropLocation, dropCharge };
 }

@@ -11,6 +11,7 @@ const { createSchema, updateSchema } = namedLookupSchema({
   latitude: z.coerce.number().min(-90).max(90),
   longitude: z.coerce.number().min(-180).max(180),
   serviceRadiusKm: z.coerce.number().positive().optional(),
+  dropCharge: z.coerce.number().nonnegative().optional().default(0),
 });
 
 export const locationsCrud = createLookupCrud({

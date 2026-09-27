@@ -480,6 +480,7 @@ export default async function CarDetailPage({ params }: CarDetailPageProps) {
               carSlug={car.slug}
               carName={car.name}
               carImage={car.images[0]?.url}
+              fuelType={car.fuelType?.name || "Diesel"}
               dailyPrice={Number(car.pricing?.dailyPrice ?? 1500)}
               hourlyPrice={car.pricing?.hourlyPrice ? Number(car.pricing.hourlyPrice) : null}
               includedKmPerDay={car.pricing?.includedKmPerDay ?? 300}

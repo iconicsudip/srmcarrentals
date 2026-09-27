@@ -166,6 +166,7 @@ export async function createBooking(input: CreateBookingInput) {
         extraKmCharge: pricing.rental.extraKmCharge,
         airportPickupCharge: pricing.airport.pickupCharge,
         airportDropCharge: pricing.airport.dropCharge,
+        locationDropCharge: pricing.locationDropCharge ?? 0,
         seasonalAdjustment: pricing.seasonal.adjustment,
         servicesTotal: pricing.services.reduce((sum, s) => sum + s.price, 0),
         insuranceCharge: pricing.insurance?.price ?? 0,

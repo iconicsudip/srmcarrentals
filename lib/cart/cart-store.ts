@@ -20,6 +20,7 @@ export interface CartItem {
   locationName?: string;
   pickupLocationId?: string;
   dropLocationId?: string;
+  locationDropCharge?: number;
   pickupAirportId?: string;
   dropAirportId?: string;
   insurance?: { id: string; name: string; price: number } | null;
@@ -30,6 +31,11 @@ export interface CartItem {
   tax: number;
   total: number;
   createdAt: number;
+  fuelType?: string;
+  includedKm?: number;
+  extraKmPrice?: number;
+  securityDeposit?: number;
+  city?: string;
 }
 
 const STORAGE_KEY = "srm_cart_items";
@@ -91,6 +97,13 @@ export function removeFromCart(id: string): void {
   saveCartItems(current.filter((c) => c.id !== id));
 }
 
+export function updateCartItem(id: string, updates: Partial<CartItem>): void {
+  const current = getCartItems();
+  saveCartItems(
+    current.map((item) => (item.id === id ? { ...item, ...updates } : item)),
+  );
+}
+
 export function clearCart(): void {
   saveCartItems([]);
 }
@@ -140,6 +153,7 @@ export function useCart() {
     openCart: () => setIsDrawerOpen(true),
     closeCart: () => setIsDrawerOpen(false),
     addItem: addToCart,
+    updateItem: updateCartItem,
     removeItem: removeFromCart,
     clear: clearCart,
   };

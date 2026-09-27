@@ -153,7 +153,8 @@ export async function calculatePricing(input: PricingCalculateDto): Promise<Pric
   if (!car) throw new NotFoundError("Car not found");
   if (!car.pricing) throw new BadRequestError("This car does not have pricing configured yet");
 
-  await resolveLocations(input.pickupLocationId, input.dropLocationId);
+  const { dropCharge: locationDropChargeRaw } = await resolveLocations(input.pickupLocationId, input.dropLocationId);
+  const locationDropCharge = input.dropIsAirport ? 0 : locationDropChargeRaw;
 
   // ---- 1. Resolve which rate card applies: Rental Package > Hourly > Daily ----
   let unitPrice = Number(car.pricing.dailyPrice);
@@ -255,6 +256,7 @@ export async function calculatePricing(input: PricingCalculateDto): Promise<Pric
       km.extraKmCharge +
       airport.pickupCharge +
       airport.dropCharge +
+      locationDropCharge +
       servicesTotal +
       (insurance?.price ?? 0),
   );
@@ -311,6 +313,7 @@ export async function calculatePricing(input: PricingCalculateDto): Promise<Pric
       extraKmCharge: km.extraKmCharge,
     },
     airport,
+    locationDropCharge,
     seasonal,
     services,
     insurance,

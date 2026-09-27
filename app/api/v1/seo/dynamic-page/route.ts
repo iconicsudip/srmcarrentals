@@ -20,7 +20,7 @@ export interface DynamicPageSeoPayload {
   ogTitle: string;
   ogDescription: string;
   ogImage: string;
-  ogType: string; // website, article, product
+  ogType: string; // website, article
   twitterCard: string; // summary_large_image, summary
   twitterCreator?: string;
 
@@ -141,6 +141,9 @@ export const GET = withErrorHandling(async (req) => {
 export const POST = withErrorHandling(async (req) => {
   await requirePermission("seo.manage");
   const body: DynamicPageSeoPayload = await req.json();
+  if (body.ogType === "product") {
+    body.ogType = "website";
+  }
 
   const path = body.path || "/";
   const settingKey = `seo.page.${encodeURIComponent(path)}`;
