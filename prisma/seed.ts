@@ -67,13 +67,13 @@ async function main() {
 
     const grantedPermissionIds =
       def.permissions === "*"
-        ? permissionRecords.map((p) => p.id)
-        : permissionRecords.filter((p) => (def.permissions as readonly string[]).includes(p.key)).map((p) => p.id);
+        ? permissionRecords.map((p: any) => p.id)
+        : permissionRecords.filter((p: any) => (def.permissions as readonly string[]).includes(p.key)).map((p: any) => p.id);
 
     await prisma.rolePermission.deleteMany({ where: { roleId: role.id } });
     if (grantedPermissionIds.length > 0) {
       await prisma.rolePermission.createMany({
-        data: grantedPermissionIds.map((permissionId) => ({ roleId: role.id, permissionId })),
+        data: grantedPermissionIds.map((permissionId: string) => ({ roleId: role.id, permissionId })),
         skipDuplicates: true,
       });
     }

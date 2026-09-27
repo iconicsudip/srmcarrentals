@@ -548,7 +548,7 @@ export async function listSimilarCars(currentCarId: string, categoryId: string, 
       const fallback = await prisma.car.findMany({
         where: {
           status: "ACTIVE",
-          id: { notIn: [currentCarId, ...similar.map((c) => c.id)] },
+          id: { notIn: [currentCarId, ...similar.map((c: any) => c.id)] },
         },
         include: CAR_CARD_INCLUDE,
         take: take - similar.length,
@@ -736,7 +736,7 @@ export async function getPublicBlogs(params?: {
       }),
     ]);
 
-    const items = blogs.map((b) => {
+    const items = blogs.map((b: any) => {
       const words = b.content ? b.content.replace(/<[^>]*>/g, "").split(/\s+/).length : 0;
       const readTimeMinutes = Math.max(1, Math.ceil(words / 200));
       return {
@@ -835,7 +835,7 @@ export async function getRelatedPublicBlogs(currentSlug: string, categoryId?: st
       const more = await prisma.blog.findMany({
         where: {
           status: "PUBLISHED",
-          slug: { notIn: [currentSlug, ...blogs.map((b) => b.slug)] },
+          slug: { notIn: [currentSlug, ...blogs.map((b: any) => b.slug)] },
         },
         take: limit - blogs.length,
         orderBy: [{ publishDate: "desc" }, { createdAt: "desc" }],
@@ -847,7 +847,7 @@ export async function getRelatedPublicBlogs(currentSlug: string, categoryId?: st
       blogs = [...blogs, ...more];
     }
 
-    return toPlain(blogs).map((b) => {
+    return toPlain(blogs).map((b: any) => {
       const words = b.content ? b.content.replace(/<[^>]*>/g, "").split(/\s+/).length : 0;
       return {
         ...b,

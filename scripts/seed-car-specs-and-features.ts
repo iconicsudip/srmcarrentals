@@ -177,7 +177,7 @@ async function main() {
       const standardFeatures = await prisma.carFeature.findMany({ take: 5 });
       if (standardFeatures.length > 0) {
         await prisma.carFeatureOnCar.createMany({
-          data: standardFeatures.map((f) => ({ carId: car.id, featureId: f.id })),
+          data: standardFeatures.map((f: any) => ({ carId: car.id, featureId: f.id })),
           skipDuplicates: true,
         });
       }

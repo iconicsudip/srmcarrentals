@@ -5,7 +5,8 @@
   "description": "SRM Car Rentals - Self-Drive Car Rental Platform & Admin Dashboard",
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "prisma generate && next build",
+    "postinstall": "prisma generate",
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
