@@ -1,5 +1,6 @@
+import Image from "next/image";
 import Link from "next/link";
-import { ArrowUp, ArrowUpRight, Camera, CarFront, Mail, MapPin, MessageCircle, Phone, Share2, Video } from "lucide-react";
+import { ArrowUp, ArrowUpRight, Camera, Mail, MapPin, MessageCircle, Phone, Share2, Video } from "lucide-react";
 
 import type { CompanyContent } from "@/modules/settings/site-content.schemas";
 
@@ -63,16 +64,12 @@ export function SiteFooter({ company }: { company: CompanyContent }) {
         {/* ── Link grid ── */}
         <div className="mt-16 grid grid-cols-2 gap-x-6 gap-y-12 lg:grid-cols-12">
           <div className="col-span-2 lg:col-span-4">
-            <Link href="/" className="inline-flex items-center gap-3">
-              <span className="flex size-11 rotate-3 items-center justify-center rounded-xl bg-gradient-to-br from-amber-300 via-orange-500 to-orange-600 text-white shadow-lg shadow-orange-500/30 ring-1 ring-white/30">
-                <CarFront className="size-5" />
-              </span>
-              <span>
-                <span className="block text-lg font-black tracking-tight">{company.name.toUpperCase()}</span>
-                {company.tagline && (
-                  <span className="block text-[10px] font-bold tracking-[0.25em] text-amber-300/80">{company.tagline.toUpperCase()}</span>
-                )}
-              </span>
+            <Link
+              href="/"
+              aria-label={`${company.name} — home`}
+              className="inline-flex items-center rounded-2xl bg-white px-4 py-2 shadow-xl shadow-black/30 ring-1 ring-amber-300/60"
+            >
+              <Image src="/images/srm-logo.webp" alt={company.name} width={477} height={199} className="h-14 w-auto" />
             </Link>
             {company.description && <p className="mt-5 max-w-sm text-sm leading-relaxed text-white/60">{company.description}</p>}
             {socials.length > 0 && (

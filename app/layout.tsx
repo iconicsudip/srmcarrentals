@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 
 import { Providers } from "@/components/providers";
+import { UpdatePrompt } from "@/components/update-prompt";
+import { getBuildId } from "@/lib/version/build-id";
 
 import "./globals.css";
 
@@ -20,6 +22,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" suppressHydrationWarning>
       <body className="antialiased">
         <Providers>{children}</Providers>
+        <UpdatePrompt buildId={getBuildId()} />
       </body>
     </html>
   );

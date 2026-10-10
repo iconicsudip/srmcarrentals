@@ -1,9 +1,10 @@
 "use client";
 
 import * as React from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { CarFront, Menu, Phone, ShoppingBag, UserCheck, X } from "lucide-react";
+import { Menu, Phone, ShoppingBag, UserCheck, X } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -58,16 +59,19 @@ export function SiteHeader({
       {/* Gold hairline */}
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-amber-400/70 to-transparent" />
       <div className={cn("mx-auto flex max-w-[1520px] items-center justify-between px-4 transition-[height] duration-300 sm:px-6 lg:px-8", scrolled ? "h-16" : "h-20")}>
-        <Link href="/" className="flex items-center gap-2.5">
-          <span className="relative flex size-10 rotate-3 items-center justify-center rounded-xl bg-gradient-to-br from-amber-300 via-orange-500 to-orange-600 text-white shadow-lg shadow-orange-500/30 ring-1 ring-white/30 transition-transform duration-300 hover:rotate-0">
-            <CarFront className="size-5" />
-          </span>
-          <span className="text-lg font-black tracking-tight text-white">
-            {companyName.split(" ")[0]?.toUpperCase()}
-            <span className="ml-1.5 text-xs font-semibold tracking-[0.2em] text-amber-300/80">
-              {companyName.split(" ").slice(1).join(" ").toUpperCase()}
-            </span>
-          </span>
+        <Link
+          href="/"
+          aria-label={`${companyName} — home`}
+          className="flex items-center rounded-xl bg-white px-2.5 py-1 shadow-lg shadow-black/30 ring-1 ring-amber-300/60 transition-transform duration-300 hover:scale-[1.03]"
+        >
+          <Image
+            src="/images/srm-logo.webp"
+            alt={companyName}
+            width={477}
+            height={199}
+            priority
+            className={cn("w-auto transition-[height] duration-300", scrolled ? "h-9" : "h-11")}
+          />
         </Link>
 
         <nav className="hidden items-center gap-1 rounded-full border border-white/10 bg-white/5 p-1 lg:flex">

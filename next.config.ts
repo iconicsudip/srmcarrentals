@@ -5,6 +5,7 @@ const nextConfig: NextConfig = {
   compress: true,
   poweredByHeader: false,
   experimental: {
+    authInterrupts: true,
     optimizePackageImports: ["lucide-react", "date-fns", "recharts", "@radix-ui/react-select"],
   },
   typescript: {
