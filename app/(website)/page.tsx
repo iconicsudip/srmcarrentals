@@ -83,7 +83,7 @@ export default async function HomePage() {
       <DynamicJsonLd path="/" />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
-      <HeroSection content={content.hero} locations={locations} services={services} />
+      <HeroSection content={content.hero} locations={locations} services={services} carCount={counts.carCount} />
       <TrustBadgeRow badges={content.trustBadges} />
       <CategoryCardsSection counts={counts} services={services} />
       {services.cars && <FleetSection cars={cars} categories={categories} totalCount={counts.carCount} />}

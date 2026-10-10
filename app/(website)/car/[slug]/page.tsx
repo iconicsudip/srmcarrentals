@@ -20,9 +20,10 @@ function DynamicFeatureIcon({ name, className }: { name?: string | null; classNa
 }
 
 import { Badge } from "@/components/ui/badge";
+import { getCarFallbackImage } from "@/lib/car-fallback-image";
 import { CarGallery } from "@/components/website/car-gallery";
 import { BookingEngine } from "@/components/website/booking-engine";
-import { MobileBookBar } from "@/components/website/mobile-book-bar";
+import { MobileBookBar, MobileQuickBook } from "@/components/website/mobile-book-bar";
 import { SimilarCarsCarousel } from "@/components/website/similar-cars-carousel";
 import {
   getCompanyContent,
@@ -202,7 +203,14 @@ export default async function CarDetailPage({ params }: CarDetailPageProps) {
           {/* LEFT COLUMN: Media, Specs, Features, Policies */}
           <div className="flex flex-col gap-8 lg:col-span-2">
             {/* Gallery */}
-            <CarGallery images={car.images} name={car.name} />
+            <CarGallery images={car.images} name={car.name} fallbackSrc={getCarFallbackImage(car.brand.name, car.category?.name)} />
+
+            {/* Phones: booking call-to-action right under the photo */}
+            <MobileQuickBook
+              carName={car.name}
+              price={`From ₹${Number(car.pricing?.dailyPrice ?? 1500).toLocaleString("en-IN")} / day`}
+              phone={company.phone}
+            />
 
             {/* Vehicle Title & Badges */}
             <div className="rounded-3xl border border-neutral-200/90 bg-white p-6 shadow-sm">

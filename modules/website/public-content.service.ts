@@ -25,6 +25,7 @@ const FALLBACK_HOMEPAGE: HomepageContent = {
     secondaryCtaLabel: "Explore Fleet",
     secondaryCtaHref: "/cars",
     backgroundImageUrl: "/images/hero-car-bg.jpg",
+    backgroundImages: [],
   },
   trustBadges: [
     { icon: "🛡️", label: "Zero Security Deposit Options" },

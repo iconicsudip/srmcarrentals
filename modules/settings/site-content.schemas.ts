@@ -20,6 +20,8 @@ export const homepageContentSchema = z.object({
     secondaryCtaLabel: z.string().default("Explore Fleet"),
     secondaryCtaHref: z.string().default("/cars"),
     backgroundImageUrl: z.string().optional().or(z.literal("")),
+    /** Extra slides for the hero carousel (the main background image is always slide 1). */
+    backgroundImages: z.array(z.string()).default([]),
   }),
   trustBadges: z.array(z.object({ icon: z.string().min(1), label: z.string().min(1) })).default([]),
   philosophy: z.object({

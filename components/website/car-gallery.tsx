@@ -8,10 +8,20 @@ import { Badge } from "@/components/ui/badge";
 interface CarGalleryProps {
   images: { url: string; altText: string | null }[];
   name: string;
+  /** Shown when the car has no photos, or a photo fails to load. */
+  fallbackSrc?: string;
 }
 
-export function CarGallery({ images, name }: CarGalleryProps) {
+export function CarGallery({ images: rawImages, name, fallbackSrc }: CarGalleryProps) {
   const [active, setActive] = React.useState(0);
+  const [failed, setFailed] = React.useState<Record<string, boolean>>({});
+
+  const images =
+    rawImages.length > 0
+      ? rawImages.map((img) => (failed[img.url] && fallbackSrc ? { ...img, url: fallbackSrc } : img))
+      : fallbackSrc
+        ? [{ url: fallbackSrc, altText: name }]
+        : [];
 
   if (images.length === 0) {
     return (
@@ -40,7 +50,8 @@ export function CarGallery({ images, name }: CarGalleryProps) {
           alt={activeImage!.altText ?? name}
           fill
           sizes="(max-width: 1024px) 100vw, 800px"
-          className="object-contain p-4 transition-transform duration-500 group-hover:scale-105"
+          className="object-cover transition-transform duration-500 group-hover:scale-105"
+          onError={() => setFailed((f) => ({ ...f, [rawImages[active]?.url ?? ""]: true }))}
           priority
         />
 

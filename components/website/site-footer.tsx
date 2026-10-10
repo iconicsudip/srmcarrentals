@@ -1,14 +1,14 @@
 import Link from "next/link";
-import { Camera, CarFront, Mail, MapPin, MessageCircle, Phone, Share2, Video } from "lucide-react";
+import { ArrowUp, ArrowUpRight, Camera, CarFront, Mail, MapPin, MessageCircle, Phone, Share2, Video } from "lucide-react";
 
 import type { CompanyContent } from "@/modules/settings/site-content.schemas";
 
 export function SiteFooter({ company }: { company: CompanyContent }) {
   const socials = [
-    { icon: Camera, href: company.socialLinks.instagram },
-    { icon: Share2, href: company.socialLinks.facebook },
-    { icon: Video, href: company.socialLinks.youtube },
-    { icon: MessageCircle, href: company.socialLinks.whatsapp },
+    { icon: Camera, href: company.socialLinks.instagram, label: "Instagram" },
+    { icon: Share2, href: company.socialLinks.facebook, label: "Facebook" },
+    { icon: Video, href: company.socialLinks.youtube, label: "YouTube" },
+    { icon: MessageCircle, href: company.socialLinks.whatsapp, label: "WhatsApp" },
   ].filter((s) => s.href);
 
   const columns = [
@@ -17,30 +17,74 @@ export function SiteFooter({ company }: { company: CompanyContent }) {
     { title: "Company", links: company.footerLinks.company },
   ].filter((col) => col.links.length > 0);
 
+  const phoneDigits = company.phone?.replace(/[^0-9]/g, "") ?? "";
+  const whatsappHref = company.socialLinks.whatsapp || (phoneDigits ? `https://wa.me/${phoneDigits}` : "");
+  const brandWord = company.name.split(" ")[0]?.toUpperCase() ?? "SRM";
+
   return (
-    <footer className="border-t border-neutral-200 bg-white text-neutral-900">
-      <div className="mx-auto max-w-[1520px] px-4 py-16 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 gap-10 lg:grid-cols-5">
-          <div className="lg:col-span-2">
-            <div className="mb-3 flex items-center gap-2">
-              <span className="flex size-9 items-center justify-center rounded-xl bg-orange-500/10 text-orange-600 shadow-xs">
+    <footer className="relative overflow-hidden bg-neutral-950 text-white lg:[clip-path:polygon(0_56px,100%_0,100%_100%,0_100%)]">
+      {/* glows */}
+      <div className="pointer-events-none absolute -top-32 left-1/2 h-72 w-[60rem] max-w-full -translate-x-1/2 bg-[radial-gradient(ellipse_at_center,rgba(249,115,22,0.22),transparent_65%)]" />
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-amber-400/60 to-transparent lg:hidden" />
+
+      <div className="relative mx-auto max-w-[1520px] px-4 pt-16 sm:px-6 lg:px-8 lg:pt-28">
+        {/* ── CTA band ── */}
+        <div className="flex flex-col gap-8 rounded-[28px] border border-white/10 bg-gradient-to-br from-white/[0.07] to-white/[0.02] p-7 backdrop-blur-sm sm:p-10 lg:flex-row lg:items-center lg:justify-between">
+          <div className="max-w-xl">
+            <span className="text-[11px] font-bold tracking-[0.28em] text-amber-300 uppercase">Your keys are waiting</span>
+            <h2 className="mt-3 text-3xl leading-[1.05] font-black tracking-tight uppercase sm:text-5xl">
+              Ready when <span className="bg-gradient-to-r from-amber-300 via-orange-400 to-amber-500 bg-clip-text text-transparent">you are</span>
+              <span className="text-orange-500">.</span>
+            </h2>
+            <p className="mt-3 text-sm text-white/60">Talk to a real person, get a quote in minutes, and hit the road today.</p>
+          </div>
+          <div className="flex flex-col gap-3 sm:flex-row">
+            {company.phone && (
+              <a
+                href={`tel:${company.phone.replace(/\s/g, "")}`}
+                className="shimmer-sheen relative inline-flex items-center justify-center gap-2.5 overflow-hidden rounded-full bg-gradient-to-r from-orange-500 to-amber-500 px-7 py-3.5 text-sm font-black text-white shadow-xl shadow-orange-500/30 transition hover:shadow-orange-500/50"
+              >
+                <Phone className="size-4" /> Call {company.phone}
+              </a>
+            )}
+            {whatsappHref && (
+              <a
+                href={whatsappHref}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center justify-center gap-2.5 rounded-full border border-[#25D366]/50 bg-[#25D366]/15 px-7 py-3.5 text-sm font-black text-[#5be28d] transition hover:bg-[#25D366] hover:text-white"
+              >
+                <MessageCircle className="size-4" /> WhatsApp us
+              </a>
+            )}
+          </div>
+        </div>
+
+        {/* ── Link grid ── */}
+        <div className="mt-16 grid grid-cols-2 gap-x-6 gap-y-12 lg:grid-cols-12">
+          <div className="col-span-2 lg:col-span-4">
+            <Link href="/" className="inline-flex items-center gap-3">
+              <span className="flex size-11 rotate-3 items-center justify-center rounded-xl bg-gradient-to-br from-amber-300 via-orange-500 to-orange-600 text-white shadow-lg shadow-orange-500/30 ring-1 ring-white/30">
                 <CarFront className="size-5" />
               </span>
-              <div>
-                <div className="text-base font-black text-neutral-950">{company.name.toUpperCase()}</div>
-                {company.tagline && <div className="text-xs font-bold tracking-widest text-orange-600">{company.tagline.toUpperCase()}</div>}
-              </div>
-            </div>
-            {company.description && <p className="max-w-sm text-sm text-neutral-600 leading-relaxed">{company.description}</p>}
+              <span>
+                <span className="block text-lg font-black tracking-tight">{company.name.toUpperCase()}</span>
+                {company.tagline && (
+                  <span className="block text-[10px] font-bold tracking-[0.25em] text-amber-300/80">{company.tagline.toUpperCase()}</span>
+                )}
+              </span>
+            </Link>
+            {company.description && <p className="mt-5 max-w-sm text-sm leading-relaxed text-white/60">{company.description}</p>}
             {socials.length > 0 && (
-              <div className="mt-4 flex gap-2">
-                {socials.map(({ icon: Icon, href }, i) => (
+              <div className="mt-6 flex gap-2.5">
+                {socials.map(({ icon: Icon, href, label }) => (
                   <a
-                    key={i}
+                    key={label}
                     href={href}
                     target="_blank"
                     rel="noreferrer"
-                    className="flex size-9 items-center justify-center rounded-full border border-neutral-200 bg-neutral-50 text-neutral-600 hover:bg-orange-50 hover:text-orange-600 hover:border-orange-500/40 transition shadow-xs"
+                    aria-label={label}
+                    className="flex size-10 items-center justify-center rounded-full border border-white/15 bg-white/5 text-white/70 transition hover:-translate-y-0.5 hover:border-amber-400/70 hover:bg-amber-400/10 hover:text-amber-300"
                   >
                     <Icon className="size-4" />
                   </a>
@@ -50,13 +94,23 @@ export function SiteFooter({ company }: { company: CompanyContent }) {
           </div>
 
           {columns.map((col) => (
-            <div key={col.title}>
-              <h4 className="mb-4 text-xs font-bold tracking-widest text-neutral-400 uppercase">{col.title}</h4>
-              <ul className="flex flex-col gap-2.5">
+            <div key={col.title} className="lg:col-span-2">
+              <h4 className="mb-5 flex items-center gap-2 text-[11px] font-bold tracking-[0.25em] text-amber-300 uppercase">
+                <span className="h-px w-5 bg-amber-400/70" />
+                {col.title}
+              </h4>
+              <ul className="flex flex-col gap-3">
                 {col.links.map((link) => (
                   <li key={link.label}>
-                    <Link href={link.href} className="text-sm text-neutral-600 hover:text-orange-600 transition-colors">
-                      {link.label}
+                    <Link
+                      href={link.href}
+                      className="group inline-flex items-center gap-1 text-sm text-white/65 transition-colors hover:text-white"
+                    >
+                      <span className="relative">
+                        {link.label}
+                        <span className="absolute -bottom-0.5 left-0 h-px w-0 bg-amber-400 transition-all duration-300 group-hover:w-full" />
+                      </span>
+                      <ArrowUpRight className="size-3 -translate-x-1 text-amber-300 opacity-0 transition-all group-hover:translate-x-0 group-hover:opacity-100" />
                     </Link>
                   </li>
                 ))}
@@ -64,39 +118,72 @@ export function SiteFooter({ company }: { company: CompanyContent }) {
             </div>
           ))}
 
-          <div>
-            <h4 className="mb-4 text-xs font-bold tracking-widest text-neutral-400 uppercase">CONCIERGE DESK</h4>
-            <ul className="flex flex-col gap-3 text-sm text-neutral-600">
+          <div className="col-span-2 lg:col-span-2">
+            <h4 className="mb-5 flex items-center gap-2 text-[11px] font-bold tracking-[0.25em] text-amber-300 uppercase">
+              <span className="h-px w-5 bg-amber-400/70" />
+              Concierge desk
+            </h4>
+            <ul className="flex flex-col gap-4 text-sm text-white/65">
               {company.phone && (
-                <li className="flex items-center gap-2">
-                  <Phone className="size-4 shrink-0 text-orange-500" /> {company.phone}
+                <li>
+                  <a href={`tel:${company.phone.replace(/\s/g, "")}`} className="flex items-center gap-3 transition hover:text-white">
+                    <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-white/5 text-amber-300">
+                      <Phone className="size-3.5" />
+                    </span>
+                    {company.phone}
+                  </a>
                 </li>
               )}
               {company.email && (
-                <li className="flex items-center gap-2">
-                  <Mail className="size-4 shrink-0 text-orange-500" /> {company.email}
+                <li>
+                  <a href={`mailto:${company.email}`} className="flex items-center gap-3 break-all transition hover:text-white">
+                    <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-white/5 text-amber-300">
+                      <Mail className="size-3.5" />
+                    </span>
+                    {company.email}
+                  </a>
                 </li>
               )}
               {company.address && (
-                <li className="flex items-start gap-2">
-                  <MapPin className="mt-0.5 size-4 shrink-0 text-orange-500" /> {company.address}
+                <li className="flex items-start gap-3">
+                  <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-white/5 text-amber-300">
+                    <MapPin className="size-3.5" />
+                  </span>
+                  <span className="leading-relaxed">{company.address}</span>
                 </li>
               )}
             </ul>
           </div>
         </div>
 
-        <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-neutral-150 pt-6 text-xs text-neutral-500 sm:flex-row">
+        {/* ── Giant outlined wordmark ── */}
+        <div aria-hidden className="pointer-events-none mt-14 -mb-4 overflow-hidden text-center select-none sm:-mb-8">
+          <span className="block text-[26vw] leading-[0.8] font-black tracking-tighter text-transparent [-webkit-text-stroke:1px_rgba(255,255,255,0.12)] lg:text-[17rem]">
+            {brandWord}
+          </span>
+        </div>
+      </div>
+
+      {/* ── Bottom bar ── */}
+      <div className="relative border-t border-white/10 bg-black/40">
+        <div className="mx-auto flex max-w-[1520px] flex-col items-center justify-between gap-4 px-4 py-5 text-xs text-white/50 sm:flex-row sm:px-6 lg:px-8">
           <p>
             © {new Date().getFullYear()} {company.name}. All rights reserved.
           </p>
-          <div className="flex gap-4">
-            <Link href="/privacy-policy" className="hover:text-orange-600 transition-colors">
+          <div className="flex items-center gap-6">
+            <Link href="/privacy-policy" className="transition-colors hover:text-amber-300">
               Privacy Policy
             </Link>
-            <Link href="/terms-and-conditions" className="hover:text-orange-600 transition-colors">
+            <Link href="/terms-and-conditions" className="transition-colors hover:text-amber-300">
               Terms of Service
             </Link>
+            <a
+              href="#top"
+              aria-label="Back to top"
+              className="flex size-9 items-center justify-center rounded-full border border-white/15 text-white/70 transition hover:border-amber-400 hover:text-amber-300"
+            >
+              <ArrowUp className="size-4" />
+            </a>
           </div>
         </div>
       </div>

@@ -42,7 +42,6 @@ export function SiteHeader({
       services.tours ? { label: "Tours", href: "/tours" } : null,
       { label: "Blog", href: "/blog" },
       { label: "About", href: "/about-us" },
-      { label: "T&C", href: "/terms-and-conditions" },
       { label: "Contact", href: "/contact-us" },
     ].filter(Boolean) as { label: string; href: string }[];
   }, [services]);

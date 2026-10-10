@@ -35,6 +35,7 @@ const DEFAULT_CONTENT: HomepageContent = {
     secondaryCtaLabel: "Explore Fleet",
     secondaryCtaHref: "/cars",
     backgroundImageUrl: "",
+    backgroundImages: [],
   },
   trustBadges: [],
   philosophy: { badge: "", title: "MORE THAN A CAR RENTAL.", paragraph1: "", paragraph2: "", imageUrl: "", stats: [] },
@@ -120,7 +121,32 @@ function HomepageContentForm() {
             <TextField control={form.control} name="hero.primaryCtaHref" label="Primary Button Link" />
             <TextField control={form.control} name="hero.secondaryCtaLabel" label="Secondary Button Label" />
             <TextField control={form.control} name="hero.secondaryCtaHref" label="Secondary Button Link" />
-            <TextField control={form.control} name="hero.backgroundImageUrl" label="Background Image URL" />
+            <TextField control={form.control} name="hero.backgroundImageUrl" label="Background Image URL (slide 1)" />
+            <FormField
+              control={form.control}
+              name="hero.backgroundImages"
+              render={({ field }) => (
+                <FormItem className="sm:col-span-2">
+                  <FormLabel>More carousel images (one URL per line)</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      rows={3}
+                      placeholder={"https://…/slide-2.jpg\nhttps://…/slide-3.jpg"}
+                      defaultValue={(field.value ?? []).join("\n")}
+                      onChange={(e) =>
+                        field.onChange(
+                          e.target.value
+                            .split("\n")
+                            .map((l) => l.trim())
+                            .filter(Boolean),
+                        )
+                      }
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
           </CardContent>
         </Card>
 

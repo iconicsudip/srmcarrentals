@@ -1,97 +1,188 @@
-import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, Compass } from "lucide-react";
+import { ArrowRight, Compass, MapPin, Plane } from "lucide-react";
 
 import type { HomepageContent, AvailableServicesConfig } from "@/modules/settings/site-content.schemas";
 import { resolveIcon } from "@/lib/icon-map";
 import { stripTrailingPunctuation } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
+import { HeroCarousel } from "@/components/website/hero-carousel";
 import { BookingWidget } from "@/components/website/booking-widget";
+
+const DEFAULT_EXTRA_SLIDES = [
+  "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=2000&q=80&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=2000&q=80&auto=format&fit=crop",
+];
 
 export function HeroSection({
   content,
   locations,
   services,
+  carCount,
 }: {
   content: HomepageContent["hero"];
   locations: { id: string; name: string }[];
   services?: AvailableServicesConfig;
+  carCount?: number;
 }) {
   const cleanTitle = stripTrailingPunctuation(content.title);
   const titleParts = content.highlightWord ? cleanTitle.split(content.highlightWord) : [cleanTitle, ""];
-  const heroImageSrc = content.backgroundImageUrl || "/images/hero-car-bg.jpg";
+  const slides = Array.from(
+    new Set([content.backgroundImageUrl || "/images/hero-car-bg.jpg", ...(content.backgroundImages ?? [])].filter(Boolean)),
+  );
+  // Out of the box (nothing configured in admin) still show a multi-image carousel.
+  const carouselImages = slides.length > 1 ? slides : [...slides, ...DEFAULT_EXTRA_SLIDES];
+  const pickupPoints = locations.slice(0, 5);
+
+  const stats = [
+    carCount && carCount > 0 ? { value: `${carCount}+`, label: "Cars in fleet" } : null,
+    locations.length > 0 ? { value: String(locations.length), label: "Pickup cities" } : null,
+    { value: "24/7", label: "Road support" },
+  ].filter((x): x is { value: string; label: string } => x !== null);
 
   return (
-    <section className="relative overflow-hidden bg-neutral-950">
-      {/* ── Background Hero Image & Ambient Warm Flares ── */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none select-none">
-        <Image
-          src={heroImageSrc}
-          alt="Luxury Fleet Self-Drive & Chauffeur"
-          fill
-          priority
-          quality={80}
-          sizes="100vw"
-          className="object-cover object-[center_45%]"
-        />
-        {/* Cinematic overlays: keep the photo vivid while the copy stays readable */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/75 via-black/40 to-black/85" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_55%_at_50%_38%,rgba(0,0,0,0.55),transparent_75%)]" />
-        <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-orange-600/25 to-transparent" />
-        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-amber-400/60 to-transparent" />
-      </div>
-
-      <div className="relative mx-auto flex max-w-5xl flex-col items-center px-4 pt-20 pb-10 text-center sm:px-6 sm:pt-28">
-        {content.badge && (
-          <span className="shimmer-sheen mb-6 inline-flex items-center gap-2 rounded-full border border-amber-400/40 bg-white/10 px-4 py-1.5 text-xs font-semibold tracking-widest text-amber-300 backdrop-blur-md shadow-xs">
-            <span className="h-1.5 w-1.5 rounded-full bg-orange-500 animate-pulse shadow-[0_0_6px_#f97316]" />
-            {content.badge}
-          </span>
-        )}
-
-        <h1 className="text-4xl leading-[1.05] font-black tracking-tight text-white uppercase drop-shadow-[0_2px_20px_rgba(0,0,0,0.5)] sm:text-6xl md:text-7xl">
-          {titleParts[0]}
-          {content.highlightWord && (
-            <span className="bg-gradient-to-r from-amber-300 via-orange-400 to-amber-500 bg-clip-text text-transparent">
-              {content.highlightWord}
-            </span>
-          )}
-          {titleParts[1]}
-          <span className="text-orange-500 animate-pulse">.</span>
-        </h1>
-
-        {content.subtitle && (
-          <p className="mt-6 max-w-2xl text-base text-white/80 sm:text-lg font-normal leading-relaxed">
-            {content.subtitle}
-          </p>
-        )}
-
-        <div className="mt-8 flex flex-wrap justify-center gap-4">
-          <Button
-            asChild
-            size="lg"
-            className="shimmer-sheen relative bg-orange-500 font-bold text-white shadow-lg shadow-orange-500/25 transition-all duration-300 hover:bg-orange-600 hover:shadow-xl hover:shadow-orange-500/40 hover:-translate-y-0.5 active:translate-y-0"
-          >
-            <Link href={content.primaryCtaHref}>
-              {content.primaryCtaLabel}
-              <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
-            </Link>
-          </Button>
-          <Button
-            asChild
-            size="lg"
-            variant="outline"
-            className="border-white/30 bg-white/10 text-white backdrop-blur-md transition-all duration-300 hover:border-amber-400/60 hover:bg-white/20 hover:text-white hover:-translate-y-0.5 active:translate-y-0 shadow-xs"
-          >
-            <Link href={content.secondaryCtaHref}>
-              <Compass className="size-4 text-orange-500" />
-              {content.secondaryCtaLabel}
-            </Link>
-          </Button>
+    <section className="relative overflow-hidden bg-neutral-950 pb-6 [clip-path:none] lg:pb-14 lg:[clip-path:polygon(0_0,100%_0,100%_calc(100%-56px),0_100%)]">
+      {/* ── Photography: full-bleed, framed to the right so the cars stay visible ── */}
+      <div className="absolute inset-0 select-none">
+        <HeroCarousel images={carouselImages} />
+        <div className="pointer-events-none absolute inset-0">
+        {/* Left-weighted scrim: copy stays legible, the right side keeps the photo vivid */}
+        <div className="absolute inset-0 bg-gradient-to-r from-neutral-950/90 via-neutral-950/60 to-neutral-950/10" />
+        <div className="absolute inset-0 bg-gradient-to-b from-neutral-950/70 via-transparent to-neutral-950/90" />
+        <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-orange-600/25 to-transparent" />
+        {/* Oversized outline wordmark for depth */}
+        <span
+          aria-hidden
+          className="absolute -bottom-6 -left-4 hidden text-[15rem] leading-none font-black tracking-tighter text-transparent select-none lg:block [-webkit-text-stroke:1px_rgba(255,255,255,0.07)]"
+        >
+          SRM
+        </span>
         </div>
       </div>
 
-      <div className="relative mx-auto max-w-[1520px] px-4 pb-16 sm:px-6 lg:px-8">
+      <div className="relative mx-auto grid max-w-[1520px] items-center gap-12 px-4 pt-14 pb-10 sm:px-6 sm:pt-20 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,0.75fr)] lg:gap-16 lg:px-8 lg:pt-24">
+        {/* ── LEFT: editorial copy ── */}
+        <div className="max-w-3xl">
+          {content.badge && (
+            <div className="mb-7 flex items-center gap-3">
+              <span className="h-px w-10 bg-gradient-to-r from-amber-400 to-transparent" />
+              <span className="inline-flex items-center gap-2 text-[11px] font-bold tracking-[0.28em] text-amber-300 uppercase">
+                <span className="size-1.5 animate-pulse rounded-full bg-amber-400 shadow-[0_0_10px_#fbbf24]" />
+                {content.badge}
+              </span>
+            </div>
+          )}
+
+          <h1 className="text-[2.75rem] leading-[0.95] font-black tracking-tight text-white uppercase drop-shadow-[0_2px_24px_rgba(0,0,0,0.5)] sm:text-6xl lg:text-7xl xl:text-[5.5rem]">
+            {titleParts[0]}
+            {content.highlightWord && (
+              <span className="relative inline-block">
+                <span className="bg-gradient-to-r from-amber-300 via-orange-400 to-amber-500 bg-clip-text text-transparent">
+                  {content.highlightWord}
+                </span>
+                {/* Hand-drawn underline stroke */}
+                <svg
+                  aria-hidden
+                  viewBox="0 0 200 12"
+                  preserveAspectRatio="none"
+                  className="absolute -bottom-2 left-0 h-2.5 w-full text-orange-500"
+                >
+                  <path d="M2 8 C 40 2, 90 12, 130 6 S 185 4, 198 7" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+                </svg>
+              </span>
+            )}
+            {titleParts[1]}
+            <span className="text-orange-500">.</span>
+          </h1>
+
+          {content.subtitle && (
+            <p className="mt-8 max-w-xl text-base leading-relaxed text-white/75 sm:text-lg">{content.subtitle}</p>
+          )}
+
+          <div className="mt-9 flex flex-wrap items-center gap-x-8 gap-y-4">
+            <Link
+              href={content.primaryCtaHref}
+              className="shimmer-sheen group relative inline-flex items-center gap-3 overflow-hidden rounded-full bg-gradient-to-r from-orange-500 via-orange-500 to-amber-500 py-2 pr-2 pl-7 text-sm font-black text-white shadow-xl shadow-orange-500/30 transition hover:shadow-orange-500/50"
+            >
+              {content.primaryCtaLabel}
+              <span className="flex size-10 items-center justify-center rounded-full bg-white/20 transition-transform duration-300 group-hover:translate-x-0.5">
+                <ArrowRight className="size-4" />
+              </span>
+            </Link>
+            <Link
+              href={content.secondaryCtaHref}
+              className="group inline-flex items-center gap-2 text-sm font-bold text-white/90 transition hover:text-amber-300"
+            >
+              <Compass className="size-4 text-amber-400" />
+              <span className="border-b border-white/30 pb-0.5 transition group-hover:border-amber-300">
+                {content.secondaryCtaLabel}
+              </span>
+            </Link>
+          </div>
+
+          {/* Proof strip */}
+          <dl className="mt-12 flex max-w-xl flex-wrap gap-x-10 gap-y-5 border-t border-white/15 pt-7">
+            {stats.map((st) => (
+              <div key={st.label}>
+                <dt className="text-3xl font-black tracking-tight text-white">{st.value}</dt>
+                <dd className="mt-0.5 text-[11px] font-semibold tracking-widest text-white/55 uppercase">{st.label}</dd>
+              </div>
+            ))}
+          </dl>
+
+          {/* Phones: pickup cities as chips (the key card below is desktop-only) */}
+          {pickupPoints.length > 0 && (
+            <div className="mt-7 flex flex-wrap gap-2 lg:hidden">
+              {pickupPoints.slice(0, 4).map((l) => (
+                <span key={l.id} className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-xs font-semibold text-white/90 backdrop-blur-md">
+                  <MapPin className="size-3 text-amber-400" /> {l.name}
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* ── RIGHT: "route" key card — real pickup points on a dotted line ── */}
+        {pickupPoints.length > 0 && (
+          <aside className="relative hidden justify-self-end lg:mr-14 lg:block lg:w-full lg:max-w-[360px]">
+            <div className="lux-ring absolute -inset-10 rounded-full opacity-60" aria-hidden />
+            <div className="relative rounded-[28px] border border-white/20 bg-neutral-950/50 p-6 shadow-2xl shadow-black/40 backdrop-blur-xl">
+              <div className="absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-amber-400/80 to-transparent" />
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-bold tracking-[0.25em] text-amber-300 uppercase">Pickup points</span>
+                <span className="flex items-center gap-1.5 text-[10px] font-semibold text-emerald-300">
+                  <span className="size-1.5 animate-pulse rounded-full bg-emerald-400" /> Live
+                </span>
+              </div>
+
+              <ol className="relative mt-6 space-y-5">
+                {/* dotted route line */}
+                <span aria-hidden className="absolute top-2 bottom-2 left-[7px] w-px bg-[repeating-linear-gradient(to_bottom,rgba(251,191,36,0.7)_0_4px,transparent_4px_9px)]" />
+                {pickupPoints.map((l, i) => (
+                  <li key={l.id} className="relative flex items-center gap-4 pl-7">
+                    <span
+                      className={`absolute left-0 size-[15px] rounded-full border-2 ${
+                        i === 0 ? "border-orange-500 bg-orange-500 shadow-[0_0_12px_#f97316]" : "border-amber-300 bg-neutral-950"
+                      }`}
+                    />
+                    <span className="text-sm font-bold text-white">{l.name}</span>
+                    {i === 0 && (
+                      <span className="ml-auto rounded-full bg-orange-500/20 px-2 py-0.5 text-[9px] font-bold tracking-wider text-orange-300 uppercase">
+                        Start
+                      </span>
+                    )}
+                  </li>
+                ))}
+              </ol>
+
+              <div className="mt-6 flex items-center gap-2.5 rounded-2xl border border-white/10 bg-white/5 px-3.5 py-3 text-[11px] leading-snug text-white/70">
+                <Plane className="size-4 shrink-0 text-amber-300" />
+                Delivery to Airport, Railway Station or Hotel
+              </div>
+            </div>
+          </aside>
+        )}
+      </div>
+
+      <div className="relative mx-auto max-w-[1520px] px-4 sm:px-6 lg:px-8">
         <BookingWidget locations={locations} services={services} />
       </div>
     </section>
