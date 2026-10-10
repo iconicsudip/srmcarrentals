@@ -18,8 +18,10 @@ export interface CarEnquiry {
   pickupAt?: string;
   dropAt?: string;
   pickupLocation?: string;
+  /** City resolved from the chosen location (drives which WhatsApp number was used). */
+  city?: string;
   notes?: string;
-  source: "CAR_CARD_WHATSAPP";
+  source: "CAR_CARD_WHATSAPP" | "FLOATING_WIDGET";
   status: CarEnquiryStatus;
   createdAt: string;
 }

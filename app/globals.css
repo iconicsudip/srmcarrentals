@@ -365,3 +365,8 @@
 @media (prefers-reduced-motion: reduce) {
   .hero-kenburns { animation: none; }
 }
+
+@keyframes fleetProgress {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}

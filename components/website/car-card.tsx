@@ -468,7 +468,8 @@ function CarCardInner({
           }}
           pickupDate={pickupDate ?? undefined}
           dropDate={dropDate ?? undefined}
-          pickupLocation={car.locations?.find((l) => l.locationId === locationId)?.location.name}
+          locations={car.locations?.map((l) => ({ id: l.location.id, name: l.location.name })) ?? []}
+          defaultLocationId={locationId}
           label="Book on WhatsApp"
           className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#25D366] py-3 text-xs font-black text-white shadow-md shadow-emerald-500/25 transition hover:bg-[#1ebe5a] active:scale-[0.99] cursor-pointer"
         />

@@ -2,13 +2,16 @@ import { AmbientBackground } from "@/components/website/ambient-background";
 import { CartDrawer } from "@/components/website/cart-drawer";
 import { SiteFooter } from "@/components/website/site-footer";
 import { SiteHeader } from "@/components/website/site-header";
-import { getCompanyContent, getAvailableServices } from "@/modules/website/public-content.service";
+import { WhatsAppFloat } from "@/components/website/whatsapp-float";
+import { getCompanyContent, getAvailableServices, listActiveLocations } from "@/modules/website/public-content.service";
 
 export default async function WebsiteLayout({ children }: { children: React.ReactNode }) {
-  const [company, services] = await Promise.all([
+  const [company, services, locations] = await Promise.all([
     getCompanyContent(),
     getAvailableServices(),
+    listActiveLocations(),
   ]);
+  const cities = Array.from(new Set((locations as { city?: string }[]).map((l) => l.city?.trim()).filter((c): c is string => Boolean(c))));
 
   return (
     <div className="relative min-h-svh bg-[#FAFAFC] text-neutral-900 selection:bg-orange-500 selection:text-white">
@@ -17,6 +20,7 @@ export default async function WebsiteLayout({ children }: { children: React.Reac
       <main className="relative z-0">{children}</main>
       <SiteFooter company={company} />
       <CartDrawer phone={company.phone} />
+      <WhatsAppFloat cities={cities} />
     </div>
   );
 }

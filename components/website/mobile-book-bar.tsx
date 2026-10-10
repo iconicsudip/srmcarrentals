@@ -13,16 +13,20 @@ export function MobileQuickBook({
   carName,
   price,
   phone,
+  whatsappNumber,
   targetId = "book",
 }: {
   carName: string;
   price: string;
   phone: string;
+  /** City-routed WhatsApp number (digits, with country code). Falls back to `phone`. */
+  whatsappNumber?: string;
   targetId?: string;
 }) {
   const digits = phone.replace(/[^0-9]/g, "");
-  const wa = digits
-    ? `https://wa.me/${digits}?text=${encodeURIComponent(`Hello SRM Car Rentals! I'm interested in booking the ${carName}. Please share availability.`)}`
+  const waDigits = whatsappNumber || (digits.length === 10 ? `91${digits}` : digits);
+  const wa = waDigits
+    ? `https://wa.me/${waDigits}?text=${encodeURIComponent(`Hello SRM Car Rentals! I'm interested in booking the ${carName}. Please share availability.`)}`
     : "";
   return (
     <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-neutral-950 via-neutral-900 to-neutral-800 p-5 text-white shadow-xl shadow-neutral-900/20 lg:hidden">

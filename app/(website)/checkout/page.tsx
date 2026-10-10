@@ -130,9 +130,14 @@ export default function CheckoutPage() {
   // Payment method selection: "PICKUP" (Cash / UPI at handover) or "ONLINE" (30% advance)
   const [paymentMethod, setPaymentMethod] = React.useState<"PICKUP" | "ONLINE">("PICKUP");
 
-  const advance = splitAdvance(grandTotal);
+  // The 30% advance applies to the rental amount; the refundable deposit is collected at handover.
+  const rentalPayable = Math.max(0, grandTotal - refundableDeposit);
+  const advance = splitAdvance(rentalPayable);
   const payableNow = paymentMethod === "ONLINE" ? advance.now : 0;
   const payableLater = grandTotal - payableNow;
+
+  const [summaryOpen, setSummaryOpen] = React.useState(false);
+  const [touched, setTouched] = React.useState<Record<string, boolean>>({});
 
   const handleLocationChange = (locationId: string) => {
     if (!primaryItem) return;
@@ -200,6 +205,28 @@ export default function CheckoutPage() {
     }
   }, [currentUser]);
 
+  const fieldError = (id: string, value: string): string | undefined => {
+    if (id === "fullName" && !value.trim()) return "Please enter your full name";
+    if (id === "phone" && value.replace(/[^0-9]/g, "").length !== 10) return "Enter a valid 10-digit mobile number";
+    if (id === "city" && !value.trim()) return "Please enter your city";
+    if (id === "email" && value.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim())) return "Enter a valid email address";
+    if (id === "aadharNumber" && value.replace(/\D/g, "").length > 0 && value.replace(/\D/g, "").length !== 12) {
+      return "Aadhaar must be 12 digits";
+    }
+    return undefined;
+  };
+
+  const handleBlur = (id: string) => {
+    setTouched((t) => ({ ...t, [id]: true }));
+    const message = fieldError(id, (formValues as Record<string, string>)[id] ?? "");
+    setErrors((prev) => {
+      const next = { ...prev };
+      if (message) next[id] = message;
+      else delete next[id];
+      return next;
+    });
+  };
+
   // Handle Field Input Change
   const handleFieldChange = (fieldId: string, value: string) => {
     setFormValues((prev) => ({ ...prev, [fieldId]: value }));
@@ -253,21 +280,21 @@ export default function CheckoutPage() {
       return;
     }
 
-    const newErrors: Record<string, string> = {};
-    if (!formValues.fullName.trim()) {
-      newErrors.fullName = "Full Name is required";
-    }
     const cleanPhone = formValues.phone.replace(/[^0-9]/g, "");
-    if (cleanPhone.length !== 10) {
-      newErrors.phone = "Valid 10-digit Phone Number is required";
-    }
-    if (!formValues.city.trim()) {
-      newErrors.city = "City is required";
+    const newErrors: Record<string, string> = {};
+    for (const id of ["fullName", "phone", "city", "email", "aadharNumber"] as const) {
+      const message = fieldError(id, formValues[id]);
+      if (message) newErrors[id] = message;
     }
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
-      toast.error("Please fill in all required fields marked with *");
+      setTouched({ fullName: true, phone: true, city: true, email: true, aadharNumber: true });
+      toast.error("Please fix the highlighted fields");
+      const first = ["fullName", "phone", "city", "email", "aadharNumber"].find((id) => newErrors[id]);
+      const el = first ? document.getElementById(`co-${first}`) : null;
+      el?.scrollIntoView({ behavior: "smooth", block: "center" });
+      (el as HTMLInputElement | null)?.focus({ preventScroll: true });
       return;
     }
 
@@ -421,6 +448,33 @@ export default function CheckoutPage() {
           </div>
         </div>
 
+        {/* Progress */}
+        <ol className="mt-6 flex items-center gap-2 text-[11px] font-bold tracking-wider uppercase sm:gap-3 sm:text-xs">
+          {[
+            { label: "Cart", state: "done" },
+            { label: "Your details", state: "active" },
+            { label: paymentMethod === "ONLINE" ? "Pay advance" : "Confirm", state: "todo" },
+          ].map((step, i, arr) => (
+            <React.Fragment key={step.label}>
+              <li className={`flex items-center gap-2 ${step.state === "todo" ? "text-neutral-400" : "text-neutral-900"}`}>
+                <span
+                  className={`flex size-6 items-center justify-center rounded-full text-[11px] font-black ${
+                    step.state === "done"
+                      ? "bg-emerald-500 text-white"
+                      : step.state === "active"
+                        ? "bg-orange-500 text-white shadow-md shadow-orange-500/30"
+                        : "border border-neutral-300 text-neutral-400"
+                  }`}
+                >
+                  {step.state === "done" ? <CheckCircle2 className="size-3.5" /> : i + 1}
+                </span>
+                {step.label}
+              </li>
+              {i < arr.length - 1 && <span className="h-px flex-1 bg-neutral-200" />}
+            </React.Fragment>
+          ))}
+        </ol>
+
         <div className="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-12">
           {/* LEFT COLUMN: Checkout Form (8 cols) */}
           <div className="lg:col-span-7 xl:col-span-8">
@@ -524,108 +578,112 @@ export default function CheckoutPage() {
 
               {/* ── SECTION: Billing details (Matching User Reference) ── */}
               <div className="rounded-3xl border border-neutral-200/90 bg-white p-6 sm:p-8 shadow-xl space-y-6">
-                <div>
-                  <h2 className="text-xl sm:text-2xl font-bold text-neutral-950 tracking-tight">
-                    Billing details
-                  </h2>
+                <div className="flex items-center gap-3">
+                  <span className="flex size-9 items-center justify-center rounded-xl bg-orange-50 text-orange-600 border border-orange-200">
+                    <User className="size-5" />
+                  </span>
+                  <div>
+                    <h2 className="text-xl font-bold tracking-tight text-neutral-950 sm:text-2xl">Your details</h2>
+                    <p className="text-[11px] text-neutral-500">Fields marked * are required.</p>
+                  </div>
                 </div>
 
-                <div className="space-y-5">
-                  {/* ROW 1: Full Name * & Phone Number * */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-                    <div className="flex flex-col gap-2">
-                      <label className="text-sm font-semibold text-neutral-800">
-                        Full Name <span className="text-red-500 font-bold">*</span>
-                      </label>
-                      <input
-                        type="text"
-                        value={formValues.fullName}
-                        onChange={(e) => handleFieldChange("fullName", e.target.value)}
-                        placeholder=""
-                        className={`h-12 w-full rounded-xl border bg-white px-3.5 text-sm text-neutral-900 outline-none transition ${
-                          errors.fullName
-                            ? "border-red-500 focus:border-red-500"
-                            : "border-neutral-300 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
-                        }`}
-                      />
-                      {errors.fullName && (
-                        <p className="text-xs text-red-500">{errors.fullName}</p>
-                      )}
-                    </div>
+                <div className="grid grid-cols-1 gap-x-6 gap-y-5 sm:grid-cols-2">
+                  <CheckoutField id="fullName" label="Full name" required error={touched.fullName ? errors.fullName : undefined} hint="As on your driving license">
+                    <input
+                      id="co-fullName"
+                      type="text"
+                      autoComplete="name"
+                      value={formValues.fullName}
+                      onChange={(e) => handleFieldChange("fullName", e.target.value)}
+                      onBlur={() => handleBlur("fullName")}
+                      placeholder="e.g. Rahul Sharma"
+                      className={fieldClass(touched.fullName && !!errors.fullName)}
+                    />
+                  </CheckoutField>
 
-                    <div className="flex flex-col gap-2">
-                      <label className="text-sm font-semibold text-neutral-800">
-                        Phone Number <span className="text-red-500 font-bold">*</span>
-                      </label>
+                  <CheckoutField id="phone" label="Mobile number" required error={touched.phone ? errors.phone : undefined} hint="We send your booking confirmation here">
+                    <div className="relative">
+                      <span className="pointer-events-none absolute top-1/2 left-3.5 -translate-y-1/2 border-r border-neutral-200 pr-2.5 text-sm font-semibold text-neutral-500">
+                        +91
+                      </span>
                       <input
+                        id="co-phone"
                         type="tel"
+                        inputMode="numeric"
+                        autoComplete="tel-national"
+                        maxLength={10}
                         value={formValues.phone}
                         onChange={(e) => handleFieldChange("phone", toTenDigits(e.target.value))}
-                        inputMode="numeric"
-                        maxLength={10}
-                        autoComplete="tel-national"
-                        placeholder="10-digit mobile number"
-                        className={`h-12 w-full rounded-xl border bg-white px-3.5 text-sm text-neutral-900 outline-none transition ${
-                          errors.phone
-                            ? "border-red-500 focus:border-red-500"
-                            : "border-neutral-300 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
-                        }`}
+                        onBlur={() => handleBlur("phone")}
+                        placeholder="98765 43210"
+                        className={`${fieldClass(touched.phone && !!errors.phone)} pl-16`}
                       />
-                      {errors.phone && (
-                        <p className="text-xs text-red-500">{errors.phone}</p>
+                      {formValues.phone.length === 10 && !errors.phone && (
+                        <CheckCircle2 className="absolute top-1/2 right-3.5 size-4 -translate-y-1/2 text-emerald-500" />
                       )}
                     </div>
-                  </div>
+                  </CheckoutField>
 
-                  {/* ROW 2: Driving License Number (optional) */}
-                  <div className="flex flex-col gap-2">
-                    <label className="text-sm font-semibold text-neutral-800">
-                      Driving License Number (optional)
-                    </label>
+                  <CheckoutField id="email" label="Email" error={touched.email ? errors.email : undefined} hint="Optional — for your invoice & voucher">
                     <input
-                      type="text"
-                      value={formValues.licenseNumber}
-                      onChange={(e) => handleFieldChange("licenseNumber", e.target.value)}
-                      placeholder="Enter your driving license number"
-                      className="h-12 w-full rounded-xl border border-neutral-300 bg-white px-3.5 text-sm text-neutral-900 placeholder:text-neutral-400 outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
+                      id="co-email"
+                      type="email"
+                      autoComplete="email"
+                      value={formValues.email}
+                      onChange={(e) => handleFieldChange("email", e.target.value)}
+                      onBlur={() => handleBlur("email")}
+                      placeholder="you@example.com"
+                      className={fieldClass(touched.email && !!errors.email)}
                     />
-                  </div>
+                  </CheckoutField>
 
-                  {/* ROW 3: City * & Aadhar Number (optional) */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-                    <div className="flex flex-col gap-2">
-                      <label className="text-sm font-semibold text-neutral-800">
-                        City <span className="text-red-500 font-bold">*</span>
-                      </label>
-                      <input
-                        type="text"
-                        value={formValues.city}
-                        onChange={(e) => handleFieldChange("city", e.target.value)}
-                        placeholder=""
-                        className={`h-12 w-full rounded-xl border bg-white px-3.5 text-sm text-neutral-900 outline-none transition ${
-                          errors.city
-                            ? "border-red-500 focus:border-red-500"
-                            : "border-neutral-300 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
-                        }`}
-                      />
-                      {errors.city && (
-                        <p className="text-xs text-red-500">{errors.city}</p>
-                      )}
-                    </div>
+                  <CheckoutField id="city" label="City" required error={touched.city ? errors.city : undefined} hint="Where you live or are staying">
+                    <input
+                      id="co-city"
+                      type="text"
+                      autoComplete="address-level2"
+                      value={formValues.city}
+                      onChange={(e) => handleFieldChange("city", e.target.value)}
+                      onBlur={() => handleBlur("city")}
+                      placeholder="e.g. Udaipur"
+                      className={fieldClass(touched.city && !!errors.city)}
+                    />
+                  </CheckoutField>
 
-                    <div className="flex flex-col gap-2">
-                      <label className="text-sm font-semibold text-neutral-800">
-                        Aadhar Number (optional)
-                      </label>
-                      <input
-                        type="text"
-                        value={formValues.aadharNumber}
-                        onChange={(e) => handleFieldChange("aadharNumber", e.target.value)}
-                        placeholder=""
-                        className="h-12 w-full rounded-xl border border-neutral-300 bg-white px-3.5 text-sm text-neutral-900 placeholder:text-neutral-400 outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
-                      />
-                    </div>
-                  </div>
+                  <CheckoutField id="licenseNumber" label="Driving license number" hint="Optional — speeds up handover">
+                    <input
+                      id="co-licenseNumber"
+                      type="text"
+                      autoCapitalize="characters"
+                      value={formValues.licenseNumber}
+                      onChange={(e) => handleFieldChange("licenseNumber", e.target.value.toUpperCase())}
+                      placeholder="e.g. RJ14 20200012345"
+                      className={fieldClass(false)}
+                    />
+                  </CheckoutField>
+
+                  <CheckoutField id="aadharNumber" label="Aadhaar number" error={touched.aadharNumber ? errors.aadharNumber : undefined} hint="Optional — only the last 4 digits are stored">
+                    <input
+                      id="co-aadharNumber"
+                      type="text"
+                      inputMode="numeric"
+                      maxLength={14}
+                      value={formValues.aadharNumber}
+                      onChange={(e) =>
+                        handleFieldChange(
+                          "aadharNumber",
+                          e.target.value
+                            .replace(/\D/g, "")
+                            .slice(0, 12)
+                            .replace(/(\d{4})(?=\d)/g, "$1 "),
+                        )
+                      }
+                      onBlur={() => handleBlur("aadharNumber")}
+                      placeholder="XXXX XXXX XXXX"
+                      className={fieldClass(touched.aadharNumber && !!errors.aadharNumber)}
+                    />
+                  </CheckoutField>
                 </div>
               </div>
 
@@ -694,7 +752,7 @@ export default function CheckoutPage() {
                       </span>
                     </div>
                     <p className="mt-2 text-[11px] text-neutral-600">
-                      Pay {formatInr(advance.now)} now ({ADVANCE_PERCENT}%) and the remaining {formatInr(advance.later)} at vehicle handover. Mobile number is verified via Razorpay OTP; pay securely with UPI (GPay/PhonePe/Paytm), Cards, or NetBanking.
+                      Pay {formatInr(advance.now)} now ({ADVANCE_PERCENT}% of the rental) and the remaining {formatInr(grandTotal - advance.now)} (incl. refundable deposit) at vehicle handover. Mobile number is verified via Razorpay OTP; pay securely with UPI (GPay/PhonePe/Paytm), Cards, or NetBanking.
                     </p>
                   </label>
                 </div>
@@ -756,14 +814,15 @@ export default function CheckoutPage() {
                     ) : (
                       <span className="flex items-center justify-center gap-2">
                         {paymentMethod === "ONLINE" ? (
-                          <>Verify Phone &amp; Pay {ADVANCE_PERCENT}% Advance • {formatInr(advance.now)} →</>
+                          <>Pay {formatInr(advance.now)} &amp; Reserve →</>
                         ) : (
-                          <>Confirm Reservation (Pay at Pickup) • {formatInr(grandTotal)} →</>
+                          <>Confirm Reservation →</>
                         )}
                       </span>
                     )}
                   </Button>
-                  <p className="mt-2 text-center text-[11px] text-neutral-500">
+                  <p className="mt-2 flex items-center justify-center gap-1.5 text-center text-[11px] text-neutral-500">
+                    <ShieldCheck className="size-3.5 shrink-0 text-emerald-600" />
                     {paymentMethod === "ONLINE"
                       ? `You will be redirected to Razorpay to verify your phone number and pay the ${ADVANCE_PERCENT}% advance. The balance is due at handover.`
                       : "By clicking Confirm Reservation, your vehicle is locked in the system and an instant booking voucher is created."}
@@ -774,9 +833,21 @@ export default function CheckoutPage() {
           </div>
 
           {/* RIGHT COLUMN: Sticky Order Summary (4 cols) */}
-          <div className="lg:col-span-5 xl:col-span-4">
+          <div className="max-lg:order-first lg:col-span-5 xl:col-span-4">
             <div className="lg:sticky lg:top-24 space-y-4">
-              <div className="rounded-3xl border border-neutral-200/90 bg-white p-6 shadow-2xl space-y-4">
+              <button
+                type="button"
+                onClick={() => setSummaryOpen((v) => !v)}
+                aria-expanded={summaryOpen}
+                className="flex w-full items-center justify-between rounded-2xl border border-neutral-200 bg-white px-4 py-3.5 text-left shadow-sm lg:hidden"
+              >
+                <span className="flex items-center gap-2 text-sm font-bold text-neutral-900">
+                  <Receipt className="size-4 text-orange-500" />
+                  {summaryOpen ? "Hide" : "Show"} order summary
+                </span>
+                <span className="text-base font-black text-neutral-950">{formatInr(grandTotal)}</span>
+              </button>
+              <div className={`${summaryOpen ? "block" : "hidden"} rounded-3xl border border-neutral-200/90 bg-white p-6 shadow-2xl space-y-4 lg:block`}>
                 <div className="flex items-center justify-between border-b border-neutral-200 pb-3">
                   <h3 className="text-base sm:text-lg font-bold text-neutral-950 uppercase tracking-tight">Order Summary</h3>
                   <span className="rounded-full bg-orange-500/10 px-2 py-0.5 text-[10px] font-bold text-orange-600 border border-orange-500/20">
@@ -959,6 +1030,47 @@ export default function CheckoutPage() {
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+
+function fieldClass(hasError: boolean) {
+  return `h-12 w-full rounded-xl border bg-white px-3.5 text-sm text-neutral-900 placeholder:text-neutral-400 outline-none transition ${
+    hasError
+      ? "border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-500/20"
+      : "border-neutral-300 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
+  }`;
+}
+
+function CheckoutField({
+  id,
+  label,
+  required,
+  hint,
+  error,
+  children,
+}: {
+  id: string;
+  label: string;
+  required?: boolean;
+  hint?: string;
+  error?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="flex flex-col gap-1.5">
+      <label htmlFor={`co-${id}`} className="text-sm font-semibold text-neutral-800">
+        {label} {required && <span className="font-bold text-red-500">*</span>}
+      </label>
+      {children}
+      {error ? (
+        <p role="alert" className="flex items-center gap-1 text-xs font-medium text-red-600">
+          <Info className="size-3.5 shrink-0" /> {error}
+        </p>
+      ) : (
+        hint && <p className="text-[11px] text-neutral-500">{hint}</p>
+      )}
     </div>
   );
 }

@@ -41,7 +41,7 @@ export function HeroCarousel({ images, intervalMs = 6500 }: { images: string[]; 
           fill
           priority={i === 0}
           loading={i === 0 ? "eager" : "lazy"}
-          quality={78}
+          quality={80}
           sizes="100vw"
           className={`object-cover object-[62%_50%] transition-opacity duration-[1400ms] ease-in-out ${
             i === index ? "hero-kenburns opacity-100" : "opacity-0"

@@ -3,7 +3,9 @@ import { BadRequestError } from "@/lib/http/errors";
 import { created, ok } from "@/lib/http/api-response";
 import { withErrorHandling } from "@/lib/http/with-error-handling";
 import { getSetting, setSetting } from "@/modules/settings/settings.service";
-import { getCompanyContent } from "@/modules/website/public-content.service";
+import { prisma } from "@/lib/prisma";
+import { getWhatsAppNumbers } from "@/lib/whatsapp/numbers";
+import { pickWhatsAppNumber } from "@/lib/whatsapp/pick";
 import {
   CAR_ENQUIRIES_SETTING_KEY,
   MAX_STORED_CAR_ENQUIRIES,
@@ -33,24 +35,32 @@ export const POST = withErrorHandling(async (req) => {
   const phone = toTenDigits(clean(body.phone, 30));
   const email = clean(body.email, 160);
 
-  if (!carId || !carName) throw new BadRequestError("Invalid enquiry payload");
+  const isGeneral = clean(body.source, 30) === "FLOATING_WIDGET";
+  if (!isGeneral && (!carId || !carName)) throw new BadRequestError("Invalid enquiry payload");
   if (!name) throw new BadRequestError("Full name is required");
   if (phone.length !== 10) throw new BadRequestError("Enter a valid 10-digit mobile number");
   if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new BadRequestError("Email is not valid");
 
+  // Resolve the city of the chosen location (drives which WhatsApp number is used).
+  const locationId = clean(body.locationId, 100);
+  const city =
+    clean(body.city, 100) ||
+    (locationId ? (await prisma.location.findUnique({ where: { id: locationId }, select: { city: true } }))?.city : undefined);
+
   const enquiry: CarEnquiry = {
     id: `cenq_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
-    carId,
+    carId: carId || "general",
     carSlug: clean(body.carSlug, 200) || undefined,
-    carName,
+    carName: carName || "General enquiry",
     name,
     phone,
     email: email || undefined,
     pickupAt: clean(body.pickupAt, 40) || undefined,
     dropAt: clean(body.dropAt, 40) || undefined,
     pickupLocation: clean(body.pickupLocation, 200) || undefined,
+    city: city || undefined,
     notes: clean(body.notes, 1000) || undefined,
-    source: "CAR_CARD_WHATSAPP",
+    source: isGeneral ? "FLOATING_WIDGET" : "CAR_CARD_WHATSAPP",
     status: "NEW",
     createdAt: new Date().toISOString(),
   };
@@ -59,8 +69,7 @@ export const POST = withErrorHandling(async (req) => {
   const next = [enquiry, ...(Array.isArray(existing) ? existing : [])].slice(0, MAX_STORED_CAR_ENQUIRIES);
   await setSetting(CAR_ENQUIRIES_SETTING_KEY, next);
 
-  const company = await getCompanyContent();
-  const whatsappNumber = (company.socialLinks?.whatsapp?.match(/wa\.me\/(\d+)/)?.[1] ?? company.phone ?? "").replace(/[^0-9]/g, "");
+  const whatsappNumber = pickWhatsAppNumber(await getWhatsAppNumbers(), city);
 
   return created({ id: enquiry.id, whatsappNumber });
 });

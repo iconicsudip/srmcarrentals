@@ -5,6 +5,7 @@ import * as React from "react";
 import { useSearchParams } from "next/navigation";
 import { AlertCircle, CheckCircle2, Loader2, MapPin, MessageCircle, Plane, Phone, ShieldCheck, ShoppingBag, Tag } from "lucide-react";
 import { toast } from "sonner";
+import { pickWhatsAppNumber, toWaNumber, type WhatsAppNumbers } from "@/lib/whatsapp/pick";
 import type { PricingCalculateResponse } from "@srm/types";
 
 import { ApiRequestError, apiFetch } from "@/lib/api-client";
@@ -25,6 +26,8 @@ export interface BookingEngineProps {
   fuelType?: string;
   includedKmPerDay: number;
   phone: string;
+  /** City-wise WhatsApp routing (from admin settings). */
+  whatsappNumbers?: WhatsAppNumbers | null;
   locations: { id: string; name: string; city: string; state: string; dropCharge?: any }[];
   airports: { id: string; name: string; code: string; city: string }[];
   insurances: { id: string; name: string; dailyPrice?: any; fixedPrice?: any; description?: string | null }[];
@@ -90,6 +93,7 @@ export function BookingEngine({
   fuelType,
   includedKmPerDay,
   phone,
+  whatsappNumbers,
   locations,
   airports,
   insurances,
@@ -305,7 +309,9 @@ export function BookingEngine({
       toast.error("This car is unavailable for the selected dates. Please adjust your dates.");
       return;
     }
-    const number = phone.replace(/[^0-9]/g, "");
+    // Route to the selected city's WhatsApp number (falls back to the default / company number).
+    const bookingCity = locations.find((l) => l.id === selectedLocationId)?.city;
+    const number = pickWhatsAppNumber(whatsappNumbers, bookingCity) || toWaNumber(phone);
     if (!number) {
       toast.error("WhatsApp number is not configured.");
       return;

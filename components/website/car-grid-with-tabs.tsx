@@ -24,6 +24,8 @@ interface CarGridWithTabsProps<T extends CarCardData & { tabId: string }> {
   scrollRow?: boolean;
   /** When true, cards are rendered in 2 stacked rows per carousel slide/column */
   twoRows?: boolean;
+  /** With `twoRows`, put one card per column (a single-row compact carousel). */
+  singleRowCompact?: boolean;
   /** When true, only show 1-day base price on the cards */
   showBasePriceOnly?: boolean;
 }
@@ -41,6 +43,7 @@ export function CarGridWithTabs<T extends CarCardData & { tabId: string }>({
   centerTabs = false,
   scrollRow = false,
   twoRows = false,
+  singleRowCompact = false,
   showBasePriceOnly = false,
 }: CarGridWithTabsProps<T>) {
   const [activeTab, setActiveTab] = React.useState("all");
@@ -57,11 +60,12 @@ export function CarGridWithTabs<T extends CarCardData & { tabId: string }>({
   const pairedCars = React.useMemo(() => {
     if (!twoRows) return [];
     const pairs: T[][] = [];
-    for (let i = 0; i < visible.length; i += 2) {
-      pairs.push(visible.slice(i, i + 2));
+    const chunk = singleRowCompact ? 1 : 2;
+    for (let i = 0; i < visible.length; i += chunk) {
+      pairs.push(visible.slice(i, i + chunk));
     }
     return pairs;
-  }, [visible, twoRows]);
+  }, [visible, twoRows, singleRowCompact]);
 
   const totalItems = twoRows ? pairedCars.length : visible.length;
   const [visibleCount, setVisibleCount] = React.useState(1);

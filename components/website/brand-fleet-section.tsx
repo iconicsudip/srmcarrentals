@@ -52,6 +52,7 @@ export function BrandFleetSection({ cars, brands, totalCount }: BrandFleetSectio
             totalCount={totalCount}
             centerTabs
             twoRows
+            singleRowCompact
             showBasePriceOnly
           />
         </div>

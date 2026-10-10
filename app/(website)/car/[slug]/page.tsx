@@ -23,6 +23,8 @@ import { Badge } from "@/components/ui/badge";
 import { getCarFallbackImage } from "@/lib/car-fallback-image";
 import { CarGallery } from "@/components/website/car-gallery";
 import { BookingEngine } from "@/components/website/booking-engine";
+import { getWhatsAppNumbers } from "@/lib/whatsapp/numbers";
+import { pickWhatsAppNumber } from "@/lib/whatsapp/pick";
 import { MobileBookBar, MobileQuickBook } from "@/components/website/mobile-book-bar";
 import { SimilarCarsCarousel } from "@/components/website/similar-cars-carousel";
 import {
@@ -83,6 +85,7 @@ function formatInr(amount: any) {
 export default async function CarDetailPage({ params }: CarDetailPageProps) {
   const { slug } = await params;
 
+  const whatsappNumbers = await getWhatsAppNumbers();
   const [car, company, locations, airports, insurances, extraServices] = await Promise.all([
     getPublicCarBySlug(slug),
     getCompanyContent(),
@@ -210,6 +213,7 @@ export default async function CarDetailPage({ params }: CarDetailPageProps) {
               carName={car.name}
               price={`From ₹${Number(car.pricing?.dailyPrice ?? 1500).toLocaleString("en-IN")} / day`}
               phone={company.phone}
+              whatsappNumber={pickWhatsAppNumber(whatsappNumbers, car.locations?.[0]?.location?.city)}
             />
 
             {/* Vehicle Title & Badges */}
@@ -471,6 +475,7 @@ export default async function CarDetailPage({ params }: CarDetailPageProps) {
               hourlyPrice={car.pricing?.hourlyPrice ? Number(car.pricing.hourlyPrice) : null}
               includedKmPerDay={car.pricing?.includedKmPerDay ?? 300}
               phone={company.phone}
+              whatsappNumbers={whatsappNumbers}
               locations={locations}
               airports={airports}
               insurances={insurances}

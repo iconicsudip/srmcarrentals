@@ -21,7 +21,7 @@ export function PhilosophySection({ content }: { content: HomepageContent["philo
           <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between rounded-2xl border border-neutral-200/80 bg-white/90 px-4 py-3 backdrop-blur-md shadow-lg">
             <div>
               <div className="text-[10px] font-bold tracking-widest text-orange-700 uppercase">Heritage &amp; Craftsmanship</div>
-              <div className="mt-0.5 text-xs font-black text-neutral-950">JODHPUR · JAIPUR · UDAIPUR</div>
+              <div className="mt-0.5 text-xs font-black text-neutral-950">UDAIPUR · NAVSARI · JAIPUR</div>
             </div>
             <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-orange-500/15 text-orange-600 shadow-xs">
               <Award className="size-4" />

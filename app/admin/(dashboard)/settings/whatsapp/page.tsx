@@ -27,6 +27,11 @@ export default function WhatsAppSettingsPage() {
     autoSendVoucherOnHold: true,
     autoSendDriverDetails: true,
     welcomeMessageTemplate: "Hello! Welcome to SRM Car Rentals Udaipur. How can we assist your journey today?",
+    cityNumbers: [
+      { city: "Udaipur", number: "" },
+      { city: "Navsari", number: "" },
+      { city: "Jaipur", number: "" },
+    ] as { city: string; number: string }[],
   });
 
   React.useEffect(() => {
@@ -117,6 +122,53 @@ export default function WhatsAppSettingsPage() {
                       <option value="META_CLOUD_API">Meta Official WhatsApp Cloud API</option>
                     </select>
                   </div>
+                </div>
+
+                {/* City-wise numbers */}
+                <div className="border-t pt-4 space-y-3">
+                  <div>
+                    <h3 className="text-sm font-semibold">City-wise WhatsApp numbers</h3>
+                    <p className="text-xs text-muted-foreground">
+                      When a customer books or contacts us for a car in a city, WhatsApp opens that city&apos;s number. Cities without a number use the official number above.
+                      City names must match the city on your Locations.
+                    </p>
+                  </div>
+                  {form.cityNumbers.map((row, i) => (
+                    <div key={i} className="grid grid-cols-[1fr_1.3fr_auto] items-center gap-2">
+                      <Input
+                        value={row.city}
+                        placeholder="City (e.g. Udaipur)"
+                        onChange={(e) =>
+                          setForm({ ...form, cityNumbers: form.cityNumbers.map((r, j) => (j === i ? { ...r, city: e.target.value } : r)) })
+                        }
+                      />
+                      <Input
+                        value={row.number}
+                        placeholder="+91 98XXXXXXXX"
+                        inputMode="tel"
+                        onChange={(e) =>
+                          setForm({ ...form, cityNumbers: form.cityNumbers.map((r, j) => (j === i ? { ...r, number: e.target.value } : r)) })
+                        }
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="text-red-500"
+                        onClick={() => setForm({ ...form, cityNumbers: form.cityNumbers.filter((_, j) => j !== i) })}
+                      >
+                        Remove
+                      </Button>
+                    </div>
+                  ))}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setForm({ ...form, cityNumbers: [...form.cityNumbers, { city: "", number: "" }] })}
+                  >
+                    + Add city
+                  </Button>
                 </div>
 
                 {form.provider === "META_CLOUD_API" && (

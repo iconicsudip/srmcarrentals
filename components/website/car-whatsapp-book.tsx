@@ -28,14 +28,17 @@ export function CarWhatsAppBook({
   car,
   pickupDate,
   dropDate,
-  pickupLocation,
+  locations = [],
+  defaultLocationId,
   className,
   label = "WhatsApp",
 }: {
   car: CarWhatsAppTarget;
   pickupDate?: string;
   dropDate?: string;
-  pickupLocation?: string;
+  /** Locations this car is available at — the chosen one decides which city's WhatsApp number is used. */
+  locations?: { id: string; name: string }[];
+  defaultLocationId?: string | null;
   className?: string;
   label?: string;
 }) {
@@ -48,11 +51,12 @@ export function CarWhatsAppBook({
     email: "",
     pickupAt: asLocalInput(pickupDate),
     dropAt: asLocalInput(dropDate),
-    pickupLocation: pickupLocation ?? "",
+    locationId: (defaultLocationId && locations.some((l) => l.id === defaultLocationId) ? defaultLocationId : locations[0]?.id) ?? "",
+    pickupLocation: "",
     notes: "",
     website: "", // honeypot
   });
-  const set = (k: keyof typeof v) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
+  const set = (k: keyof typeof v) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
     setV((p) => ({ ...p, [k]: k === "phone" ? toTenDigits(e.target.value) : e.target.value }));
 
   React.useEffect(() => {
@@ -70,7 +74,13 @@ export function CarWhatsAppBook({
     try {
       const res = await apiFetch<{ id: string; whatsappNumber: string }>("/car-enquiries", {
         method: "POST",
-        body: { carId: car.id, carSlug: car.slug, carName: car.name, ...v },
+        body: {
+          carId: car.id,
+          carSlug: car.slug,
+          carName: car.name,
+          ...v,
+          pickupLocation: locations.find((l) => l.id === v.locationId)?.name ?? v.pickupLocation,
+        },
       });
       setDone(true);
       toast.success("Request saved! Opening WhatsApp…");
@@ -85,7 +95,7 @@ export function CarWhatsAppBook({
           car.priceLabel ? `• *Rate*: ${car.priceLabel}` : null,
           v.pickupAt ? `• *Pickup*: ${fmt(v.pickupAt)}` : null,
           v.dropAt ? `• *Drop*: ${fmt(v.dropAt)}` : null,
-          v.pickupLocation ? `• *Location*: ${v.pickupLocation}` : null,
+          locations.find((l) => l.id === v.locationId) ? `• *City / Branch*: ${locations.find((l) => l.id === v.locationId)!.name}` : v.pickupLocation ? `• *Location*: ${v.pickupLocation}` : null,
           `• *Name*: ${v.name}`,
           `• *Mobile*: ${v.phone}`,
           v.notes ? `• *Notes*: ${v.notes}` : null,
@@ -181,8 +191,18 @@ export function CarWhatsAppBook({
               <Field label="Drop Date & Time" required>
                 <input required type="datetime-local" value={v.dropAt} min={v.pickupAt || undefined} onChange={set("dropAt")} className={inputClass} />
               </Field>
-              <Field label="Pickup Location / City" className="sm:col-span-2">
-                <input value={v.pickupLocation} onChange={set("pickupLocation")} placeholder="Branch, airport, hotel…" className={inputClass} />
+              <Field label="Pickup City / Branch" required={locations.length > 0} className="sm:col-span-2">
+                {locations.length > 0 ? (
+                  <select required value={v.locationId} onChange={set("locationId")} className={inputClass}>
+                    {locations.map((l) => (
+                      <option key={l.id} value={l.id}>
+                        {l.name}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <input value={v.pickupLocation} onChange={set("pickupLocation")} placeholder="Branch, airport, hotel…" className={inputClass} />
+                )}
               </Field>
               <Field label="Email (optional)" className="sm:col-span-2">
                 <input type="email" value={v.email} onChange={set("email")} placeholder="you@example.com" className={inputClass} />

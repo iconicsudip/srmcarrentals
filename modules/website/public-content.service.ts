@@ -670,6 +670,7 @@ const CAR_DETAIL_INCLUDE = {
   interiorColor: true,
   features: { include: { feature: true } },
   safetyFeatures: { include: { safetyFeature: true } },
+  locations: { include: { location: true } },
   images: { orderBy: { sortOrder: "asc" as const } },
   pricing: true,
 } as const;
