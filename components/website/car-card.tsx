@@ -249,7 +249,7 @@ function CarCardInner({
             alt={image?.altText ?? car.name}
             fill
             sizes="(max-width: 640px) 280px, 340px"
-            className="object-contain p-2 transition-transform duration-700 ease-out group-hover:scale-108"
+            className="object-cover transition-transform duration-700 ease-out group-hover:scale-108"
             onError={() => setImgSrc(fallbackImg)}
           />
           <div className="absolute bottom-2 left-2 right-2 flex items-center justify-between text-[10px] text-neutral-600 px-1">
@@ -340,13 +340,13 @@ function CarCardInner({
         </div>
 
         {/* Car Image (Clickable) */}
-        <Link href={carHref} className="relative my-3 block aspect-[4/3] w-full overflow-hidden">
+        <Link href={carHref} className="relative my-3 block aspect-[4/3] w-full overflow-hidden rounded-xl">
           <Image
             src={imgSrc}
             alt={image?.altText ?? car.name}
             fill
             sizes="(max-width: 768px) 100vw, 300px"
-            className="object-contain transition-transform duration-700 ease-out group-hover:scale-108"
+            className="object-cover transition-transform duration-700 ease-out group-hover:scale-108"
             onError={() => setImgSrc(fallbackImg)}
           />
         </Link>
