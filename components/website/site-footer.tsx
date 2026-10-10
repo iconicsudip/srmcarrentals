@@ -16,7 +16,6 @@ export function SiteFooter({ company, branches = [], text }: { company: CompanyC
     { icon: Camera, href: company.socialLinks.instagram, label: "Instagram" },
     { icon: Share2, href: company.socialLinks.facebook, label: "Facebook" },
     { icon: Video, href: company.socialLinks.youtube, label: "YouTube" },
-    { icon: MessageCircle, href: company.socialLinks.whatsapp, label: "WhatsApp" },
   ].filter((s) => s.href);
 
   const columns = [
