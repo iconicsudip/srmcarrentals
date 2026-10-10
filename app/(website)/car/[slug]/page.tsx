@@ -233,7 +233,7 @@ export default async function CarDetailPage({ params }: CarDetailPageProps) {
 
               <h1 className="mt-4 text-3xl font-black text-neutral-950 sm:text-4xl">{car.name}</h1>
               <p className="mt-1 text-sm text-neutral-500">
-                {car.brand.name} {car.model.name} · Model Year {car.year} · Self-Drive Rental
+                {t("carpage.model-line", { brand: car.brand.name, model: car.model.name, year: car.year })}
               </p>
 
               {car.shortDescription && (
@@ -299,7 +299,7 @@ export default async function CarDetailPage({ params }: CarDetailPageProps) {
             {/* About & Description */}
             {car.description && (
               <div className="rounded-3xl border border-neutral-200/90 bg-white p-6 shadow-sm">
-                <h2 className="text-lg font-bold text-neutral-950">About the {car.name}</h2>
+                <h2 className="text-lg font-bold text-neutral-950">{t("carpage.about-the", { name: car.name })}</h2>
                 <div className="mt-3 text-sm leading-relaxed text-neutral-600 whitespace-pre-line">
                   {car.description}
                 </div>

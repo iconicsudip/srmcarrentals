@@ -31,11 +31,11 @@ export function ErrorBoundaryView({
   return (
     <ErrorScreen
       code={isStale ? "UPDATE" : "500"}
-      title={isStale ? "A new version is live" : "Something went wrong"}
+      title={isStale ? t("errors.stale-title") : t("errors.server-title")}
       message={
         isStale
-          ? "We just released an update and this page is out of date. Refresh to load the latest version."
-          : "An unexpected error occurred on our side. You can try again, or head back to the homepage."
+          ? t("errors.stale-message")
+          : t("errors.server-message")
       }
       detail={error?.digest}
       fullscreen={fullscreen}

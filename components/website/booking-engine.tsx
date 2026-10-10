@@ -252,7 +252,7 @@ export function BookingEngine({
       });
       setPricingResult(response);
     } catch (err) {
-      setCalcError(err instanceof ApiRequestError ? err.message : "Unable to calculate pricing.");
+      setCalcError(err instanceof ApiRequestError ? err.message : t("booking.calc-error"));
     } finally {
       setCalcLoading(false);
     }
@@ -461,7 +461,7 @@ export function BookingEngine({
                 : "text-neutral-600 hover:text-neutral-950"
             }`}
           >
-            Daily Rental (24h)
+            {t("booking.daily-toggle")}
           </button>
           <button
             type="button"
@@ -472,7 +472,7 @@ export function BookingEngine({
                 : "text-neutral-600 hover:text-neutral-950"
             }`}
           >
-            Hourly Rental (₹{Number(hourlyPrice).toLocaleString("en-IN")}/hr)
+            {t("booking.hourly-toggle", { price: Number(hourlyPrice).toLocaleString("en-IN") })}
           </button>
         </div>
       )}
@@ -558,13 +558,13 @@ export function BookingEngine({
             <div>
               <div className="flex items-center justify-between">
                 <Label className="text-xs text-neutral-700 font-medium">
-                  {differentDropLocation ? "Pickup Branch Office" : "Branch Office (Pickup & Drop)"}
+                  {differentDropLocation ? t("booking.pickup-branch") : t("booking.branch-both")}
                 </Label>
                 {!differentDropLocation && (
                   <span className={`text-[11px] font-semibold ${Number(locations.find((l) => l.id === selectedLocationId)?.dropCharge ?? 0) > 0 ? "text-orange-600" : "text-emerald-600"}`}>
                     {Number(locations.find((l) => l.id === selectedLocationId)?.dropCharge ?? 0) > 0
-                      ? `Drop Fee: ₹${Number(locations.find((l) => l.id === selectedLocationId)?.dropCharge).toLocaleString("en-IN")}`
-                      : "Free Drop (₹0)"}
+                      ? t("booking.drop-fee", { amount: Number(locations.find((l) => l.id === selectedLocationId)?.dropCharge).toLocaleString("en-IN") })
+                      : t("booking.free-drop")}
                   </span>
                 )}
               </div>
@@ -580,7 +580,7 @@ export function BookingEngine({
               >
                 {locations.map((loc) => {
                   const charge = Number(loc.dropCharge ?? 0);
-                  const priceLabel = charge > 0 ? ` — ₹${charge.toLocaleString("en-IN")} Drop Fee` : " — Free Drop (₹0)";
+                  const priceLabel = charge > 0 ? ` — ${t("booking.drop-fee-amount", { amount: charge.toLocaleString("en-IN") })}` : ` — ${t("booking.free-drop")}`;
                   return (
                     <option key={loc.id} value={loc.id} className="bg-white text-neutral-900">
                       {loc.name} ({loc.city}){priceLabel}
@@ -612,8 +612,8 @@ export function BookingEngine({
                   <Label className="text-xs text-neutral-700 font-medium">{t("booking.dropoff-branch-office")}</Label>
                   <span className={`text-[11px] font-semibold ${Number(locations.find((l) => l.id === selectedDropLocationId)?.dropCharge ?? 0) > 0 ? "text-orange-600" : "text-emerald-600"}`}>
                     {Number(locations.find((l) => l.id === selectedDropLocationId)?.dropCharge ?? 0) > 0
-                      ? `Drop Fee: ₹${Number(locations.find((l) => l.id === selectedDropLocationId)?.dropCharge).toLocaleString("en-IN")}`
-                      : "Free Drop (₹0)"}
+                      ? t("booking.drop-fee", { amount: Number(locations.find((l) => l.id === selectedDropLocationId)?.dropCharge).toLocaleString("en-IN") })
+                      : t("booking.free-drop")}
                   </span>
                 </div>
                 <select
@@ -623,7 +623,7 @@ export function BookingEngine({
                 >
                   {locations.map((loc) => {
                     const charge = Number(loc.dropCharge ?? 0);
-                    const priceLabel = charge > 0 ? ` — ₹${charge.toLocaleString("en-IN")} Drop Fee` : " — Free Drop (₹0)";
+                    const priceLabel = charge > 0 ? ` — ${t("booking.drop-fee-amount", { amount: charge.toLocaleString("en-IN") })}` : ` — ${t("booking.free-drop")}`;
                     return (
                       <option key={loc.id} value={loc.id} className="bg-white text-neutral-900">
                         {loc.name} ({loc.city}){priceLabel}
@@ -669,7 +669,7 @@ export function BookingEngine({
                 const priceLabel =
                   Number(ins.dailyPrice ?? ins.fixedPrice) > 0
                     ? `+₹${Number(ins.dailyPrice ?? ins.fixedPrice)}/day`
-                    : "Included Free";
+                    : t("booking.included-free");
 
                 return (
                   <label
@@ -739,7 +739,7 @@ export function BookingEngine({
           {appliedCoupon ? (
             <div className="flex items-center justify-between text-xs text-emerald-600">
               <span className="flex items-center gap-1 font-bold">
-                <Tag className="size-3.5" /> Coupon &ldquo;{appliedCoupon}&rdquo; applied!
+                <Tag className="size-3.5" /> {t("booking.coupon-applied", { code: appliedCoupon })}
               </span>
               <button
                 type="button"
@@ -758,7 +758,7 @@ export function BookingEngine({
                 className="h-8 border-neutral-200 bg-white text-xs uppercase text-neutral-900"
               />
               <Button type="submit" size="sm" variant="outline" disabled={isApplyingCoupon} className="h-8 border-neutral-200 bg-white text-xs hover:border-orange-500 hover:text-orange-600">
-                {isApplyingCoupon ? <Loader2 className="size-3 animate-spin" /> : "Apply"}
+                {isApplyingCoupon ? <Loader2 className="size-3 animate-spin" /> : t("booking.apply")}
               </Button>
             </form>
           )}
@@ -773,13 +773,13 @@ export function BookingEngine({
           <div className="relative rounded-2xl border border-dashed border-neutral-300 bg-gradient-to-b from-amber-50/40 to-neutral-50/70 p-4 text-xs before:absolute before:top-1/2 before:-left-2 before:size-4 before:-translate-y-1/2 before:rounded-full before:border before:border-neutral-200 before:bg-white after:absolute after:top-1/2 after:-right-2 after:size-4 after:-translate-y-1/2 after:rounded-full after:border after:border-neutral-200 after:bg-white">
             <div className="flex flex-col gap-2">
               <div className="flex justify-between text-neutral-600">
-                <span>Base Rental ({pricingResult.duration.fullDays || 1} day(s))</span>
+                <span>{t("booking.base-rental", { days: pricingResult.duration.fullDays || 1 })}</span>
                 <span>{formatInr(pricingResult.rental.basePrice)}</span>
               </div>
 
               {pricingResult.rental.extraHourCharge > 0 && (
                 <div className="flex justify-between text-neutral-600">
-                  <span>Extra Hours ({pricingResult.duration.extraHours}h)</span>
+                  <span>{t("booking.extra-hours", { hours: pricingResult.duration.extraHours })}</span>
                   <span>{formatInr(pricingResult.rental.extraHourCharge)}</span>
                 </div>
               )}
@@ -864,10 +864,10 @@ export function BookingEngine({
               <Loader2 className="mr-2 size-4 animate-spin" /> {t("booking.checking-availability-rates")}
             </>
           ) : isAvailable === false ? (
-            "Car unavailable for selected dates"
+            t("booking.unavailable")
           ) : (
             <span className="flex items-center justify-center gap-2">
-              <ShoppingBag className="size-4" /> Add to Cart •{" "}
+              <ShoppingBag className="size-4" /> {t("booking.add-to-cart")} •{" "}
               {formatInr(pricingResult?.total ?? (rentalMode === "HOURLY" ? Number(hourlyPrice || 500) : dailyPrice))}
             </span>
           )}
