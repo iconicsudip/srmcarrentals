@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import { Calendar, CarFront, CheckCircle2, ChevronRight, Clock, Info, Loader2, LogIn, LogOut, Receipt, ShieldCheck, ShoppingBag, User, UserCheck } from "lucide-react";
 import { toast } from "sonner";
 
+import { useCopy } from "@/components/copy-provider";
 import { useCart } from "@/lib/cart/cart-store";
 import { ApiRequestError, apiFetch } from "@/lib/api-client";
 import { useCurrentUser, useLogin, useLogout } from "@/hooks/use-auth";
@@ -48,6 +49,7 @@ function toTenDigits(value: string): string {
 }
 
 export default function CheckoutPage() {
+  const t = useCopy();
   const router = useRouter();
   const { items, clear, updateItem } = useCart();
 
@@ -160,7 +162,7 @@ export default function CheckoutPage() {
         : `${primaryItem.locationName || "Udaipur"} → ${loc.name}`,
     });
     setIsChangingLocation(false);
-    toast.success(`Delivery Location updated to ${loc.name}`);
+    toast.success(t("checkout.toast-location-updated", { name: loc.name }));
   };
 
   // Authentication hooks
@@ -206,12 +208,12 @@ export default function CheckoutPage() {
   }, [currentUser]);
 
   const fieldError = (id: string, value: string): string | undefined => {
-    if (id === "fullName" && !value.trim()) return "Please enter your full name";
-    if (id === "phone" && value.replace(/[^0-9]/g, "").length !== 10) return "Enter a valid 10-digit mobile number";
-    if (id === "city" && !value.trim()) return "Please enter your city";
-    if (id === "email" && value.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim())) return "Enter a valid email address";
+    if (id === "fullName" && !value.trim()) return t("checkout.err-name");
+    if (id === "phone" && value.replace(/[^0-9]/g, "").length !== 10) return t("checkout.err-phone");
+    if (id === "city" && !value.trim()) return t("checkout.err-city");
+    if (id === "email" && value.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim())) return t("checkout.err-email");
     if (id === "aadharNumber" && value.replace(/\D/g, "").length > 0 && value.replace(/\D/g, "").length !== 12) {
-      return "Aadhaar must be 12 digits";
+      return t("checkout.err-aadhaar");
     }
     return undefined;
   };
@@ -245,7 +247,7 @@ export default function CheckoutPage() {
     setLoginError(null);
 
     if (!loginEmail.trim() || !loginPassword.trim()) {
-      setLoginError("Please enter your email and password.");
+      setLoginError(t("checkout.toast-login-required"));
       return;
     }
 
@@ -255,7 +257,7 @@ export default function CheckoutPage() {
         password: loginPassword,
       });
 
-      toast.success(`Welcome back, ${res.user.firstName}! Contact details pre-filled.`);
+      toast.success(t("checkout.toast-welcome", { name: res.user.firstName }));
       setFormValues((prev) => ({
         ...prev,
         fullName: `${res.user.firstName} ${res.user.lastName}`.trim(),
@@ -265,7 +267,7 @@ export default function CheckoutPage() {
       setLoginPassword("");
       setShowLogin(false);
     } catch (err) {
-      const msg = err instanceof ApiRequestError ? err.message : "Invalid email or password. Please try again.";
+      const msg = err instanceof ApiRequestError ? err.message : t("checkout.toast-login-failed");
       setLoginError(msg);
       toast.error(msg);
     }
@@ -276,7 +278,7 @@ export default function CheckoutPage() {
     e.preventDefault();
 
     if (!agreeTerms) {
-      toast.error("Please accept the rental policy and terms of service.");
+      toast.error(t("checkout.toast-accept-terms"));
       return;
     }
 
@@ -290,7 +292,7 @@ export default function CheckoutPage() {
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       setTouched({ fullName: true, phone: true, city: true, email: true, aadharNumber: true });
-      toast.error("Please fix the highlighted fields");
+      toast.error(t("checkout.toast-fix-fields"));
       const first = ["fullName", "phone", "city", "email", "aadharNumber"].find((id) => newErrors[id]);
       const el = first ? document.getElementById(`co-${first}`) : null;
       el?.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -371,16 +373,16 @@ export default function CheckoutPage() {
       clear();
 
       if (paymentMethod === "ONLINE" && result.paymentUrl) {
-        toast.success("Redirecting to Razorpay for phone verification & payment...");
+        toast.success(t("checkout.toast-redirect-pay"));
         window.location.href = result.paymentUrl;
         return;
       }
 
-      toast.success("Reservation confirmed! 15-minute hold active.");
+      toast.success(t("checkout.toast-confirmed"));
       router.push(`/booking/${result.bookingReference}`);
     } catch (err) {
       toast.error(
-        err instanceof ApiRequestError ? err.message : "Failed to create reservation. Please try again.",
+        err instanceof ApiRequestError ? err.message : t("checkout.toast-failed"),
       );
     } finally {
       setIsSubmitting(false);
@@ -395,12 +397,12 @@ export default function CheckoutPage() {
           <div className="flex size-20 items-center justify-center rounded-3xl bg-orange-50 border border-orange-200 text-orange-500 mb-6 shadow-sm">
             <ShoppingBag className="size-10" />
           </div>
-          <h1 className="text-3xl font-black text-neutral-950 uppercase tracking-tight">Your Cart is Empty</h1>
+          <h1 className="text-3xl font-black text-neutral-950 uppercase tracking-tight">{t("checkout.your-cart-is-empty")}</h1>
           <p className="mt-3 text-sm text-neutral-600 max-w-md">
-            You don&apos;t have any vehicles in your checkout cart yet. Browse our verified self-drive fleet, choose trip dates, and add a vehicle to continue.
+            {t("checkout.you-dont-have-any")}
           </p>
           <Button asChild className="mt-8 bg-orange-500 hover:bg-orange-600 font-bold px-8 py-3 text-sm rounded-xl text-white shadow-lg shadow-orange-500/20">
-            <Link href="/cars">Explore Self-Drive Fleet →</Link>
+            <Link href="/cars">{t("checkout.explore-selfdrive-fleet")}</Link>
           </Button>
         </div>
       </div>
@@ -412,13 +414,13 @@ export default function CheckoutPage() {
       {/* Top Breadcrumb */}
       <div className="border-b border-neutral-200/80 bg-white/80 py-3 backdrop-blur-md">
         <div className="mx-auto flex max-w-[1520px] items-center gap-1.5 px-4 text-xs text-neutral-500 sm:px-6 lg:px-8">
-          <Link href="/" className="hover:text-neutral-900 transition">Home</Link>
+          <Link href="/" className="hover:text-neutral-900 transition">{t("checkout.home")}</Link>
           <ChevronRight className="size-3" />
-          <Link href="/cars" className="hover:text-neutral-900 transition">Fleet</Link>
+          <Link href="/cars" className="hover:text-neutral-900 transition">{t("checkout.fleet")}</Link>
           <ChevronRight className="size-3" />
-          <Link href="/cart" className="hover:text-neutral-900 transition">Cart</Link>
+          <Link href="/cart" className="hover:text-neutral-900 transition">{t("checkout.cart")}</Link>
           <ChevronRight className="size-3" />
-          <span className="font-semibold text-orange-600">Checkout</span>
+          <span className="font-semibold text-orange-600">{t("checkout.checkout")}</span>
         </div>
       </div>
 
@@ -427,23 +429,23 @@ export default function CheckoutPage() {
         <div className="flex flex-wrap items-center justify-between gap-4 border-b border-neutral-200 pb-6">
           <div>
             <span className="rounded-full bg-orange-500/10 px-3 py-1 text-[11px] font-bold uppercase tracking-widest text-orange-600 border border-orange-500/20">
-              Secure Checkout • 256-Bit SSL
+              {t("checkout.secure-checkout-256bit-ssl")}
             </span>
             <h1 className="mt-3 text-2xl font-black uppercase tracking-tight text-neutral-950 sm:text-3xl">
-              Complete Your Reservation
+              {t("checkout.complete-your-reservation")}
             </h1>
             <p className="text-xs text-neutral-600 mt-1">
-              Finalize driver contact details, verification requirements, and payment preferences.
+              {t("checkout.finalize-driver-contact-details")}
             </p>
           </div>
 
           <div className="hidden sm:flex items-center gap-3 text-xs text-neutral-600">
             <span className="flex items-center gap-1.5 font-medium">
-              <ShieldCheck className="size-4 text-emerald-600" /> Free Cancellation
+              <ShieldCheck className="size-4 text-emerald-600" /> {t("checkout.free-cancellation")}
             </span>
             <span className="text-neutral-300">|</span>
             <span className="flex items-center gap-1.5 font-medium">
-              <CheckCircle2 className="size-4 text-orange-500" /> Instant 15-Min Hold
+              <CheckCircle2 className="size-4 text-orange-500" /> {t("checkout.instant-15min-hold")}
             </span>
           </div>
         </div>
@@ -451,9 +453,9 @@ export default function CheckoutPage() {
         {/* Progress */}
         <ol className="mt-6 flex items-center gap-2 text-[11px] font-bold tracking-wider uppercase sm:gap-3 sm:text-xs">
           {[
-            { label: "Cart", state: "done" },
-            { label: "Your details", state: "active" },
-            { label: paymentMethod === "ONLINE" ? "Pay advance" : "Confirm", state: "todo" },
+            { label: t("checkout.step-cart"), state: "done" },
+            { label: t("checkout.step-details"), state: "active" },
+            { label: paymentMethod === "ONLINE" ? t("checkout.step-pay-advance") : t("checkout.step-confirm"), state: "todo" },
           ].map((step, i, arr) => (
             <React.Fragment key={step.label}>
               <li className={`flex items-center gap-2 ${step.state === "todo" ? "text-neutral-400" : "text-neutral-900"}`}>
@@ -493,7 +495,7 @@ export default function CheckoutPage() {
                           {currentUser.firstName} {currentUser.lastName}
                         </span>
                         <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[9px] font-black uppercase text-emerald-700">
-                          Verified Member
+                          {t("checkout.verified-member")}
                         </span>
                       </div>
                       <p className="text-xs text-neutral-600">{currentUser.email}</p>
@@ -512,21 +514,21 @@ export default function CheckoutPage() {
                     ) : (
                       <LogOut className="size-3.5 mr-1.5" />
                     )}
-                    {logoutMutation.isPending ? "Signing Out..." : "Sign Out"}
+                    {logoutMutation.isPending ? t("checkout.signing-out") : t("checkout.sign-out")}
                   </Button>
                 </div>
               ) : (
                 <div className="rounded-2xl border border-neutral-200 bg-white p-4 shadow-sm flex flex-wrap items-center justify-between gap-3 text-xs">
                   <div className="flex items-center gap-2 text-neutral-700 font-medium">
                     <User className="size-4 text-orange-500" />
-                    <span>Already have an account with SRM?</span>
+                    <span>{t("checkout.already-have-an-account")}</span>
                   </div>
                   <button
                     type="button"
                     onClick={() => setShowLogin(!showLogin)}
                     className="text-orange-600 font-bold hover:underline"
                   >
-                    {showLogin ? "Close Login" : "Click here to sign in"}
+                    {showLogin ? t("checkout.close-login") : t("checkout.open-login")}
                   </button>
                 </div>
               )}
@@ -535,7 +537,7 @@ export default function CheckoutPage() {
               {showLogin && !currentUser && (
                 <div className="rounded-2xl border border-orange-200 bg-orange-50/60 p-5 animate-in fade-in">
                   <div className="flex items-center gap-2 text-xs font-bold text-orange-600">
-                    <LogIn className="size-4" /> Sign In to Your SRM Account
+                    <LogIn className="size-4" /> {t("checkout.sign-in-to-your")}
                   </div>
                   <form onSubmit={handleInlineLogin} className="mt-4 space-y-3">
                     {loginError && (
@@ -545,7 +547,7 @@ export default function CheckoutPage() {
                       <input
                         type="email"
                         required
-                        placeholder="Email Address"
+                        placeholder={t("checkout.email-address")}
                         value={loginEmail}
                         onChange={(e) => setLoginEmail(e.target.value)}
                         className="h-11 rounded-xl border border-neutral-300 bg-white px-3.5 text-xs text-neutral-900 outline-none focus:border-orange-500 shadow-xs"
@@ -553,7 +555,7 @@ export default function CheckoutPage() {
                       <input
                         type="password"
                         required
-                        placeholder="Password"
+                        placeholder={t("checkout.password")}
                         value={loginPassword}
                         onChange={(e) => setLoginPassword(e.target.value)}
                         className="h-11 rounded-xl border border-neutral-300 bg-white px-3.5 text-xs text-neutral-900 outline-none focus:border-orange-500 shadow-xs"
@@ -566,10 +568,10 @@ export default function CheckoutPage() {
                     >
                       {loginMutation.isPending ? (
                         <span className="flex items-center gap-1.5">
-                          <Loader2 className="size-3.5 animate-spin" /> Signing In...
+                          <Loader2 className="size-3.5 animate-spin" /> {t("checkout.signing-in")}
                         </span>
                       ) : (
-                        "Sign In & Pre-fill"
+                        t("checkout.signin-prefill")
                       )}
                     </Button>
                   </form>
@@ -583,13 +585,13 @@ export default function CheckoutPage() {
                     <User className="size-5" />
                   </span>
                   <div>
-                    <h2 className="text-xl font-bold tracking-tight text-neutral-950 sm:text-2xl">Your details</h2>
-                    <p className="text-[11px] text-neutral-500">Fields marked * are required.</p>
+                    <h2 className="text-xl font-bold tracking-tight text-neutral-950 sm:text-2xl">{t("checkout.your-details")}</h2>
+                    <p className="text-[11px] text-neutral-500">{t("checkout.fields-marked-are-required")}</p>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 gap-x-6 gap-y-5 sm:grid-cols-2">
-                  <CheckoutField id="fullName" label="Full name" required error={touched.fullName ? errors.fullName : undefined} hint="As on your driving license">
+                  <CheckoutField id="fullName" label={t("checkout.full-name")} required error={touched.fullName ? errors.fullName : undefined} hint={t("checkout.as-on-your-driving")}>
                     <input
                       id="co-fullName"
                       type="text"
@@ -597,12 +599,12 @@ export default function CheckoutPage() {
                       value={formValues.fullName}
                       onChange={(e) => handleFieldChange("fullName", e.target.value)}
                       onBlur={() => handleBlur("fullName")}
-                      placeholder="e.g. Rahul Sharma"
+                      placeholder={t("checkout.eg-rahul-sharma")}
                       className={fieldClass(touched.fullName && !!errors.fullName)}
                     />
                   </CheckoutField>
 
-                  <CheckoutField id="phone" label="Mobile number" required error={touched.phone ? errors.phone : undefined} hint="We send your booking confirmation here">
+                  <CheckoutField id="phone" label={t("checkout.mobile-number")} required error={touched.phone ? errors.phone : undefined} hint={t("checkout.we-send-your-booking")}>
                     <div className="relative">
                       <span className="pointer-events-none absolute top-1/2 left-3.5 -translate-y-1/2 border-r border-neutral-200 pr-2.5 text-sm font-semibold text-neutral-500">
                         +91
@@ -625,7 +627,7 @@ export default function CheckoutPage() {
                     </div>
                   </CheckoutField>
 
-                  <CheckoutField id="email" label="Email" error={touched.email ? errors.email : undefined} hint="Optional — for your invoice & voucher">
+                  <CheckoutField id="email" label={t("checkout.email")} error={touched.email ? errors.email : undefined} hint={t("checkout.optional-for-your-invoice")}>
                     <input
                       id="co-email"
                       type="email"
@@ -633,12 +635,12 @@ export default function CheckoutPage() {
                       value={formValues.email}
                       onChange={(e) => handleFieldChange("email", e.target.value)}
                       onBlur={() => handleBlur("email")}
-                      placeholder="you@example.com"
+                      placeholder={t("checkout.youexamplecom")}
                       className={fieldClass(touched.email && !!errors.email)}
                     />
                   </CheckoutField>
 
-                  <CheckoutField id="city" label="City" required error={touched.city ? errors.city : undefined} hint="Where you live or are staying">
+                  <CheckoutField id="city" label={t("checkout.city")} required error={touched.city ? errors.city : undefined} hint={t("checkout.where-you-live-or")}>
                     <input
                       id="co-city"
                       type="text"
@@ -646,24 +648,24 @@ export default function CheckoutPage() {
                       value={formValues.city}
                       onChange={(e) => handleFieldChange("city", e.target.value)}
                       onBlur={() => handleBlur("city")}
-                      placeholder="e.g. Udaipur"
+                      placeholder={t("checkout.eg-udaipur")}
                       className={fieldClass(touched.city && !!errors.city)}
                     />
                   </CheckoutField>
 
-                  <CheckoutField id="licenseNumber" label="Driving license number" hint="Optional — speeds up handover">
+                  <CheckoutField id="licenseNumber" label={t("checkout.driving-license-number")} hint={t("checkout.optional-speeds-up-handover")}>
                     <input
                       id="co-licenseNumber"
                       type="text"
                       autoCapitalize="characters"
                       value={formValues.licenseNumber}
                       onChange={(e) => handleFieldChange("licenseNumber", e.target.value.toUpperCase())}
-                      placeholder="e.g. RJ14 20200012345"
+                      placeholder={t("checkout.eg-rj14-20200012345")}
                       className={fieldClass(false)}
                     />
                   </CheckoutField>
 
-                  <CheckoutField id="aadharNumber" label="Aadhaar number" error={touched.aadharNumber ? errors.aadharNumber : undefined} hint="Optional — only the last 4 digits are stored">
+                  <CheckoutField id="aadharNumber" label={t("checkout.aadhaar-number")} error={touched.aadharNumber ? errors.aadharNumber : undefined} hint={t("checkout.optional-only-the-last")}>
                     <input
                       id="co-aadharNumber"
                       type="text"
@@ -680,7 +682,7 @@ export default function CheckoutPage() {
                         )
                       }
                       onBlur={() => handleBlur("aadharNumber")}
-                      placeholder="XXXX XXXX XXXX"
+                      placeholder={t("checkout.xxxx-xxxx-xxxx")}
                       className={fieldClass(touched.aadharNumber && !!errors.aadharNumber)}
                     />
                   </CheckoutField>
@@ -694,8 +696,8 @@ export default function CheckoutPage() {
                     <Receipt className="size-5" />
                   </div>
                   <div>
-                    <h2 className="text-base font-bold text-neutral-950 uppercase tracking-tight">Payment Preference</h2>
-                    <p className="text-[11px] text-neutral-500">Choose when and how you wish to settle this booking.</p>
+                    <h2 className="text-base font-bold text-neutral-950 uppercase tracking-tight">{t("checkout.payment-preference")}</h2>
+                    <p className="text-[11px] text-neutral-500">{t("checkout.choose-when-and-how")}</p>
                   </div>
                 </div>
 
@@ -717,14 +719,14 @@ export default function CheckoutPage() {
                           onChange={() => setPaymentMethod("PICKUP")}
                           className="accent-orange-500 mt-0.5"
                         />
-                        <span className="font-bold text-xs text-neutral-950">Pay at Handover / Pickup</span>
+                        <span className="font-bold text-xs text-neutral-950">{t("checkout.pay-at-handover-pickup")}</span>
                       </div>
                       <span className="rounded bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-700 border border-emerald-200">
-                        Zero Risk
+                        {t("checkout.zero-risk")}
                       </span>
                     </div>
                     <p className="mt-2 text-[11px] text-neutral-600">
-                      ₹0 upfront charge now. Pay via UPI, Cash, or Card after inspecting the vehicle.
+                      {t("checkout.0-upfront-charge-now")}
                     </p>
                   </label>
 
@@ -745,14 +747,14 @@ export default function CheckoutPage() {
                           onChange={() => setPaymentMethod("ONLINE")}
                           className="accent-orange-500 mt-0.5"
                         />
-                        <span className="font-bold text-xs text-neutral-950">Pay {ADVANCE_PERCENT}% Advance Online</span>
+                        <span className="font-bold text-xs text-neutral-950">{t("checkout.online-title", { percent: ADVANCE_PERCENT })}</span>
                       </div>
                       <span className="rounded bg-orange-100 px-2 py-0.5 text-[10px] font-bold text-orange-700 border border-orange-200">
-                        Phone OTP Verified
+                        {t("checkout.phone-otp-verified")}
                       </span>
                     </div>
                     <p className="mt-2 text-[11px] text-neutral-600">
-                      Pay {formatInr(advance.now)} now ({ADVANCE_PERCENT}% of the rental) and the remaining {formatInr(grandTotal - advance.now)} (incl. refundable deposit) at vehicle handover. Mobile number is verified via Razorpay OTP; pay securely with UPI (GPay/PhonePe/Paytm), Cards, or NetBanking.
+                      {t("checkout.online-desc", { now: formatInr(advance.now), percent: ADVANCE_PERCENT, later: formatInr(grandTotal - advance.now) })}
                     </p>
                   </label>
                 </div>
@@ -765,8 +767,8 @@ export default function CheckoutPage() {
                     <ShieldCheck className="size-5" />
                   </div>
                   <div>
-                    <h2 className="text-base font-bold text-neutral-950 uppercase tracking-tight">Terms &amp; Eligibility</h2>
-                    <p className="text-[11px] text-neutral-500">Standard verification requirements set by Rajasthan RTO and SRM policy.</p>
+                    <h2 className="text-base font-bold text-neutral-950 uppercase tracking-tight">{t("checkout.terms-eligibility")}</h2>
+                    <p className="text-[11px] text-neutral-500">{t("checkout.standard-verification-requirements-set")}</p>
                   </div>
                 </div>
 
@@ -779,7 +781,7 @@ export default function CheckoutPage() {
                       className="mt-0.5 accent-orange-500"
                     />
                     <span>
-                      <strong className="text-neutral-950">Original Driving License (LMV):</strong> I hold an original valid Indian Driving License (minimum 1 year old) and will present it alongside Government ID (Aadhaar/Passport) at vehicle handover.
+                      <strong className="text-neutral-950">Original Driving License (LMV):</strong> {t("checkout.i-hold-an-original")}
                     </span>
                   </label>
 
@@ -791,7 +793,7 @@ export default function CheckoutPage() {
                       className="mt-0.5 accent-orange-500"
                     />
                     <span>
-                      <strong className="text-neutral-950">Rental Policy &amp; Safety Limit:</strong> I agree to SRM&apos;s rental agreement, speed limit compliance (80 km/h), driver age requirements (min 21+ years), and understand that a refundable security deposit is collected at vehicle pickup.
+                      <strong className="text-neutral-950">{t("checkout.rental-policy-safety-limit")}</strong> {t("checkout.i-agree-to-srms")}
                     </span>
                   </label>
                 </div>
@@ -808,15 +810,15 @@ export default function CheckoutPage() {
                       <span className="flex items-center justify-center gap-2">
                         <Loader2 className="size-5 animate-spin" />
                         {paymentMethod === "ONLINE"
-                          ? "Connecting to Razorpay for Phone Verification..."
-                          : "Securing Your Vehicle Hold..."}
+                          ? t("checkout.connecting-razorpay")
+                          : t("checkout.securing-hold")}
                       </span>
                     ) : (
                       <span className="flex items-center justify-center gap-2">
                         {paymentMethod === "ONLINE" ? (
-                          <>Pay {formatInr(advance.now)} &amp; Reserve →</>
+                          <>{t("checkout.cta-online", { amount: formatInr(advance.now) })}</>
                         ) : (
-                          <>Confirm Reservation →</>
+                          <>{t("checkout.confirm-reservation")}</>
                         )}
                       </span>
                     )}
@@ -824,8 +826,8 @@ export default function CheckoutPage() {
                   <p className="mt-2 flex items-center justify-center gap-1.5 text-center text-[11px] text-neutral-500">
                     <ShieldCheck className="size-3.5 shrink-0 text-emerald-600" />
                     {paymentMethod === "ONLINE"
-                      ? `You will be redirected to Razorpay to verify your phone number and pay the ${ADVANCE_PERCENT}% advance. The balance is due at handover.`
-                      : "By clicking Confirm Reservation, your vehicle is locked in the system and an instant booking voucher is created."}
+                      ? t("checkout.note-online", { percent: ADVANCE_PERCENT })
+                      : t("checkout.note-pickup")}
                   </p>
                 </div>
               </div>
@@ -843,13 +845,13 @@ export default function CheckoutPage() {
               >
                 <span className="flex items-center gap-2 text-sm font-bold text-neutral-900">
                   <Receipt className="size-4 text-orange-500" />
-                  {summaryOpen ? "Hide" : "Show"} order summary
+                  {t("checkout.summary-toggle", { action: summaryOpen ? t("checkout.hide") : t("checkout.show") })}
                 </span>
                 <span className="text-base font-black text-neutral-950">{formatInr(grandTotal)}</span>
               </button>
               <div className={`${summaryOpen ? "block" : "hidden"} rounded-3xl border border-neutral-200/90 bg-white p-6 shadow-2xl space-y-4 lg:block`}>
                 <div className="flex items-center justify-between border-b border-neutral-200 pb-3">
-                  <h3 className="text-base sm:text-lg font-bold text-neutral-950 uppercase tracking-tight">Order Summary</h3>
+                  <h3 className="text-base sm:text-lg font-bold text-neutral-950 uppercase tracking-tight">{t("checkout.order-summary")}</h3>
                   <span className="rounded-full bg-orange-500/10 px-2 py-0.5 text-[10px] font-bold text-orange-600 border border-orange-500/20">
                     {items.length} Car{items.length > 1 ? "s" : ""}
                   </span>
@@ -878,7 +880,7 @@ export default function CheckoutPage() {
                         <div className="flex-1 min-w-0">
                           <h4 className="text-sm font-bold text-neutral-950 truncate">{item.carName}</h4>
                           <span className="inline-block rounded bg-orange-50 px-1.5 py-0.5 text-[9px] font-bold text-orange-600 uppercase border border-orange-200">
-                            {item.rentalMode === "HOURLY" ? "Hourly Rental" : "Daily 24h"}
+                            {item.rentalMode === "HOURLY" ? t("checkout.hourly-rental") : t("checkout.daily-24h")}
                           </span>
 
                           <div className="mt-1 text-[11px] text-neutral-600 space-y-0.5">
@@ -901,13 +903,13 @@ export default function CheckoutPage() {
                 <div className="border-t border-neutral-200 pt-3 space-y-3 text-xs sm:text-sm">
                   {/* Subtotal */}
                   <div className="flex items-center justify-between">
-                    <span className="font-bold text-neutral-700">Subtotal:</span>
+                    <span className="font-bold text-neutral-700">{t("checkout.subtotal")}</span>
                     <span className="font-bold text-neutral-950">{formatInr(effectiveSubtotal)}</span>
                   </div>
 
                   {/* Free Kms */}
                   <div className="flex items-center justify-between">
-                    <span className="font-bold text-neutral-700">Free Kms:</span>
+                    <span className="font-bold text-neutral-700">{t("checkout.free-kms")}</span>
                     <span className="font-semibold text-neutral-950">{freeKmsLabel}</span>
                   </div>
 
@@ -915,7 +917,7 @@ export default function CheckoutPage() {
                   <div className="space-y-1.5">
                     <div className="flex items-center justify-between gap-2">
                       <div className="flex items-center gap-1.5">
-                        <span className="font-bold text-neutral-700">Delivery Location:</span>
+                        <span className="font-bold text-neutral-700">{t("checkout.delivery-location")}</span>
                         {locations.length > 0 && (
                           <button
                             type="button"
@@ -952,20 +954,20 @@ export default function CheckoutPage() {
 
                   {/* Delivery Charge */}
                   <div className="flex items-center justify-between">
-                    <span className="font-bold text-neutral-700">Delivery Charge:</span>
+                    <span className="font-bold text-neutral-700">{t("checkout.delivery-charge")}</span>
                     <span className="font-bold text-neutral-950">{formatInr(deliveryCharge)}</span>
                   </div>
 
                   {/* Refundable Deposit */}
                   <div className="flex items-center justify-between">
-                    <span className="font-bold text-neutral-700">Refundable Deposit:</span>
+                    <span className="font-bold text-neutral-700">{t("checkout.refundable-deposit")}</span>
                     <span className="font-bold text-neutral-950">{formatInr(refundableDeposit)}</span>
                   </div>
 
                   {/* Coupon Discount (if applied) */}
                   {totalDiscount > 0 && (
                     <div className="flex items-center justify-between text-emerald-600 font-bold">
-                      <span>Coupon Discount:</span>
+                      <span>{t("checkout.coupon-discount")}</span>
                       <span>-{formatInr(totalDiscount)}</span>
                     </div>
                   )}
@@ -975,13 +977,13 @@ export default function CheckoutPage() {
 
                   {/* Fuel */}
                   <div className="flex items-center justify-between">
-                    <span className="font-bold text-neutral-700">Fuel:</span>
+                    <span className="font-bold text-neutral-700">{t("checkout.fuel")}</span>
                     <span className="font-semibold text-neutral-950">{fuelType}</span>
                   </div>
 
                   {/* Extra kms charge */}
                   <div className="flex items-center justify-between">
-                    <span className="font-bold text-neutral-700">Extra kms charge:</span>
+                    <span className="font-bold text-neutral-700">{t("checkout.extra-kms-charge")}</span>
                     <span className="font-bold text-neutral-950">{formatInr(extraKmRate)}</span>
                   </div>
 
@@ -990,7 +992,7 @@ export default function CheckoutPage() {
 
                   {/* Grand Total */}
                   <div className="rounded-xl border border-neutral-200 bg-neutral-50 p-3.5 flex items-center justify-between">
-                    <span className="text-sm font-bold text-neutral-900">Grand Total:</span>
+                    <span className="text-sm font-bold text-neutral-900">{t("checkout.grand-total")}</span>
                     <span className="text-lg font-black text-neutral-950">{formatInr(grandTotal)}</span>
                   </div>
 
@@ -1000,14 +1002,14 @@ export default function CheckoutPage() {
                   {/* Payment breakdown */}
                   <div className="rounded-xl border border-orange-500/40 border-l-4 border-l-orange-500 bg-orange-50 p-3.5 flex items-center justify-between">
                     <span className="text-sm sm:text-base font-bold text-orange-800">
-                      Payable Now{paymentMethod === "ONLINE" ? ` (${ADVANCE_PERCENT}%)` : ""}:
+                      {t("checkout.payable-now")}{paymentMethod === "ONLINE" ? ` (${ADVANCE_PERCENT}%)` : ""}:
                     </span>
                     <span className="text-lg sm:text-xl font-black text-orange-600">{formatInr(payableNow)}</span>
                   </div>
 
                   <div className="rounded-xl border border-emerald-500/40 border-l-4 border-l-emerald-600 bg-emerald-50 p-3.5 flex items-center justify-between">
                     <span className="text-sm sm:text-base font-bold text-emerald-800">
-                      Payable Later{paymentMethod === "ONLINE" ? ` (${100 - ADVANCE_PERCENT}%)` : ""}:
+                      {t("checkout.payable-later")}{paymentMethod === "ONLINE" ? ` (${100 - ADVANCE_PERCENT}%)` : ""}:
                     </span>
                     <span className="text-lg sm:text-xl font-black text-emerald-700">{formatInr(payableLater)}</span>
                   </div>
@@ -1021,7 +1023,7 @@ export default function CheckoutPage() {
                   <div className="rounded-xl border border-neutral-200 bg-neutral-50 p-3 text-xs text-neutral-600 flex items-start gap-2.5 leading-relaxed mt-2">
                     <Info className="size-4 text-neutral-400 shrink-0 mt-0.5" />
                     <p>
-                      <strong className="text-neutral-900">Total includes:</strong> Subtotal + Delivery + Refundable Deposit. Deposit will be refunded upon vehicle return.
+                      <strong className="text-neutral-900">{t("checkout.total-includes")}</strong> {t("checkout.subtotal-delivery-refundable-deposit")}
                     </p>
                   </div>
                 </div>

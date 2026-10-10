@@ -1,5 +1,6 @@
 "use client";
 
+import { useCopy } from "@/components/copy-provider";
 import * as React from "react";
 import Link from "next/link";
 import { ArrowLeft, RefreshCw } from "lucide-react";
@@ -20,6 +21,7 @@ export function ErrorBoundaryView({
   homeHref?: string;
   fullscreen?: boolean;
 }) {
+  const t = useCopy();
   React.useEffect(() => {
     console.error(error);
   }, [error]);
@@ -41,15 +43,15 @@ export function ErrorBoundaryView({
         <>
           {isStale ? (
             <button type="button" onClick={() => window.location.reload()} className={primaryBtn}>
-              <RefreshCw className="size-4" /> Refresh page
+              <RefreshCw className="size-4" /> {t("errors.refresh-page")}
             </button>
           ) : (
             <button type="button" onClick={() => retry()} className={primaryBtn}>
-              <RefreshCw className="size-4" /> Try again
+              <RefreshCw className="size-4" /> {t("errors.try-again")}
             </button>
           )}
           <Link href={homeHref} className={ghostBtn}>
-            <ArrowLeft className="size-4" /> Back to home
+            <ArrowLeft className="size-4" /> {t("errors.back-to-home")}
           </Link>
         </>
       }

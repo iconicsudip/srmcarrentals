@@ -1,5 +1,6 @@
 "use client";
 
+import { useCopy } from "@/components/copy-provider";
 import * as React from "react";
 import Link from "next/link";
 import { Calendar, CarFront, Clock, Loader2, MapPin, MessageSquare, ShieldCheck, ShoppingBag, Trash2, X } from "lucide-react";
@@ -9,6 +10,7 @@ import { useCart } from "@/lib/cart/cart-store";
 import { Button } from "@/components/ui/button";
 
 function formatInr(amount: number | undefined | null) {
+  const t = useCopy();
   const safe = Number.isFinite(amount) ? (amount as number) : 0;
   return new Intl.NumberFormat("en-IN", {
     style: "currency",
@@ -33,6 +35,7 @@ function formatDate(iso: string) {
 }
 
 export function CartDrawer({ phone = "+91 9414551250" }: { phone?: string }) {
+  const t = useCopy();
   const router = useRouter();
   const { items, count, total, isDrawerOpen, closeCart, removeItem, clear } = useCart();
   const [isCheckingOut, setIsCheckingOut] = React.useState(false);
@@ -108,7 +111,7 @@ export function CartDrawer({ phone = "+91 9414551250" }: { phone?: string }) {
               <ShoppingBag className="size-5" />
             </span>
             <div>
-              <h2 className="text-base font-black text-neutral-950 uppercase tracking-tight">Your Cart</h2>
+              <h2 className="text-base font-black text-neutral-950 uppercase tracking-tight">{t("cartdrawer.your-cart")}</h2>
               <p className="text-[11px] text-neutral-500 font-medium">
                 {count === 0 ? "No cars selected" : `${count} vehicle${count > 1 ? "s" : ""} selected`}
               </p>
@@ -122,7 +125,7 @@ export function CartDrawer({ phone = "+91 9414551250" }: { phone?: string }) {
                 onClick={clear}
                 className="text-xs text-neutral-400 hover:text-red-500 transition cursor-pointer font-medium"
               >
-                Clear all
+                {t("cartdrawer.clear-all")}
               </button>
             )}
             <button
@@ -140,12 +143,12 @@ export function CartDrawer({ phone = "+91 9414551250" }: { phone?: string }) {
           {items.length === 0 ? (
             <div className="flex h-full flex-col items-center justify-center text-center p-6 text-neutral-500">
               <CarFront className="size-16 text-neutral-300 mb-3 stroke-[1.5]" />
-              <h3 className="text-sm font-bold text-neutral-950">Your cart is empty</h3>
+              <h3 className="text-sm font-bold text-neutral-950">{t("cartdrawer.your-cart-is-empty")}</h3>
               <p className="mt-1 text-xs text-neutral-500 max-w-[220px]">
-                Browse our fleet of self-drive hatchbacks, sedans, and SUVs to add a car.
+                {t("cartdrawer.browse-our-fleet-of")}
               </p>
               <Button asChild onClick={closeCart} className="mt-4 bg-orange-500 text-white font-bold shadow-md shadow-orange-500/25 hover:bg-orange-600">
-                <Link href="/cars">Explore Fleet →</Link>
+                <Link href="/cars">{t("cartdrawer.explore-fleet")}</Link>
               </Button>
             </div>
           ) : (
@@ -194,7 +197,7 @@ export function CartDrawer({ phone = "+91 9414551250" }: { phone?: string }) {
                       disabled={deletingId === item.id}
                       onClick={() => handleDeleteItem(item.id)}
                       className="text-neutral-400 hover:text-red-500 transition p-1 cursor-pointer disabled:opacity-50"
-                      title="Remove item"
+                      title={t("cartdrawer.remove-item")}
                     >
                       {deletingId === item.id ? (
                         <Loader2 className="size-3.5 animate-spin text-red-500" />
@@ -243,7 +246,7 @@ export function CartDrawer({ phone = "+91 9414551250" }: { phone?: string }) {
             </div>
 
             <div className="flex items-center justify-between text-base font-black text-neutral-950">
-              <span>Total Payable</span>
+              <span>{t("cartdrawer.total-payable")}</span>
               <span className="text-lg text-orange-600">{formatInr(total)}</span>
             </div>
 
@@ -260,7 +263,7 @@ export function CartDrawer({ phone = "+91 9414551250" }: { phone?: string }) {
             >
               {isCheckingOut ? (
                 <span className="flex items-center justify-center gap-2">
-                  <Loader2 className="size-4 animate-spin" /> Preparing Checkout...
+                  <Loader2 className="size-4 animate-spin" /> {t("cartdrawer.preparing-checkout")}
                 </span>
               ) : (
                 <span className="flex items-center justify-center gap-2">
@@ -276,7 +279,7 @@ export function CartDrawer({ phone = "+91 9414551250" }: { phone?: string }) {
               rel="noopener noreferrer"
               className="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 py-3 text-xs font-bold text-white shadow-lg shadow-emerald-600/20 transition active:scale-95"
             >
-              <MessageSquare className="size-4" /> Instant Book via WhatsApp
+              <MessageSquare className="size-4" /> {t("cartdrawer.instant-book-via-whatsapp")}
             </a>
 
             {/* View Full Cart Page Button */}
@@ -286,7 +289,7 @@ export function CartDrawer({ phone = "+91 9414551250" }: { phone?: string }) {
               onClick={closeCart}
               className="w-full border-neutral-200 bg-neutral-50 text-xs text-neutral-800 hover:bg-neutral-100 hover:text-neutral-950"
             >
-              <Link href="/cart">View Full Cart Details</Link>
+              <Link href="/cart">{t("cartdrawer.view-full-cart-details")}</Link>
             </Button>
           </div>
         )}

@@ -1,5 +1,6 @@
 "use client";
 
+import { useCopy } from "@/components/copy-provider";
 import * as React from "react";
 import Image from "next/image";
 import { CarFront, ChevronLeft, ChevronRight, ShieldCheck, Sparkles } from "lucide-react";
@@ -13,6 +14,7 @@ interface CarGalleryProps {
 }
 
 export function CarGallery({ images: rawImages, name, fallbackSrc }: CarGalleryProps) {
+  const t = useCopy();
   const [active, setActive] = React.useState(0);
   const [failed, setFailed] = React.useState<Record<string, boolean>>({});
 
@@ -58,10 +60,10 @@ export function CarGallery({ images: rawImages, name, fallbackSrc }: CarGalleryP
         {/* Feature Badges Overlay */}
         <div className="absolute top-4 left-4 flex flex-wrap gap-2">
           <Badge className="border-emerald-500/30 bg-white/90 text-emerald-700 shadow-sm backdrop-blur-md">
-            <ShieldCheck className="mr-1 size-3" /> Fully Sanitized
+            <ShieldCheck className="mr-1 size-3" /> {t("gallery.fully-sanitized")}
           </Badge>
           <Badge className="border-neutral-200 bg-white/90 text-neutral-800 shadow-sm backdrop-blur-md">
-            <Sparkles className="mr-1 size-3 text-orange-500" /> Premium Fleet
+            <Sparkles className="mr-1 size-3 text-orange-500" /> {t("gallery.premium-fleet")}
           </Badge>
         </div>
 
@@ -78,7 +80,7 @@ export function CarGallery({ images: rawImages, name, fallbackSrc }: CarGalleryP
             <button
               type="button"
               onClick={handlePrev}
-              aria-label="Previous image"
+              aria-label={t("gallery.previous-image")}
               className="absolute top-1/2 left-3 flex size-9 -translate-y-1/2 items-center justify-center rounded-full border border-neutral-200 bg-white/90 text-neutral-800 opacity-0 shadow-md backdrop-blur-md transition-opacity group-hover:opacity-100 hover:bg-orange-500 hover:text-white"
             >
               <ChevronLeft className="size-5" />
@@ -86,7 +88,7 @@ export function CarGallery({ images: rawImages, name, fallbackSrc }: CarGalleryP
             <button
               type="button"
               onClick={handleNext}
-              aria-label="Next image"
+              aria-label={t("gallery.next-image")}
               className="absolute top-1/2 right-3 flex size-9 -translate-y-1/2 items-center justify-center rounded-full border border-neutral-200 bg-white/90 text-neutral-800 opacity-0 shadow-md backdrop-blur-md transition-opacity group-hover:opacity-100 hover:bg-orange-500 hover:text-white"
             >
               <ChevronRight className="size-5" />

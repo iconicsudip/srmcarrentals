@@ -1,5 +1,6 @@
 "use client";
 
+import { useCopy } from "@/components/copy-provider";
 import * as React from "react";
 import { CalendarCheck, MessageCircle, Phone } from "lucide-react";
 
@@ -23,6 +24,7 @@ export function MobileQuickBook({
   whatsappNumber?: string;
   targetId?: string;
 }) {
+  const t = useCopy();
   const digits = phone.replace(/[^0-9]/g, "");
   const waDigits = whatsappNumber || (digits.length === 10 ? `91${digits}` : digits);
   const wa = waDigits
@@ -34,11 +36,11 @@ export function MobileQuickBook({
       <div className="relative">
         <div className="flex items-end justify-between gap-3">
           <div>
-            <span className="text-[10px] font-bold tracking-[0.2em] text-amber-300 uppercase">Book this car</span>
+            <span className="text-[10px] font-bold tracking-[0.2em] text-amber-300 uppercase">{t("quickbook.book-this-car")}</span>
             <div className="mt-1 text-2xl leading-none font-black text-white">{price}</div>
           </div>
           <span className="rounded-full border border-emerald-400/30 bg-emerald-400/10 px-3 py-1 text-[10px] font-bold text-emerald-300">
-            Pay 30% to reserve
+            {t("quickbook.pay-30-to-reserve")}
           </span>
         </div>
 
@@ -59,7 +61,7 @@ export function MobileQuickBook({
           onClick={() => scrollToBooking(targetId)}
           className="shimmer-sheen relative mt-5 flex w-full items-center justify-center gap-2 overflow-hidden rounded-2xl bg-gradient-to-r from-orange-500 to-amber-500 py-3.5 text-sm font-black text-white shadow-lg shadow-orange-500/30 active:scale-[0.98]"
         >
-          <CalendarCheck className="size-4" /> Select dates &amp; book
+          <CalendarCheck className="size-4" /> {t("quickbook.select-dates-book")}
         </button>
 
         <div className="mt-3 grid grid-cols-2 gap-3">
@@ -70,7 +72,7 @@ export function MobileQuickBook({
               rel="noopener noreferrer"
               className="flex items-center justify-center gap-2 rounded-2xl bg-[#25D366] py-3 text-xs font-black text-white"
             >
-              <MessageCircle className="size-4" /> WhatsApp
+              <MessageCircle className="size-4" /> {t("quickbook.whatsapp")}
             </a>
           )}
           {digits && (
@@ -78,7 +80,7 @@ export function MobileQuickBook({
               href={`tel:+${digits}`}
               className="flex items-center justify-center gap-2 rounded-2xl border border-white/20 bg-white/10 py-3 text-xs font-black text-white"
             >
-              <Phone className="size-4" /> Call now
+              <Phone className="size-4" /> {t("quickbook.call-now")}
             </a>
           )}
         </div>
@@ -89,6 +91,7 @@ export function MobileQuickBook({
 
 /** Phone-only sticky bar: jumps to the booking panel, hides itself once it is on screen. */
 export function MobileBookBar({ label, price, targetId = "book" }: { label: string; price: string; targetId?: string }) {
+  const t = useCopy();
   const [visible, setVisible] = React.useState(true);
 
   React.useEffect(() => {
@@ -115,7 +118,7 @@ export function MobileBookBar({ label, price, targetId = "book" }: { label: stri
           onClick={() => scrollToBooking(targetId)}
           className="flex shrink-0 items-center gap-2 rounded-full bg-gradient-to-r from-orange-500 to-amber-500 px-6 py-3 text-sm font-black text-white shadow-lg shadow-orange-500/30 active:scale-95"
         >
-          <CalendarCheck className="size-4" /> Book Now
+          <CalendarCheck className="size-4" /> {t("quickbook.book-now")}
         </button>
       </div>
     </div>

@@ -1,5 +1,6 @@
 "use client";
 
+import { useCopy } from "@/components/copy-provider";
 import { ADVANCE_PERCENT, splitAdvance } from "@/lib/checkout/advance";
 import * as React from "react";
 import { useSearchParams } from "next/navigation";
@@ -35,6 +36,7 @@ export interface BookingEngineProps {
 }
 
 function formatInr(amount: number | string | null | undefined) {
+  const t = useCopy();
   if (amount == null) return "₹0";
   return new Intl.NumberFormat("en-IN", {
     style: "currency",
@@ -99,6 +101,7 @@ export function BookingEngine({
   insurances,
   extraServices,
 }: BookingEngineProps) {
+  const t = useCopy();
   const searchParams = useSearchParams();
 
   const qLocationId = searchParams.get("locationId") ?? searchParams.get("location");
@@ -431,7 +434,7 @@ export function BookingEngine({
           <div className="min-w-0">
             <span className="inline-flex items-center gap-1.5 text-[10px] font-bold tracking-[0.18em] text-amber-400 uppercase">
               <span className="size-1.5 rounded-full bg-amber-400 shadow-[0_0_8px_#fbbf24]" />
-              Reserve Your Drive
+              {t("booking.reserve-your-drive")}
             </span>
             <h3 className="mt-1 truncate text-xl font-black tracking-tight">{carName}</h3>
           </div>
@@ -503,17 +506,17 @@ export function BookingEngine({
           >
             {availLoading ? (
               <>
-                <Loader2 className="size-3.5 animate-spin" /> Checking availability…
+                <Loader2 className="size-3.5 animate-spin" /> {t("booking.checking-availability")}
               </>
             ) : isAvailable ? (
               <>
-                <CheckCircle2 className="size-3.5" /> Available for selected dates
-                <span className="ml-auto text-[10px] font-normal text-emerald-600">✓ Instant Selection</span>
+                <CheckCircle2 className="size-3.5" /> {t("booking.available-for-selected-dates")}
+                <span className="ml-auto text-[10px] font-normal text-emerald-600">{t("booking.instant-selection")}</span>
               </>
             ) : (
               <>
-                <AlertCircle className="size-3.5" /> Not available for selected dates
-                <span className="ml-auto text-[10px] font-normal text-red-600">Try other dates</span>
+                <AlertCircle className="size-3.5" /> {t("booking.not-available-for-selected")}
+                <span className="ml-auto text-[10px] font-normal text-red-600">{t("booking.try-other-dates")}</span>
               </>
             )}
           </div>
@@ -521,7 +524,7 @@ export function BookingEngine({
 
         {/* Delivery Mode: Branch / Airport */}
         <div>
-          <Label className="text-xs text-neutral-700 font-medium">Delivery & Handover Point</Label>
+          <Label className="text-xs text-neutral-700 font-medium">{t("booking.delivery-handover-point")}</Label>
           <div className="mt-1.5 grid grid-cols-2 gap-2">
             <button
               type="button"
@@ -532,7 +535,7 @@ export function BookingEngine({
                   : "border-neutral-200 bg-neutral-50 text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100"
               }`}
             >
-              <MapPin className="size-3.5" /> City Branch Office
+              <MapPin className="size-3.5" /> {t("booking.city-branch-office")}
             </button>
 
             <button
@@ -544,7 +547,7 @@ export function BookingEngine({
                   : "border-neutral-200 bg-neutral-50 text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100"
               }`}
             >
-              <Plane className="size-3.5" /> Airport Terminal
+              <Plane className="size-3.5" /> {t("booking.airport-terminal")}
             </button>
           </div>
         </div>
@@ -600,13 +603,13 @@ export function BookingEngine({
                 }}
                 className="rounded border-neutral-300 bg-white accent-orange-500"
               />
-              <span>Drop-off at a different branch office</span>
+              <span>{t("booking.dropoff-at-a-different")}</span>
             </label>
 
             {differentDropLocation && (
               <div>
                 <div className="flex items-center justify-between">
-                  <Label className="text-xs text-neutral-700 font-medium">Drop-off Branch Office</Label>
+                  <Label className="text-xs text-neutral-700 font-medium">{t("booking.dropoff-branch-office")}</Label>
                   <span className={`text-[11px] font-semibold ${Number(locations.find((l) => l.id === selectedDropLocationId)?.dropCharge ?? 0) > 0 ? "text-orange-600" : "text-emerald-600"}`}>
                     {Number(locations.find((l) => l.id === selectedDropLocationId)?.dropCharge ?? 0) > 0
                       ? `Drop Fee: ₹${Number(locations.find((l) => l.id === selectedDropLocationId)?.dropCharge).toLocaleString("en-IN")}`
@@ -633,7 +636,7 @@ export function BookingEngine({
           </div>
         ) : (
           <div>
-            <Label className="text-xs text-neutral-700 font-medium">Select Airport Terminal</Label>
+            <Label className="text-xs text-neutral-700 font-medium">{t("booking.select-airport-terminal")}</Label>
             <select
               value={selectedAirportId}
               onChange={(e) => setSelectedAirportId(e.target.value)}
@@ -646,7 +649,7 @@ export function BookingEngine({
               ))}
             </select>
             <p className="mt-1 text-[11px] text-neutral-500">
-              Vehicle will be waiting at Arrivals gate with flight-tracked handover.
+              {t("booking.vehicle-will-be-waiting")}
             </p>
           </div>
         )}
@@ -656,9 +659,9 @@ export function BookingEngine({
           <div className="rounded-2xl border border-neutral-200 bg-neutral-50/70 p-3.5">
             <div className="flex items-center justify-between text-xs font-bold text-neutral-950">
               <span className="flex items-center gap-1.5">
-                <ShieldCheck className="size-4 text-emerald-600" /> Protection Plan
+                <ShieldCheck className="size-4 text-emerald-600" /> {t("booking.protection-plan")}
               </span>
-              <span className="text-[11px] text-emerald-600 font-semibold">Recommended</span>
+              <span className="text-[11px] text-emerald-600 font-semibold">{t("booking.recommended")}</span>
             </div>
             <div className="mt-2.5 flex flex-col gap-2">
               {insurances.map((ins) => {
@@ -701,7 +704,7 @@ export function BookingEngine({
         {/* Extra Services Checklist */}
         {extraServices.length > 0 && (
           <div className="rounded-2xl border border-neutral-200 bg-neutral-50/70 p-3.5">
-            <div className="text-xs font-bold text-neutral-950">Convenience Add-ons</div>
+            <div className="text-xs font-bold text-neutral-950">{t("booking.convenience-addons")}</div>
             <div className="mt-2 flex flex-col gap-1.5">
               {extraServices.map((srv) => {
                 const checked = selectedExtraIds.includes(srv.id);
@@ -743,13 +746,13 @@ export function BookingEngine({
                 onClick={handleRemoveCoupon}
                 className="text-[11px] text-neutral-500 underline hover:text-neutral-900"
               >
-                Remove
+                {t("booking.remove")}
               </button>
             </div>
           ) : (
             <form onSubmit={handleApplyCoupon} className="flex gap-2">
               <Input
-                placeholder="Promo Code (e.g. SRM10)"
+                placeholder={t("booking.promo-code-eg-srm10")}
                 value={couponInput}
                 onChange={(e) => setCouponInput(e.target.value)}
                 className="h-8 border-neutral-200 bg-white text-xs uppercase text-neutral-900"
@@ -764,7 +767,7 @@ export function BookingEngine({
         {/* Pricing Breakdown Summary */}
         {calcLoading ? (
           <div className="flex items-center justify-center py-4 text-xs text-neutral-500">
-            <Loader2 className="mr-2 size-4 animate-spin text-orange-500" /> Updating live price...
+            <Loader2 className="mr-2 size-4 animate-spin text-orange-500" /> {t("booking.updating-live-price")}
           </div>
         ) : pricingResult ? (
           <div className="relative rounded-2xl border border-dashed border-neutral-300 bg-gradient-to-b from-amber-50/40 to-neutral-50/70 p-4 text-xs before:absolute before:top-1/2 before:-left-2 before:size-4 before:-translate-y-1/2 before:rounded-full before:border before:border-neutral-200 before:bg-white after:absolute after:top-1/2 after:-right-2 after:size-4 after:-translate-y-1/2 after:rounded-full after:border after:border-neutral-200 after:bg-white">
@@ -783,35 +786,35 @@ export function BookingEngine({
 
               {pricingResult.airport.pickupCharge + pricingResult.airport.dropCharge > 0 && (
                 <div className="flex justify-between text-neutral-600">
-                  <span>Airport Delivery Fee</span>
+                  <span>{t("booking.airport-delivery-fee")}</span>
                   <span>{formatInr(pricingResult.airport.pickupCharge + pricingResult.airport.dropCharge)}</span>
                 </div>
               )}
 
               {pricingResult.locationDropCharge > 0 && (
                 <div className="flex justify-between text-neutral-600">
-                  <span>Drop Location Fee</span>
+                  <span>{t("booking.drop-location-fee")}</span>
                   <span>{formatInr(pricingResult.locationDropCharge)}</span>
                 </div>
               )}
 
               {pricingResult.insurance && pricingResult.insurance.price > 0 && (
                 <div className="flex justify-between text-neutral-600">
-                  <span>Protection Plan</span>
+                  <span>{t("booking.protection-plan-2")}</span>
                   <span>{formatInr(pricingResult.insurance.price)}</span>
                 </div>
               )}
 
               {pricingResult.services && pricingResult.services.length > 0 && (
                 <div className="flex justify-between text-neutral-600">
-                  <span>Add-ons</span>
+                  <span>{t("booking.addons")}</span>
                   <span>{formatInr(pricingResult.services.reduce((sum, s) => sum + s.price, 0))}</span>
                 </div>
               )}
 
               {pricingResult.discount > 0 && (
                 <div className="flex justify-between font-bold text-emerald-600">
-                  <span>Discount</span>
+                  <span>{t("booking.discount")}</span>
                   <span>-{formatInr(pricingResult.discount)}</span>
                 </div>
               )}
@@ -824,19 +827,19 @@ export function BookingEngine({
               )}
 
               <div className="flex items-center justify-between border-t border-dashed border-neutral-300 pt-2.5 text-sm font-black text-neutral-950">
-                <span>Total Payable</span>
+                <span>{t("booking.total-payable")}</span>
                 <span className="text-gradient-gold text-xl">{formatInr(pricingResult.total)}</span>
               </div>
 
               <div className="flex items-center justify-between rounded-xl bg-neutral-900 px-3 py-2 text-[11px] text-white/80">
                 <span>
-                  Reserve now with <strong className="text-amber-300">{ADVANCE_PERCENT}%</strong>
+                  {t("booking.reserve-now-with")} <strong className="text-amber-300">{ADVANCE_PERCENT}%</strong>
                 </span>
                 <span className="font-black text-amber-300">{formatInr(splitAdvance(pricingResult.total).now)}</span>
               </div>
 
               <div className="mt-1 flex items-center justify-between text-[11px] text-emerald-600">
-                <span>Refundable Security Deposit</span>
+                <span>{t("booking.refundable-security-deposit")}</span>
                 <span>₹3,000–₹5,000 (at pickup)</span>
               </div>
             </div>
@@ -854,11 +857,11 @@ export function BookingEngine({
         >
           {isAdding ? (
             <>
-              <Loader2 className="mr-2 size-4 animate-spin" /> Adding to Cart...
+              <Loader2 className="mr-2 size-4 animate-spin" /> {t("booking.adding-to-cart")}
             </>
           ) : availLoading || calcLoading ? (
             <>
-              <Loader2 className="mr-2 size-4 animate-spin" /> Checking availability & rates…
+              <Loader2 className="mr-2 size-4 animate-spin" /> {t("booking.checking-availability-rates")}
             </>
           ) : isAvailable === false ? (
             "Car unavailable for selected dates"
@@ -878,7 +881,7 @@ export function BookingEngine({
           className="w-full rounded-2xl bg-[#25D366] py-3.5 text-sm font-black text-white shadow-lg shadow-emerald-500/25 transition-all hover:bg-[#1ebe5a] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
         >
           <span className="flex items-center justify-center gap-2">
-            <MessageCircle className="size-4" /> Book on WhatsApp
+            <MessageCircle className="size-4" /> {t("booking.book-on-whatsapp")}
           </span>
         </Button>
       </div>

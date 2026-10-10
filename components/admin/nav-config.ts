@@ -191,6 +191,7 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       { title: "Homepage Content", href: "/admin/website/homepage", icon: LayoutTemplate, permission: "homepage.manage" },
       { title: "Text & Labels", href: "/admin/website/text", icon: LayoutTemplate, permission: "homepage.manage" },
+      { title: "Page Copy", href: "/admin/website/copy", icon: ScrollText, permission: "homepage.manage" },
       { title: "About Us Page", href: "/admin/website/about", icon: Info, permission: "homepage.manage" },
       { title: "Contact Page", href: "/admin/website/contact", icon: PhoneCall, permission: "homepage.manage" },
       { title: "FAQs", href: "/admin/website/faq", icon: HelpCircle, permission: "homepage.manage" },

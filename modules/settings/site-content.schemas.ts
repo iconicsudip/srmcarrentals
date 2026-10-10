@@ -326,6 +326,7 @@ export const SITE_CONTENT_SCHEMAS: Record<string, z.ZodType<unknown>> = {
   "homepage.content": homepageContentSchema,
   "homepage.company": companyContentSchema,
   "homepage.text": siteTextSchema,
+  "homepage.copy": z.record(z.string(), z.string().max(2000)),
   "pages.about": aboutPageContentSchema,
   "pages.contact": contactPageContentSchema,
   "pages.faq": faqPageContentSchema,

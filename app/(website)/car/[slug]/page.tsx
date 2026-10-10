@@ -28,6 +28,7 @@ import { pickWhatsAppNumber } from "@/lib/whatsapp/pick";
 import { MobileBookBar, MobileQuickBook } from "@/components/website/mobile-book-bar";
 import { SimilarCarsCarousel } from "@/components/website/similar-cars-carousel";
 import {
+  getT,
   getCompanyContent,
   getPublicCarBySlug,
   listActiveLocations,
@@ -83,6 +84,7 @@ function formatInr(amount: any) {
 }
 
 export default async function CarDetailPage({ params }: CarDetailPageProps) {
+  const t = await getT();
   const { slug } = await params;
 
   const whatsappNumbers = await getWhatsAppNumbers();
@@ -103,49 +105,49 @@ export default async function CarDetailPage({ params }: CarDetailPageProps) {
   const specs = [
     {
       icon: Users,
-      label: "Seating Capacity",
+      label: t("carpage.spec-seating-capacity"),
       value: car.seatOption ? `${car.seatOption.count} Persons` : (car.carCapacity?.label ?? "5 Persons"),
-      subtitle: "Comfortable ergonomic seats",
+      subtitle: t("carpage.spec-comfortable-ergonomic-seats"),
     },
     {
       icon: Cog,
-      label: "Transmission",
+      label: t("carpage.spec-transmission"),
       value: car.transmissionType?.name ?? "Manual",
-      subtitle: "Smooth gear shifts",
+      subtitle: t("carpage.spec-smooth-gear-shifts"),
     },
     {
       icon: Fuel,
-      label: "Fuel Type",
+      label: t("carpage.spec-fuel-type"),
       value: car.fuelType?.name ?? "Petrol",
-      subtitle: "Full tank at delivery",
+      subtitle: t("carpage.spec-full-tank-at-delivery"),
     },
     {
       icon: Gauge,
-      label: "Engine / Cylinders",
+      label: t("carpage.spec-engine-cylinders"),
       value: car.cylinderOption ? `${car.cylinderOption.count} Cylinders` : "4 Cylinders",
       subtitle: car.pricing ? `${car.pricing.includedKmPerDay} km/day included` : "Smooth driving performance",
     },
     {
       icon: DoorOpen,
-      label: "Doors",
+      label: t("carpage.spec-doors"),
       value: car.doorOption ? `${car.doorOption.count} Doors` : "4 Doors",
-      subtitle: "Child-safety locks",
+      subtitle: t("carpage.spec-child-safety-locks"),
     },
     {
       icon: Briefcase,
-      label: "Luggage Boot",
+      label: t("carpage.spec-luggage-boot"),
       value: car.carCapacity?.luggageCapacity || car.carCapacity?.label || "Spacious Boot Space",
-      subtitle: "Trunk capacity",
+      subtitle: t("carpage.spec-trunk-capacity"),
     },
     {
       icon: Compass,
-      label: "Steering",
+      label: t("carpage.spec-steering"),
       value: car.steeringType?.name ?? "Power Steering",
-      subtitle: "Precision handling",
+      subtitle: t("carpage.spec-precision-handling"),
     },
     {
       icon: CarFront,
-      label: "Body Category",
+      label: t("carpage.spec-body-category"),
       value: car.category?.name ?? car.carType?.name ?? "Standard",
       subtitle: `${car.brand?.name} ${car.year}`,
     },
@@ -179,11 +181,11 @@ export default async function CarDetailPage({ params }: CarDetailPageProps) {
         <div className="mx-auto flex max-w-[1520px] flex-wrap items-center justify-between gap-3 px-4 text-xs sm:px-6 lg:px-8">
           <nav className="flex items-center gap-1.5 text-neutral-500">
             <Link href="/" className="hover:text-orange-600">
-              Home
+              {t("carpage.home")}
             </Link>
             <ChevronRight className="size-3" />
             <Link href="/cars" className="hover:text-orange-600">
-              Self Drive Fleet
+              {t("carpage.self-drive-fleet")}
             </Link>
             <ChevronRight className="size-3" />
             <span className="font-semibold text-neutral-900">{car.name}</span>
@@ -191,7 +193,7 @@ export default async function CarDetailPage({ params }: CarDetailPageProps) {
 
           <div className="flex items-center gap-4 text-neutral-600">
             <span className="flex items-center gap-1 text-emerald-700 font-medium">
-              <ShieldCheck className="size-3.5 text-emerald-600" /> Free Cancellation up to 48h
+              <ShieldCheck className="size-3.5 text-emerald-600" /> {t("carpage.free-cancellation-up-to")}
             </span>
             <span className="hidden sm:inline text-neutral-300">|</span>
             <span className="hidden sm:flex items-center gap-1 text-amber-700 font-medium">
@@ -225,7 +227,7 @@ export default async function CarDetailPage({ params }: CarDetailPageProps) {
                 <Badge className="border-neutral-200 bg-neutral-100 text-neutral-700">{car.category.name}</Badge>
                 <Badge className="border-neutral-200 bg-neutral-100 text-neutral-700">{car.carType.name}</Badge>
                 <Badge className="border-emerald-500/30 bg-emerald-50 text-emerald-700">
-                  <CheckCircle2 className="mr-1 size-3 text-emerald-600" /> Instant Hold Available
+                  <CheckCircle2 className="mr-1 size-3 text-emerald-600" /> {t("carpage.instant-hold-available")}
                 </Badge>
               </div>
 
@@ -242,30 +244,30 @@ export default async function CarDetailPage({ params }: CarDetailPageProps) {
               {car.pricing && (
                 <div className="mt-6 grid grid-cols-2 gap-3 rounded-2xl border border-neutral-200/80 bg-neutral-50/80 p-4 sm:grid-cols-4">
                   <div>
-                    <div className="text-[11px] text-neutral-500 uppercase font-medium">Daily Rate</div>
+                    <div className="text-[11px] text-neutral-500 uppercase font-medium">{t("carpage.daily-rate")}</div>
                     <div className="text-lg font-black text-orange-600">
                       {formatInr(car.pricing.dailyPrice)}
-                      <span className="text-xs font-normal text-neutral-500"> / day</span>
+                      <span className="text-xs font-normal text-neutral-500"> {t("carpage.day")}</span>
                     </div>
                   </div>
 
                   {car.pricing.hourlyPrice && Number(car.pricing.hourlyPrice) > 0 && (
                     <div>
-                      <div className="text-[11px] text-neutral-500 uppercase font-medium">Hourly Rate</div>
+                      <div className="text-[11px] text-neutral-500 uppercase font-medium">{t("carpage.hourly-rate")}</div>
                       <div className="text-lg font-black text-neutral-950">
                         {formatInr(car.pricing.hourlyPrice)}
-                        <span className="text-xs font-normal text-neutral-500"> / hr</span>
+                        <span className="text-xs font-normal text-neutral-500"> {t("carpage.hr")}</span>
                       </div>
                     </div>
                   )}
 
                   <div>
-                    <div className="text-[11px] text-neutral-500 uppercase font-medium">Included KM</div>
+                    <div className="text-[11px] text-neutral-500 uppercase font-medium">{t("carpage.included-km")}</div>
                     <div className="text-lg font-black text-neutral-950">{car.pricing.includedKmPerDay} km / day</div>
                   </div>
 
                   <div>
-                    <div className="text-[11px] text-neutral-500 uppercase font-medium">Security Deposit</div>
+                    <div className="text-[11px] text-neutral-500 uppercase font-medium">{t("carpage.security-deposit")}</div>
                     <div className="text-lg font-black text-emerald-700">₹3,000–₹5,000</div>
                   </div>
                 </div>
@@ -275,8 +277,8 @@ export default async function CarDetailPage({ params }: CarDetailPageProps) {
             {/* 8-Card Technical Specs Grid */}
             <div className="rounded-3xl border border-neutral-200/90 bg-white p-6 shadow-sm">
               <div className="flex items-center justify-between">
-                <h2 className="text-lg font-bold text-neutral-950">Vehicle Specifications</h2>
-                <span className="text-xs text-neutral-500 font-medium">Manufacturer Verified</span>
+                <h2 className="text-lg font-bold text-neutral-950">{t("carpage.vehicle-specifications")}</h2>
+                <span className="text-xs text-neutral-500 font-medium">{t("carpage.manufacturer-verified")}</span>
               </div>
 
               <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -307,12 +309,12 @@ export default async function CarDetailPage({ params }: CarDetailPageProps) {
             {/* Features & Safety Equipment */}
             {(car.features.length > 0 || car.safetyFeatures.length > 0) && (
               <div className="rounded-3xl border border-neutral-200/90 bg-white p-6 shadow-sm">
-                <h2 className="text-lg font-bold text-neutral-950">Features & Safety Equipment</h2>
+                <h2 className="text-lg font-bold text-neutral-950">{t("carpage.features-safety-equipment")}</h2>
 
                 {car.features.length > 0 && (
                   <div className="mt-4">
                     <h3 className="text-xs font-bold tracking-wider text-orange-600 uppercase">
-                      Comfort & Infotainment
+                      {t("carpage.comfort-infotainment")}
                     </h3>
                     <div className="mt-2.5 grid grid-cols-2 gap-2.5 sm:grid-cols-3">
                       {car.features.map((f) => (
@@ -334,7 +336,7 @@ export default async function CarDetailPage({ params }: CarDetailPageProps) {
                 {car.safetyFeatures.length > 0 && (
                   <div className="mt-6 border-t border-neutral-200/80 pt-4">
                     <h3 className="text-xs font-bold tracking-wider text-emerald-700 uppercase">
-                      Safety & Security Protection
+                      {t("carpage.safety-security-protection")}
                     </h3>
                     <div className="mt-2.5 grid grid-cols-2 gap-2.5 sm:grid-cols-3">
                       {car.safetyFeatures.map((f) => (
@@ -357,39 +359,39 @@ export default async function CarDetailPage({ params }: CarDetailPageProps) {
 
             {/* Transparent Rental Terms & Policy Accordion */}
             <div className="rounded-3xl border border-neutral-200/90 bg-white p-6 shadow-sm">
-              <h2 className="text-lg font-bold text-neutral-950">Rental Guidelines & Transparent Policies</h2>
+              <h2 className="text-lg font-bold text-neutral-950">{t("carpage.rental-guidelines-transparent-policies")}</h2>
               <p className="mt-1 text-xs text-neutral-500">
-                Everything you need to know before driving. No surprise charges or hidden clauses.
+                {t("carpage.everything-you-need-to")}
               </p>
 
               <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="rounded-2xl border border-neutral-200/80 bg-neutral-50/70 p-4">
                   <div className="flex items-center gap-2 text-xs font-bold text-emerald-700 uppercase">
-                    <CheckCircle2 className="size-4 text-emerald-600" /> What is Included
+                    <CheckCircle2 className="size-4 text-emerald-600" /> {t("carpage.what-is-included")}
                   </div>
                   <ul className="mt-2.5 flex flex-col gap-2 text-xs text-neutral-600">
                     <li className="flex items-start gap-2">
                       <Check className="mt-0.5 size-3 text-emerald-600" />
-                      <span>Standard Comprehensive Vehicle Insurance cover</span>
+                      <span>{t("carpage.standard-comprehensive-vehicle-insurance")}</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <Check className="mt-0.5 size-3 text-emerald-600" />
-                      <span>300 Included Kilometers per calendar day</span>
+                      <span>{t("carpage.300-included-kilometers-per")}</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <Check className="mt-0.5 size-3 text-emerald-600" />
-                      <span>24/7 Roadside Mechanical Assistance across Rajasthan & Gujarat</span>
+                      <span>{t("carpage.247-roadside-mechanical-assistance")}</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <Check className="mt-0.5 size-3 text-emerald-600" />
-                      <span>Sanitized, detailed, and mechanically inspected vehicle</span>
+                      <span>{t("carpage.sanitized-detailed-and-mechanically")}</span>
                     </li>
                   </ul>
                 </div>
 
                 <div className="rounded-2xl border border-neutral-200/80 bg-neutral-50/70 p-4">
                   <div className="flex items-center gap-2 text-xs font-bold text-orange-600 uppercase">
-                    <Info className="size-4 text-orange-500" /> Renter Responsibility
+                    <Info className="size-4 text-orange-500" /> {t("carpage.renter-responsibility")}
                   </div>
                   <ul className="mt-2.5 flex flex-col gap-2 text-xs text-neutral-600">
                     <li className="flex items-start gap-2">
@@ -398,15 +400,15 @@ export default async function CarDetailPage({ params }: CarDetailPageProps) {
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="mt-0.5 size-1.5 shrink-0 rounded-full bg-orange-500" />
-                      <span>Fastag highway tolls and parking charges paid by customer</span>
+                      <span>{t("carpage.fastag-highway-tolls-and")}</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="mt-0.5 size-1.5 shrink-0 rounded-full bg-orange-500" />
-                      <span>Original Driving License (min 1+ yrs old) + Govt Photo ID required</span>
+                      <span>{t("carpage.original-driving-license-min")}</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="mt-0.5 size-1.5 shrink-0 rounded-full bg-orange-500" />
-                      <span>Speed limit is 80 km/h in city and 100–110 km/h on expressways</span>
+                      <span>{t("carpage.speed-limit-is-80")}</span>
                     </li>
                   </ul>
                 </div>
@@ -416,10 +418,9 @@ export default async function CarDetailPage({ params }: CarDetailPageProps) {
               <div className="mt-4 flex items-start gap-3 rounded-2xl border border-emerald-500/20 bg-emerald-50 p-4 text-xs text-emerald-800">
                 <ShieldCheck className="mt-0.5 size-5 shrink-0 text-emerald-600" />
                 <div>
-                  <div className="font-bold">100% Refundable Security Deposit</div>
+                  <div className="font-bold">{t("carpage.100-refundable-security-deposit")}</div>
                   <p className="mt-0.5 text-neutral-600">
-                    A refundable deposit (₹3,000–₹5,000) is collected during vehicle inspection and released directly to
-                    your bank/UPI within 24 to 48 business hours after vehicle return.
+                    {t("carpage.a-refundable-deposit-30005000")}
                   </p>
                 </div>
               </div>
@@ -427,31 +428,29 @@ export default async function CarDetailPage({ params }: CarDetailPageProps) {
 
             {/* Vehicle FAQs */}
             <div className="rounded-3xl border border-neutral-200/90 bg-white p-6 shadow-sm">
-              <h2 className="text-lg font-bold text-neutral-950">Frequently Asked Questions</h2>
+              <h2 className="text-lg font-bold text-neutral-950">{t("carpage.frequently-asked-questions")}</h2>
               <div className="mt-4 flex flex-col gap-3 text-xs">
                 <details className="group rounded-2xl border border-neutral-200/80 bg-neutral-50/70 p-4 open:border-orange-500/40">
                   <summary className="cursor-pointer font-bold text-neutral-900 hover:text-orange-600">
-                    Can I pick up this car at Udaipur Airport?
+                    {t("carpage.can-i-pick-up")}
                   </summary>
                   <p className="mt-2 text-neutral-600">
-                    Yes! Select &ldquo;Airport Terminal&rdquo; in the booking engine, and our executive will deliver the car
-                    directly to Maharana Pratap Airport (UDR) Arrivals gate.
+                    {t("carpage.yes-select-airport-terminal")}
                   </p>
                 </details>
 
                 <details className="group rounded-2xl border border-neutral-200/80 bg-neutral-50/70 p-4 open:border-orange-500/40">
                   <summary className="cursor-pointer font-bold text-neutral-900 hover:text-orange-600">
-                    Can I drive to Mount Abu, Kumbhalgarh, or Jaipur?
+                    {t("carpage.can-i-drive-to")}
                   </summary>
                   <p className="mt-2 text-neutral-600">
-                    Absolutely. All SRM vehicles have all-Rajasthan permits and can be driven across neighboring states
-                    (Gujarat, MP). Any inter-state commercial border taxes are paid by the customer at border checkpoints.
+                    {t("carpage.absolutely-all-srm-vehicles")}
                   </p>
                 </details>
 
                 <details className="group rounded-2xl border border-neutral-200/80 bg-neutral-50/70 p-4 open:border-orange-500/40">
                   <summary className="cursor-pointer font-bold text-neutral-900 hover:text-orange-600">
-                    What happens if I return the car late?
+                    {t("carpage.what-happens-if-i")}
                   </summary>
                   <p className="mt-2 text-neutral-600">
                     Extra hours are calculated transparently at ₹{Number(car.pricing?.extraHourPrice ?? 150)}/hr. Please

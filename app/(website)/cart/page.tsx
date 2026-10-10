@@ -1,5 +1,6 @@
 "use client";
 
+import { useCopy } from "@/components/copy-provider";
 import * as React from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -12,6 +13,7 @@ import { apiFetch } from "@/lib/api-client";
 import type { CompanyContent } from "@/modules/settings/site-content.schemas";
 
 function formatInr(amount: number | null | undefined) {
+  const t = useCopy();
   if (amount == null) return "₹0.00";
   return new Intl.NumberFormat("en-IN", {
     style: "currency",
@@ -46,6 +48,7 @@ interface LocationOption {
 }
 
 export default function CartPage() {
+  const t = useCopy();
   const { items, count, removeItem, updateItem } = useCart();
   const [phone, setPhone] = React.useState("+91 9414551250");
   const [whatsapp, setWhatsapp] = React.useState("919414551250");
@@ -175,11 +178,11 @@ export default function CartPage() {
       <div className="border-b border-neutral-200/80 bg-white/80 backdrop-blur-md py-3">
         <div className="mx-auto flex max-w-[1520px] items-center gap-1.5 px-4 text-xs text-neutral-500 sm:px-6 lg:px-8">
           <Link href="/" className="hover:text-orange-600 transition">
-            Home
+            {t("cart.home")}
           </Link>
           <ChevronRight className="size-3 text-neutral-300" />
           <Link href="/cars" className="hover:text-orange-600 transition">
-            Self Drive Fleet
+            {t("cart.self-drive-fleet")}
           </Link>
           <ChevronRight className="size-3 text-neutral-300" />
           <span className="font-semibold text-orange-600">Cart ({count})</span>
@@ -192,12 +195,12 @@ export default function CartPage() {
             <div className="flex size-20 items-center justify-center rounded-2xl bg-orange-500/10 text-orange-600 mb-5 shadow-inner">
               <CarFront className="size-10 stroke-[1.5]" />
             </div>
-            <h2 className="text-2xl font-black text-neutral-950 uppercase tracking-tight">Your Cart is Empty</h2>
+            <h2 className="text-2xl font-black text-neutral-950 uppercase tracking-tight">{t("cart.your-cart-is-empty")}</h2>
             <p className="mt-2 text-sm text-neutral-500 max-w-md">
-              Explore our verified premium self-drive fleet, pick your dates, and proceed to booking.
+              {t("cart.explore-our-verified-premium")}
             </p>
             <Button asChild className="mt-6 rounded-xl bg-orange-500 font-bold text-white hover:bg-orange-600 shadow-lg shadow-orange-500/25 px-6 py-2.5">
-              <Link href="/cars">Explore Fleet →</Link>
+              <Link href="/cars">{t("cart.explore-fleet")}</Link>
             </Button>
           </div>
         ) : (
@@ -209,10 +212,10 @@ export default function CartPage() {
                 
                 {/* Table Header */}
                 <div className="hidden sm:grid grid-cols-12 gap-4 border-b border-neutral-200 bg-neutral-50 px-6 py-4 text-xs font-black uppercase tracking-wider text-neutral-600">
-                  <div className="col-span-6">Product &amp; Rental Schedule</div>
-                  <div className="col-span-2 text-center">Price</div>
-                  <div className="col-span-2 text-center">Quantity</div>
-                  <div className="col-span-2 text-right">Total</div>
+                  <div className="col-span-6">{t("cart.product-rental-schedule")}</div>
+                  <div className="col-span-2 text-center">{t("cart.price")}</div>
+                  <div className="col-span-2 text-center">{t("cart.quantity")}</div>
+                  <div className="col-span-2 text-right">{t("cart.total")}</div>
                 </div>
 
                 {/* Items List */}
@@ -238,7 +241,7 @@ export default function CartPage() {
                               type="button"
                               onClick={() => removeItem(item.id)}
                               className="mt-1 flex size-7 shrink-0 items-center justify-center rounded-lg border border-red-500/20 bg-red-50 text-red-600 hover:bg-red-500 hover:text-white transition active:scale-95 cursor-pointer"
-                              title="Remove car from cart"
+                              title={t("cart.remove-car-from-cart")}
                             >
                               <Trash2 className="size-3.5" />
                             </button>
@@ -287,25 +290,25 @@ export default function CartPage() {
                               <div className="rounded-xl border border-neutral-200 bg-neutral-50/80 p-2.5 text-[11px] space-y-1.5 text-neutral-700">
                                 <div className="flex items-center justify-between">
                                   <span className="text-neutral-500 flex items-center gap-1">
-                                    <Calendar className="size-3 text-orange-500" /> Pickup Date &amp; Time
+                                    <Calendar className="size-3 text-orange-500" /> {t("cart.pickup-date-time")}
                                   </span>
                                   <span className="font-semibold text-neutral-900">{formatDmyTime(item.pickup)}</span>
                                 </div>
                                 <div className="flex items-center justify-between">
                                   <span className="text-neutral-500 flex items-center gap-1">
-                                    <Clock className="size-3 text-orange-500" /> Return Date &amp; Time
+                                    <Clock className="size-3 text-orange-500" /> {t("cart.return-date-time")}
                                   </span>
                                   <span className="font-semibold text-neutral-900">{formatDmyTime(item.drop)}</span>
                                 </div>
                                 <div className="flex items-center justify-between pt-1 border-t border-neutral-200 text-[10px]">
-                                  <span className="text-neutral-500">Pickup Location</span>
+                                  <span className="text-neutral-500">{t("cart.pickup-location")}</span>
                                   <span className="text-neutral-800 truncate max-w-[160px] text-right">
                                     {item.locationName?.split("→")[0]?.trim() || city}
                                   </span>
                                 </div>
                                 {selectedLocation && (
                                   <div className="flex items-center justify-between text-[10px] text-orange-600 font-medium">
-                                    <span>Drop Location</span>
+                                    <span>{t("cart.drop-location")}</span>
                                     <span className="text-right">
                                       {selectedLocation.name}
                                       {selectedLocation.dropCharge > 0 ? ` (+₹${selectedLocation.dropCharge})` : " (Free)"}
@@ -318,13 +321,13 @@ export default function CartPage() {
 
                           {/* Col 2: Price (desktop) */}
                           <div className="sm:col-span-2 sm:text-center text-sm font-semibold text-neutral-800 sm:pt-2 flex justify-between sm:block">
-                            <span className="sm:hidden text-neutral-500 text-xs font-normal">Price:</span>
+                            <span className="sm:hidden text-neutral-500 text-xs font-normal">{t("cart.price-2")}</span>
                             <span>{formatInr(item.basePrice || item.dailyPrice)}</span>
                           </div>
 
                           {/* Col 3: Quantity / Duration */}
                           <div className="sm:col-span-2 sm:text-center text-sm font-medium text-neutral-700 sm:pt-2 flex justify-between sm:block">
-                            <span className="sm:hidden text-neutral-500 text-xs font-normal">Quantity:</span>
+                            <span className="sm:hidden text-neutral-500 text-xs font-normal">{t("cart.quantity-2")}</span>
                             <span className="inline-block rounded-md border border-orange-500/30 bg-orange-500/10 px-2 py-0.5 text-xs font-semibold text-orange-600">
                               {item.durationHours || 24} Hours
                             </span>
@@ -332,7 +335,7 @@ export default function CartPage() {
 
                           {/* Col 4: Line Total */}
                           <div className="sm:col-span-2 sm:text-right text-base font-black text-neutral-950 sm:pt-2 flex justify-between sm:block border-t sm:border-0 border-neutral-100 pt-2">
-                            <span className="sm:hidden text-neutral-500 text-xs font-normal">Total:</span>
+                            <span className="sm:hidden text-neutral-500 text-xs font-normal">{t("cart.total-2")}</span>
                             <span className="text-orange-600 sm:text-neutral-950">
                               {formatInr(item.basePrice || item.dailyPrice)}
                             </span>
@@ -352,7 +355,7 @@ export default function CartPage() {
                         <Tag className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 size-3.5 text-neutral-400" />
                         <input
                           type="text"
-                          placeholder="Coupon code"
+                          placeholder={t("cart.coupon-code")}
                           value={couponCode}
                           onChange={(e) => setCouponCode(e.target.value)}
                           className="h-11 w-full rounded-xl border border-neutral-200 bg-white pl-9 pr-4 text-xs font-medium text-neutral-900 placeholder:text-neutral-400 outline-none transition focus:border-orange-500 shadow-sm"
@@ -363,7 +366,7 @@ export default function CartPage() {
                       type="submit"
                       className="h-11 rounded-xl bg-orange-500 hover:bg-orange-600 px-5 text-xs font-bold text-white shadow-lg shadow-orange-500/25 transition active:scale-95 cursor-pointer"
                     >
-                      Apply Coupon
+                      {t("cart.apply-coupon")}
                     </Button>
                     <Button
                       type="button"
@@ -371,7 +374,7 @@ export default function CartPage() {
                       variant="outline"
                       className="h-11 rounded-xl border-neutral-200 bg-white hover:border-orange-500 hover:text-orange-600 px-5 text-xs font-bold text-neutral-800 shadow-sm transition active:scale-95 cursor-pointer"
                     >
-                      Update Cart
+                      {t("cart.update-cart")}
                     </Button>
                   </form>
                 </div>
@@ -381,15 +384,15 @@ export default function CartPage() {
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div className="flex items-center gap-2.5 rounded-2xl border border-neutral-200/90 bg-white p-3.5 text-xs text-neutral-700 shadow-sm">
                   <ShieldCheck className="size-4 text-emerald-600 shrink-0" />
-                  <span>100% Refundable Security Deposit</span>
+                  <span>{t("cart.100-refundable-security-deposit")}</span>
                 </div>
                 <div className="flex items-center gap-2.5 rounded-2xl border border-neutral-200/90 bg-white p-3.5 text-xs text-neutral-700 shadow-sm">
                   <Sparkles className="size-4 text-orange-500 shrink-0" />
-                  <span>Cleaned, Sanitized &amp; Insured</span>
+                  <span>{t("cart.cleaned-sanitized-insured")}</span>
                 </div>
                 <div className="flex items-center gap-2.5 rounded-2xl border border-neutral-200/90 bg-white p-3.5 text-xs text-neutral-700 shadow-sm">
                   <CheckCircle2 className="size-4 text-sky-600 shrink-0" />
-                  <span>Zero Hidden Charges at Pickup</span>
+                  <span>{t("cart.zero-hidden-charges-at")}</span>
                 </div>
               </div>
             </div>
@@ -404,7 +407,7 @@ export default function CartPage() {
                     <span className="flex size-8 items-center justify-center rounded-xl bg-orange-500/10 text-orange-600">
                       <Receipt className="size-4" />
                     </span>
-                    <h2 className="text-lg font-black text-neutral-950 uppercase tracking-tight">Cart Totals</h2>
+                    <h2 className="text-lg font-black text-neutral-950 uppercase tracking-tight">{t("cart.cart-totals")}</h2>
                   </div>
                   <span className="rounded-full border border-neutral-200 bg-neutral-100 px-2.5 py-0.5 text-[11px] font-bold text-neutral-600">
                     {count} Car{count > 1 ? "s" : ""}
@@ -416,13 +419,13 @@ export default function CartPage() {
                   
                   {/* Subtotal */}
                   <div className="flex items-center justify-between py-3 text-neutral-600">
-                    <span className="font-semibold text-neutral-900">Subtotal</span>
+                    <span className="font-semibold text-neutral-900">{t("cart.subtotal")}</span>
                     <span className="font-bold text-neutral-950 text-sm">{formatInr(subtotal)}</span>
                   </div>
 
                   {/* Free Kms */}
                   <div className="flex items-center justify-between py-3 text-neutral-600">
-                    <span className="font-semibold text-neutral-900">Free Kms</span>
+                    <span className="font-semibold text-neutral-900">{t("cart.free-kms")}</span>
                     <span className="text-right font-medium text-neutral-800">
                       {freeKmsTotal}km <span className="text-neutral-400 font-normal">({freeKmsPerDay}km x {primaryItem?.durationDays || 1} days)</span>
                     </span>
@@ -431,11 +434,11 @@ export default function CartPage() {
                   {/* Doorstep Delivery & Pickup Dropdown */}
                   <div className="py-3.5 space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="font-semibold text-neutral-900">Doorstep delivery &amp; pickup</span>
+                      <span className="font-semibold text-neutral-900">{t("cart.doorstep-delivery-pickup")}</span>
                       {deliveryCharge > 0 ? (
                         <span className="text-[11px] font-bold text-orange-600">+{formatInr(deliveryCharge)}</span>
                       ) : (
-                        <span className="text-[11px] font-bold text-emerald-600">Included</span>
+                        <span className="text-[11px] font-bold text-emerald-600">{t("cart.included")}</span>
                       )}
                     </div>
                     <div className="relative">
@@ -465,9 +468,9 @@ export default function CartPage() {
                   {/* Refundable Deposit */}
                   <div className="flex items-center justify-between py-3 text-neutral-600">
                     <div className="flex items-center gap-1.5">
-                      <span className="font-semibold text-neutral-900">Refundable Deposit</span>
+                      <span className="font-semibold text-neutral-900">{t("cart.refundable-deposit")}</span>
                       <span className="rounded bg-emerald-50 px-1.5 py-0.5 text-[9px] font-bold text-emerald-700 border border-emerald-500/30">
-                        100% Refundable
+                        {t("cart.100-refundable")}
                       </span>
                     </div>
                     <span className="font-bold text-neutral-950">{formatInr(refundableDeposit)}</span>
@@ -476,8 +479,8 @@ export default function CartPage() {
                   {/* Grand Total */}
                   <div className="flex items-center justify-between py-4 border-t border-neutral-200">
                     <div>
-                      <span className="text-sm font-bold text-neutral-950 uppercase tracking-wider block">Total</span>
-                      <span className="text-[10px] text-neutral-400">Includes all taxes &amp; deposit</span>
+                      <span className="text-sm font-bold text-neutral-950 uppercase tracking-wider block">{t("cart.total-3")}</span>
+                      <span className="text-[10px] text-neutral-400">{t("cart.includes-all-taxes-deposit")}</span>
                     </div>
                     <span className="text-xl sm:text-2xl font-black text-orange-600 tracking-tight">
                       {formatInr(grandTotal)}
@@ -486,13 +489,13 @@ export default function CartPage() {
 
                   {/* Fuel Policy */}
                   <div className="flex items-center justify-between py-2.5 text-neutral-600">
-                    <span className="font-medium text-neutral-800">Fuel</span>
+                    <span className="font-medium text-neutral-800">{t("cart.fuel")}</span>
                     <span className="font-semibold text-neutral-950">{fuelType}</span>
                   </div>
 
                   {/* Extra Kms Charge */}
                   <div className="flex items-center justify-between py-2.5 text-neutral-600">
-                    <span className="font-medium text-neutral-800">Extra kms charge</span>
+                    <span className="font-medium text-neutral-800">{t("cart.extra-kms-charge")}</span>
                     <span className="font-semibold text-neutral-950">₹{extraKmRate}.00 / km</span>
                   </div>
                 </div>
@@ -504,7 +507,7 @@ export default function CartPage() {
                     className="w-full h-12 rounded-xl bg-orange-500 hover:bg-orange-600 text-sm font-black uppercase tracking-wider text-white shadow-xl shadow-orange-500/25 transition-all duration-300 hover:shadow-orange-500/40 active:scale-[0.98] cursor-pointer"
                   >
                     <Link href="/checkout" className="flex items-center justify-center gap-2">
-                      <ShoppingCart className="size-4" /> Proceed To Checkout
+                      <ShoppingCart className="size-4" /> {t("cart.proceed-to-checkout")}
                     </Link>
                   </Button>
                 </div>
@@ -517,7 +520,7 @@ export default function CartPage() {
                     rel="noopener noreferrer"
                     className="flex w-full h-10 items-center justify-center gap-2 rounded-xl bg-emerald-600/90 hover:bg-emerald-600 text-xs font-bold text-white transition active:scale-95 shadow-md shadow-emerald-600/20"
                   >
-                    <MessageSquare className="size-3.5" /> Book via WhatsApp
+                    <MessageSquare className="size-3.5" /> {t("cart.book-via-whatsapp")}
                   </a>
                   <a
                     href={`tel:${phone.replace(/[^0-9]/g, "")}`}

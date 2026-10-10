@@ -1,5 +1,7 @@
 import { unstable_cache } from "next/cache";
 
+import { makeT } from "@/lib/copy/translate";
+
 import { prisma } from "@/lib/prisma";
 import { getSetting } from "@/modules/settings/settings.service";
 import { DEFAULT_SITE_TEXT, siteTextSchema, type SiteText } from "@/modules/settings/site-content.schemas";
@@ -897,6 +899,18 @@ async function getSiteText_uncached(): Promise<SiteText> {
   return parsed.success ? parsed.data : DEFAULT_SITE_TEXT;
 }
 export const getSiteText = cached("getSiteText", getSiteText_uncached);
+
+/** Admin overrides for page copy (`homepage.copy`); empty when nothing was customised. */
+async function getCopyOverrides_uncached(): Promise<Record<string, string>> {
+  const stored = await getSetting<Record<string, string>>("homepage.copy");
+  return stored && typeof stored === "object" && !Array.isArray(stored) ? stored : {};
+}
+export const getCopyOverrides = cached("getCopyOverrides", getCopyOverrides_uncached);
+
+/** Server-side translate function for server components. */
+export async function getT() {
+  return makeT(await getCopyOverrides());
+}
 export const getCompanyContent = cached("getCompanyContent", getCompanyContent_uncached);
 export const getAboutPageContent = cached("getAboutPageContent", getAboutPageContent_uncached);
 export const getContactPageContent = cached("getContactPageContent", getContactPageContent_uncached);
