@@ -22,7 +22,7 @@ export function HeroSection({
   const heroImageSrc = content.backgroundImageUrl || "/images/hero-car-bg.jpg";
 
   return (
-    <section className="relative bg-[#FAFAFC] overflow-hidden">
+    <section className="relative overflow-hidden bg-neutral-950">
       {/* ── Background Hero Image & Ambient Warm Flares ── */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none select-none">
         <Image
@@ -30,30 +30,29 @@ export function HeroSection({
           alt="Luxury Fleet Self-Drive & Chauffeur"
           fill
           priority
-          quality={92}
+          quality={80}
           sizes="100vw"
-          className="object-cover object-[center_35%] opacity-20 scale-100 transition-transform duration-1000 ease-out"
+          className="object-cover object-[center_45%]"
         />
-        {/* Soft luminous gradient overlays for crisp contrast and luxury mood */}
-        <div className="absolute inset-0 bg-gradient-to-b from-white/70 via-white/85 to-[#FAFAFC]" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-orange-500/10 via-transparent to-transparent" />
-
-        {/* Ambient Warm Amber Halo behind the center */}
-        <div className="absolute top-[35%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[350px] bg-orange-500/10 rounded-full blur-[140px] pointer-events-none" />
+        {/* Cinematic overlays: keep the photo vivid while the copy stays readable */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/75 via-black/40 to-black/85" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_55%_at_50%_38%,rgba(0,0,0,0.55),transparent_75%)]" />
+        <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-orange-600/25 to-transparent" />
+        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-amber-400/60 to-transparent" />
       </div>
 
       <div className="relative mx-auto flex max-w-5xl flex-col items-center px-4 pt-20 pb-10 text-center sm:px-6 sm:pt-28">
         {content.badge && (
-          <span className="shimmer-sheen mb-6 inline-flex items-center gap-2 rounded-full border border-orange-500/30 bg-orange-500/10 px-4 py-1.5 text-xs font-semibold tracking-widest text-orange-700 backdrop-blur-md shadow-xs">
+          <span className="shimmer-sheen mb-6 inline-flex items-center gap-2 rounded-full border border-amber-400/40 bg-white/10 px-4 py-1.5 text-xs font-semibold tracking-widest text-amber-300 backdrop-blur-md shadow-xs">
             <span className="h-1.5 w-1.5 rounded-full bg-orange-500 animate-pulse shadow-[0_0_6px_#f97316]" />
             {content.badge}
           </span>
         )}
 
-        <h1 className="text-4xl leading-[1.05] font-black tracking-tight text-neutral-950 uppercase sm:text-6xl md:text-7xl">
+        <h1 className="text-4xl leading-[1.05] font-black tracking-tight text-white uppercase drop-shadow-[0_2px_20px_rgba(0,0,0,0.5)] sm:text-6xl md:text-7xl">
           {titleParts[0]}
           {content.highlightWord && (
-            <span className="text-gradient-gold">
+            <span className="bg-gradient-to-r from-amber-300 via-orange-400 to-amber-500 bg-clip-text text-transparent">
               {content.highlightWord}
             </span>
           )}
@@ -62,7 +61,7 @@ export function HeroSection({
         </h1>
 
         {content.subtitle && (
-          <p className="mt-6 max-w-2xl text-base text-neutral-600 sm:text-lg font-normal leading-relaxed">
+          <p className="mt-6 max-w-2xl text-base text-white/80 sm:text-lg font-normal leading-relaxed">
             {content.subtitle}
           </p>
         )}
@@ -82,7 +81,7 @@ export function HeroSection({
             asChild
             size="lg"
             variant="outline"
-            className="luxury-glass border-neutral-300/80 bg-white/80 text-neutral-800 backdrop-blur-md transition-all duration-300 hover:border-orange-500/40 hover:bg-white hover:text-neutral-950 hover:-translate-y-0.5 active:translate-y-0 shadow-xs"
+            className="border-white/30 bg-white/10 text-white backdrop-blur-md transition-all duration-300 hover:border-amber-400/60 hover:bg-white/20 hover:text-white hover:-translate-y-0.5 active:translate-y-0 shadow-xs"
           >
             <Link href={content.secondaryCtaHref}>
               <Compass className="size-4 text-orange-500" />
