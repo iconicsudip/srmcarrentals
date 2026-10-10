@@ -1,5 +1,6 @@
 "use client";
 
+import { ADVANCE_PERCENT, splitAdvance } from "@/lib/checkout/advance";
 import * as React from "react";
 import { useSearchParams } from "next/navigation";
 import { AlertCircle, CheckCircle2, Loader2, MapPin, Plane, Phone, ShieldCheck, ShoppingBag, Tag } from "lucide-react";
@@ -370,32 +371,39 @@ export function BookingEngine({
   };
 
   return (
-    <div className="rounded-3xl border border-neutral-200/90 bg-white p-6 shadow-xl shadow-neutral-900/5 ring-1 ring-neutral-900/5">
-      {/* Header */}
-      <div className="flex items-center justify-between border-b border-neutral-200/80 pb-4">
-        <div>
-          <span className="text-[10px] font-bold tracking-wider text-orange-600 uppercase">Self-Drive Reservation</span>
-          <h3 className="text-xl font-black text-neutral-950">{carName}</h3>
-        </div>
-        <div className="text-right">
-          <div className="text-xl font-black text-orange-600">
-            {rentalMode === "HOURLY" && hasHourly
-              ? `₹${Number(hourlyPrice).toLocaleString("en-IN")}/hr`
-              : `₹${Number(dailyPrice).toLocaleString("en-IN")}/day`}
+    <div className="relative overflow-hidden rounded-[28px] border border-neutral-200/90 bg-white p-6 pt-0 shadow-2xl shadow-neutral-900/10 ring-1 ring-neutral-900/5">
+      {/* Header — dark "key card" band */}
+      <div className="relative -mx-6 overflow-hidden bg-gradient-to-br from-neutral-950 via-neutral-900 to-neutral-800 px-6 py-5 text-white">
+        <div className="pointer-events-none absolute -top-16 -right-10 size-48 rounded-full bg-[radial-gradient(circle,rgba(249,115,22,0.45),transparent_65%)]" />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-amber-400/60 to-transparent" />
+        <div className="relative flex items-end justify-between gap-3">
+          <div className="min-w-0">
+            <span className="inline-flex items-center gap-1.5 text-[10px] font-bold tracking-[0.18em] text-amber-400 uppercase">
+              <span className="size-1.5 rounded-full bg-amber-400 shadow-[0_0_8px_#fbbf24]" />
+              Reserve Your Drive
+            </span>
+            <h3 className="mt-1 truncate text-xl font-black tracking-tight">{carName}</h3>
           </div>
-          <span className="text-[10px] text-neutral-500">{rentalMode === "HOURLY" ? "Flexible Hours" : "24-Hour Block"}</span>
+          <div className="shrink-0 rounded-2xl border border-white/15 bg-white/10 px-3.5 py-2 text-right backdrop-blur-md">
+            <div className="text-lg leading-none font-black text-amber-300">
+              {rentalMode === "HOURLY" && hasHourly
+                ? `₹${Number(hourlyPrice).toLocaleString("en-IN")}/hr`
+                : `₹${Number(dailyPrice).toLocaleString("en-IN")}/day`}
+            </div>
+            <span className="text-[10px] text-white/60">{rentalMode === "HOURLY" ? "Flexible Hours" : "24-Hour Block"}</span>
+          </div>
         </div>
       </div>
 
       {/* Mode Switch: Daily vs Hourly */}
       {hasHourly && (
-        <div className="mt-4 flex rounded-xl border border-neutral-200 bg-neutral-100/70 p-1">
+        <div className="mt-5 flex rounded-full border border-neutral-200 bg-neutral-100/70 p-1 [&>button]:rounded-full">
           <button
             type="button"
             onClick={() => handleModeToggle("DAILY")}
             className={`flex-1 rounded-lg py-2 text-xs font-bold transition-all ${
               rentalMode === "DAILY"
-                ? "bg-orange-500 text-white shadow-md shadow-orange-500/20"
+                ? "bg-neutral-900 text-amber-300 shadow-md shadow-neutral-900/20"
                 : "text-neutral-600 hover:text-neutral-950"
             }`}
           >
@@ -406,7 +414,7 @@ export function BookingEngine({
             onClick={() => handleModeToggle("HOURLY")}
             className={`flex-1 rounded-lg py-2 text-xs font-bold transition-all ${
               rentalMode === "HOURLY"
-                ? "bg-orange-500 text-white shadow-md shadow-orange-500/20"
+                ? "bg-neutral-900 text-amber-300 shadow-md shadow-neutral-900/20"
                 : "text-neutral-600 hover:text-neutral-950"
             }`}
           >
@@ -708,7 +716,7 @@ export function BookingEngine({
             <Loader2 className="mr-2 size-4 animate-spin text-orange-500" /> Updating live price...
           </div>
         ) : pricingResult ? (
-          <div className="rounded-2xl border border-neutral-200 bg-neutral-50/70 p-4 text-xs">
+          <div className="relative rounded-2xl border border-dashed border-neutral-300 bg-gradient-to-b from-amber-50/40 to-neutral-50/70 p-4 text-xs before:absolute before:top-1/2 before:-left-2 before:size-4 before:-translate-y-1/2 before:rounded-full before:border before:border-neutral-200 before:bg-white after:absolute after:top-1/2 after:-right-2 after:size-4 after:-translate-y-1/2 after:rounded-full after:border after:border-neutral-200 after:bg-white">
             <div className="flex flex-col gap-2">
               <div className="flex justify-between text-neutral-600">
                 <span>Base Rental ({pricingResult.duration.fullDays || 1} day(s))</span>
@@ -764,9 +772,16 @@ export function BookingEngine({
                 </div>
               )}
 
-              <div className="flex items-center justify-between border-t border-neutral-200 pt-2 text-sm font-black text-neutral-950">
+              <div className="flex items-center justify-between border-t border-dashed border-neutral-300 pt-2.5 text-sm font-black text-neutral-950">
                 <span>Total Payable</span>
-                <span className="text-base text-orange-600">{formatInr(pricingResult.total)}</span>
+                <span className="text-gradient-gold text-xl">{formatInr(pricingResult.total)}</span>
+              </div>
+
+              <div className="flex items-center justify-between rounded-xl bg-neutral-900 px-3 py-2 text-[11px] text-white/80">
+                <span>
+                  Reserve now with <strong className="text-amber-300">{ADVANCE_PERCENT}%</strong>
+                </span>
+                <span className="font-black text-amber-300">{formatInr(splitAdvance(pricingResult.total).now)}</span>
               </div>
 
               <div className="mt-1 flex items-center justify-between text-[11px] text-emerald-600">
@@ -784,7 +799,7 @@ export function BookingEngine({
           type="button"
           onClick={handleAddToCart}
           disabled={availLoading || isAvailable === false || calcLoading || isAdding}
-          className="mt-3 w-full rounded-2xl bg-orange-500 py-3.5 text-sm font-black text-white shadow-xl shadow-orange-500/25 transition-all hover:bg-orange-600 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
+          className="shimmer-sheen relative mt-3 w-full overflow-hidden rounded-2xl bg-gradient-to-r from-orange-500 via-orange-500 to-amber-500 py-3.5 text-sm font-black text-white shadow-xl shadow-orange-500/30 transition-all hover:from-orange-600 hover:to-amber-600 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
         >
           {isAdding ? (
             <>

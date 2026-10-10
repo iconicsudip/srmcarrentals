@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import dynamic from "next/dynamic";
 
 import { B2bSection } from "@/components/website/b2b-section";
 import { BrandFleetSection } from "@/components/website/brand-fleet-section";
@@ -10,7 +11,6 @@ import { HeroSection, TrustBadgeRow } from "@/components/website/hero-section";
 import { PhilosophySection } from "@/components/website/philosophy-section";
 import { TestimonialsSection } from "@/components/website/testimonials-section";
 import { ToursSection } from "@/components/website/tours-section";
-import { VideoShowcaseSection } from "@/components/website/video-showcase-section";
 import { WhyChooseUsSection } from "@/components/website/why-choose-us-section";
 import { FaqSection } from "@/components/website/faq-section";
 import {
@@ -28,6 +28,11 @@ import {
   listActiveTestimonials,
   listActiveTours,
 } from "@/modules/website/public-content.service";
+
+// Below-the-fold, client-heavy: split out of the initial JS bundle.
+const VideoShowcaseSection = dynamic(() =>
+  import("@/components/website/video-showcase-section").then((m) => m.VideoShowcaseSection),
+);
 
 import { getDynamicSeoForPath, DynamicJsonLd } from "@/lib/seo/dynamic-seo";
 

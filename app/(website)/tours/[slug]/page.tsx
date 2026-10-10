@@ -8,6 +8,14 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { getCompanyContent, getPublicTourBySlug } from "@/modules/website/public-content.service";
 
+// ISR: render once, then serve from cache and refresh in the background.
+export const revalidate = 300;
+
+// No pages are pre-built; each is rendered on first request, then cached (ISR).
+export function generateStaticParams() {
+  return [];
+}
+
 interface TourDetailPageProps {
   params: Promise<{ slug: string }>;
 }

@@ -39,6 +39,14 @@ interface CarDetailPageProps {
 
 import { getDynamicSeoForPath, DynamicJsonLd } from "@/lib/seo/dynamic-seo";
 
+// ISR: render once, then serve from cache and refresh in the background.
+export const revalidate = 300;
+
+// No pages are pre-built; each is rendered on first request, then cached (ISR).
+export function generateStaticParams() {
+  return [];
+}
+
 export async function generateMetadata({ params }: CarDetailPageProps): Promise<Metadata> {
   const { slug } = await params;
   const car = await getPublicCarBySlug(slug);

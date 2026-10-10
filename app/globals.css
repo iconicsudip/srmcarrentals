@@ -344,3 +344,8 @@
 @media (max-width: 767px) {
   .lux-streak, .lux-ring { display: none; }
 }
+
+@keyframes loadingBar {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(400%); }
+}

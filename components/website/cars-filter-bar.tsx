@@ -79,7 +79,7 @@ function formatChipDates(pickupDT: string, dropDT: string): string {
 function FilterSection({
   title,
   children,
-  defaultOpen = true,
+  defaultOpen = false,
   icon,
 }: {
   title: string;
@@ -447,7 +447,7 @@ export function CarsFilterBar({
 
       {/* Category */}
       {categories.length > 0 && (
-        <FilterSection title="Category">
+        <FilterSection title="Category" defaultOpen={Boolean(currentCategory)}>
           <FilterPill active={!currentCategory} onClick={() => updateParam("category", ALL)}>
             All Categories
           </FilterPill>
@@ -465,7 +465,7 @@ export function CarsFilterBar({
 
       {/* Brand */}
       {brands.length > 0 && (
-        <FilterSection title="Brand">
+        <FilterSection title="Brand" defaultOpen={Boolean(currentBrand)}>
           <FilterPill active={!currentBrand} onClick={() => updateParam("brand", ALL)}>
             All Brands
           </FilterPill>
@@ -483,7 +483,7 @@ export function CarsFilterBar({
 
       {/* Car Type */}
       {carTypes.length > 0 && (
-        <FilterSection title="Car Type" defaultOpen={false}>
+        <FilterSection title="Car Type" defaultOpen={Boolean(currentType)}>
           <FilterPill active={!currentType} onClick={() => updateParam("type", ALL)}>
             All Types
           </FilterPill>
@@ -501,7 +501,7 @@ export function CarsFilterBar({
 
       {/* Transmission */}
       {transmissionTypes.length > 0 && (
-        <FilterSection title="Transmission" defaultOpen={false}>
+        <FilterSection title="Transmission" defaultOpen={Boolean(currentTx)}>
           <FilterPill active={!currentTx} onClick={() => updateParam("transmission", ALL)}>
             Any
           </FilterPill>
@@ -519,7 +519,7 @@ export function CarsFilterBar({
 
       {/* Fuel Type */}
       {fuelTypes.length > 0 && (
-        <FilterSection title="Fuel Type" defaultOpen={false}>
+        <FilterSection title="Fuel Type" defaultOpen={Boolean(currentFuel)}>
           <FilterPill active={!currentFuel} onClick={() => updateParam("fuel", ALL)}>
             Any
           </FilterPill>

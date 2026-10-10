@@ -13,6 +13,14 @@ import {
 import { BlogContentRenderer } from "@/components/website/blog-content-renderer";
 import { BlogShareButtons } from "@/components/website/blog-share-buttons";
 
+// ISR: render once, then serve from cache and refresh in the background.
+export const revalidate = 300;
+
+// No pages are pre-built; each is rendered on first request, then cached (ISR).
+export function generateStaticParams() {
+  return [];
+}
+
 interface BlogPostPageProps {
   params: Promise<{ slug: string }>;
 }
