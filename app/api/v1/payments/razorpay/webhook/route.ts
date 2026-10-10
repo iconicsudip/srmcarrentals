@@ -44,8 +44,8 @@ export async function POST(req: Request) {
           // If linked to an SRM booking, record the payment
           if (target.bookingId || target.bookingReference) {
             const booking = target.bookingId
-              ? await prisma.booking.findUnique({ where: { id: target.bookingId } })
-              : await prisma.booking.findUnique({ where: { bookingReference: target.bookingReference } });
+              ? await prisma.booking.findUnique({ where: { id: target.bookingId }, include: { pricingSnapshot: true } })
+              : await prisma.booking.findUnique({ where: { bookingReference: target.bookingReference }, include: { pricingSnapshot: true } });
 
             if (booking) {
               await prisma.booking.update({
@@ -57,7 +57,8 @@ export async function POST(req: Request) {
                 data: {
                   bookingId: booking.id,
                   provider: "RAZORPAY",
-                  paymentType: "FULL",
+                  paymentType:
+                    Number(booking.pricingSnapshot?.grandTotal ?? 0) > target.amount ? "ADVANCE" : "FULL",
                   amount: target.amount,
                   status: "PAID",
                   providerPaymentId: payload?.payment?.entity?.id || plink.id,
@@ -84,6 +85,7 @@ export async function POST(req: Request) {
       if (paymentEntity?.notes?.bookingReference) {
         const booking = await prisma.booking.findUnique({
           where: { bookingReference: paymentEntity.notes.bookingReference },
+          include: { pricingSnapshot: true },
         });
 
         if (booking) {
@@ -97,7 +99,7 @@ export async function POST(req: Request) {
             data: {
               bookingId: booking.id,
               provider: "RAZORPAY",
-              paymentType: "FULL",
+              paymentType: Number(booking.pricingSnapshot?.grandTotal ?? 0) > amountInr ? "ADVANCE" : "FULL",
               amount: amountInr,
               status: "PAID",
               providerPaymentId: paymentEntity.id,

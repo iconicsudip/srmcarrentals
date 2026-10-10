@@ -11,6 +11,7 @@ import { calculatePricing } from "@/modules/pricing/pricing.service";
 import { generateBookingReference } from "@/modules/bookings/booking-reference";
 import { isCarAvailable, lockCarForBooking } from "@/modules/bookings/availability.service";
 import type { CreateBookingInput } from "@/modules/bookings/bookings.schemas";
+import { splitAdvance } from "@/lib/checkout/advance";
 import { cancelSmartPaymentLink, createSmartPaymentLink, listSmartLinks } from "@/lib/razorpay/razorpay-service";
 
 const BOOKING_DETAIL_INCLUDE = {
@@ -222,8 +223,8 @@ export async function createBooking(input: CreateBookingInput, origin?: string) 
       const custEmail = input.customer?.email || bookingRecord.customer?.email;
 
       const link = await createSmartPaymentLink({
-        amount: Number(pricing.total),
-        purpose: `SRM Self-Drive Booking #${bookingReference}`,
+        amount: splitAdvance(Number(pricing.total)).now,
+        purpose: `SRM Self-Drive Booking #${bookingReference} — 30% advance`,
         customerName: custName,
         customerPhone: custPhone,
         customerEmail: custEmail && !custEmail.includes("@guest.") ? custEmail : undefined,
@@ -422,7 +423,7 @@ export async function completeTrip(id: string, actualKm?: number) {
 export async function getOrCreateBookingPaymentLink(bookingReference: string, origin?: string) {
   const booking = await getBookingByReference(bookingReference);
   const links = await listSmartLinks();
-  const amount = Number(booking.pricingSnapshot?.grandTotal || 0);
+  const amount = splitAdvance(Number(booking.pricingSnapshot?.grandTotal || 0)).now;
   const bookingLinks = links.filter(
     (l) => l.bookingReference === bookingReference || l.bookingId === booking.id,
   );
@@ -486,7 +487,8 @@ export async function confirmBookingWithPayment(params: {
 
   await cancelBookingHoldJob(booking.id);
 
-  const finalAmount = params.amount ?? Number(booking.pricingSnapshot?.grandTotal ?? 0);
+  const grandTotal = Number(booking.pricingSnapshot?.grandTotal ?? 0);
+  const finalAmount = params.amount ?? grandTotal;
 
   if (booking.status === BookingStatus.CONFIRMED && booking.payments.some((p) => p.status === "PAID")) {
     return booking;
@@ -502,7 +504,7 @@ export async function confirmBookingWithPayment(params: {
         data: {
           bookingId: booking.id,
           provider: params.provider || "RAZORPAY",
-          paymentType: "FULL",
+          paymentType: grandTotal > 0 && finalAmount < grandTotal ? "ADVANCE" : "FULL",
           amount: finalAmount,
           status: "PAID",
           providerPaymentId: params.paymentId || `pay_rzp_${Date.now()}`,

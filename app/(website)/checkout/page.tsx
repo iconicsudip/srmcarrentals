@@ -1,5 +1,6 @@
 "use client";
 
+import { ADVANCE_PERCENT, splitAdvance } from "@/lib/checkout/advance";
 import * as React from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -36,6 +37,14 @@ function formatDate(iso: string) {
   } catch {
     return iso;
   }
+}
+
+/** Digits only, capped at 10 (drops a pasted +91 / leading 0 prefix). */
+function toTenDigits(value: string): string {
+  let digits = value.replace(/[^0-9]/g, "");
+  if (digits.length > 10 && digits.startsWith("91")) digits = digits.slice(2);
+  if (digits.length > 10 && digits.startsWith("0")) digits = digits.slice(1);
+  return digits.slice(0, 10);
 }
 
 export default function CheckoutPage() {
@@ -118,8 +127,12 @@ export default function CheckoutPage() {
     effectiveSubtotal + deliveryCharge + refundableDeposit - totalDiscount
   );
 
-  // Payment method selection: "PICKUP" (Cash / UPI at handover) or "ONLINE"
+  // Payment method selection: "PICKUP" (Cash / UPI at handover) or "ONLINE" (30% advance)
   const [paymentMethod, setPaymentMethod] = React.useState<"PICKUP" | "ONLINE">("PICKUP");
+
+  const advance = splitAdvance(grandTotal);
+  const payableNow = paymentMethod === "ONLINE" ? advance.now : 0;
+  const payableLater = grandTotal - payableNow;
 
   const handleLocationChange = (locationId: string) => {
     if (!primaryItem) return;
@@ -181,7 +194,7 @@ export default function CheckoutPage() {
       setFormValues((prev) => ({
         ...prev,
         fullName: prev.fullName || `${currentUser.firstName} ${currentUser.lastName}`.trim(),
-        phone: prev.phone || currentUser.phone || "",
+        phone: prev.phone || toTenDigits(currentUser.phone || ""),
         email: prev.email || currentUser.email || "",
       }));
     }
@@ -219,7 +232,7 @@ export default function CheckoutPage() {
       setFormValues((prev) => ({
         ...prev,
         fullName: `${res.user.firstName} ${res.user.lastName}`.trim(),
-        phone: res.user.phone || prev.phone,
+        phone: toTenDigits(res.user.phone || "") || prev.phone,
         email: res.user.email,
       }));
       setLoginPassword("");
@@ -245,7 +258,7 @@ export default function CheckoutPage() {
       newErrors.fullName = "Full Name is required";
     }
     const cleanPhone = formValues.phone.replace(/[^0-9]/g, "");
-    if (!cleanPhone || cleanPhone.length < 10) {
+    if (cleanPhone.length !== 10) {
       newErrors.phone = "Valid 10-digit Phone Number is required";
     }
     if (!formValues.city.trim()) {
@@ -275,7 +288,7 @@ export default function CheckoutPage() {
         customer: {
           firstName,
           lastName,
-          phone: formValues.phone.trim(),
+          phone: cleanPhone,
           email: customerEmail,
           userId: currentUser?.id,
         },
@@ -523,8 +536,11 @@ export default function CheckoutPage() {
                       <input
                         type="tel"
                         value={formValues.phone}
-                        onChange={(e) => handleFieldChange("phone", e.target.value)}
-                        placeholder=""
+                        onChange={(e) => handleFieldChange("phone", toTenDigits(e.target.value))}
+                        inputMode="numeric"
+                        maxLength={10}
+                        autoComplete="tel-national"
+                        placeholder="10-digit mobile number"
                         className={`h-12 w-full rounded-xl border bg-white px-3.5 text-sm text-neutral-900 outline-none transition ${
                           errors.phone
                             ? "border-red-500 focus:border-red-500"
@@ -647,14 +663,14 @@ export default function CheckoutPage() {
                           onChange={() => setPaymentMethod("ONLINE")}
                           className="accent-orange-500 mt-0.5"
                         />
-                        <span className="font-bold text-xs text-neutral-950">Pay Online via Razorpay</span>
+                        <span className="font-bold text-xs text-neutral-950">Pay {ADVANCE_PERCENT}% Advance Online</span>
                       </div>
                       <span className="rounded bg-orange-100 px-2 py-0.5 text-[10px] font-bold text-orange-700 border border-orange-200">
                         Phone OTP Verified
                       </span>
                     </div>
                     <p className="mt-2 text-[11px] text-neutral-600">
-                      Mobile number is verified directly via Razorpay OTP. Pay securely with UPI (GPay/PhonePe/Paytm), Cards, or NetBanking.
+                      Pay {formatInr(advance.now)} now ({ADVANCE_PERCENT}%) and the remaining {formatInr(advance.later)} at vehicle handover. Mobile number is verified via Razorpay OTP; pay securely with UPI (GPay/PhonePe/Paytm), Cards, or NetBanking.
                     </p>
                   </label>
                 </div>
@@ -716,7 +732,7 @@ export default function CheckoutPage() {
                     ) : (
                       <span className="flex items-center justify-center gap-2">
                         {paymentMethod === "ONLINE" ? (
-                          <>Verify Phone &amp; Pay via Razorpay • {formatInr(grandTotal)} →</>
+                          <>Verify Phone &amp; Pay {ADVANCE_PERCENT}% Advance • {formatInr(advance.now)} →</>
                         ) : (
                           <>Confirm Reservation (Pay at Pickup) • {formatInr(grandTotal)} →</>
                         )}
@@ -725,7 +741,7 @@ export default function CheckoutPage() {
                   </Button>
                   <p className="mt-2 text-center text-[11px] text-neutral-500">
                     {paymentMethod === "ONLINE"
-                      ? "You will be redirected to Razorpay to verify your phone number and complete digital payment."
+                      ? `You will be redirected to Razorpay to verify your phone number and pay the ${ADVANCE_PERCENT}% advance. The balance is due at handover.`
                       : "By clicking Confirm Reservation, your vehicle is locked in the system and an instant booking voucher is created."}
                   </p>
                 </div>
@@ -886,37 +902,25 @@ export default function CheckoutPage() {
                   {/* Group Divider */}
                   <div className="border-t border-neutral-200 my-2" />
 
-                  {/* Payable on Delivery / Online Container */}
-                  <div
-                    className={`rounded-xl border p-3.5 flex items-center justify-between transition-all ${
-                      paymentMethod === "PICKUP"
-                        ? "border-emerald-500/40 border-l-4 border-l-emerald-600 bg-emerald-50"
-                        : "border-orange-500/40 border-l-4 border-l-orange-500 bg-orange-50"
-                    }`}
-                  >
-                    <span
-                      className={`text-sm sm:text-base font-bold ${
-                        paymentMethod === "PICKUP" ? "text-emerald-800" : "text-orange-800"
-                      }`}
-                    >
-                      {paymentMethod === "PICKUP" ? "Payable on Delivery:" : "Payable Now:"}
+                  {/* Payment breakdown */}
+                  <div className="rounded-xl border border-orange-500/40 border-l-4 border-l-orange-500 bg-orange-50 p-3.5 flex items-center justify-between">
+                    <span className="text-sm sm:text-base font-bold text-orange-800">
+                      Payable Now{paymentMethod === "ONLINE" ? ` (${ADVANCE_PERCENT}%)` : ""}:
                     </span>
-                    <span
-                      className={`text-lg sm:text-xl font-black ${
-                        paymentMethod === "PICKUP" ? "text-emerald-700" : "text-orange-600"
-                      }`}
-                    >
-                      {formatInr(grandTotal)}
-                    </span>
+                    <span className="text-lg sm:text-xl font-black text-orange-600">{formatInr(payableNow)}</span>
                   </div>
 
-                  {/* Secondary Payable Row */}
-                  <div className="flex items-center justify-between px-1 text-xs sm:text-sm text-neutral-600">
-                    <span className="font-medium text-neutral-600">
-                      {paymentMethod === "PICKUP" ? "Payable Now:" : "Payable on Delivery:"}
+                  <div className="rounded-xl border border-emerald-500/40 border-l-4 border-l-emerald-600 bg-emerald-50 p-3.5 flex items-center justify-between">
+                    <span className="text-sm sm:text-base font-bold text-emerald-800">
+                      Payable Later{paymentMethod === "ONLINE" ? ` (${100 - ADVANCE_PERCENT}%)` : ""}:
                     </span>
-                    <span className="font-bold text-neutral-950">{formatInr(0)}</span>
+                    <span className="text-lg sm:text-xl font-black text-emerald-700">{formatInr(payableLater)}</span>
                   </div>
+                  <p className="px-1 text-[11px] text-neutral-500">
+                    {paymentMethod === "ONLINE"
+                      ? "The balance is collected at vehicle handover."
+                      : "Everything is payable at vehicle handover. Choose online to lock in your booking with a 30% advance."}
+                  </p>
 
                   {/* Info Notice Box */}
                   <div className="rounded-xl border border-neutral-200 bg-neutral-50 p-3 text-xs text-neutral-600 flex items-start gap-2.5 leading-relaxed mt-2">
