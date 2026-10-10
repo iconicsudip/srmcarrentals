@@ -304,6 +304,30 @@ export default function CheckoutPage() {
         extraServiceIds: primaryItem.extraServices.map((s) => s.id),
         couponCode: primaryItem.couponCode,
         paymentMethod,
+        // Everything else shown/entered on this page, captured with the booking
+        details: {
+          customer: {
+            licenseNumber: formValues.licenseNumber.trim() || undefined,
+            aadhaarNumber: formValues.aadharNumber.trim() || undefined,
+            city: formValues.city.trim(),
+            emailProvided: Boolean(formValues.email.trim()),
+            hasValidLicense: hasLicense,
+            agreedToTerms: agreeTerms,
+          },
+          selection: {
+            rentalMode: primaryItem.rentalMode,
+            kmLimit: primaryItem.includedKm,
+            extraKmPrice: primaryItem.extraKmPrice,
+            deliveryType: primaryItem.deliveryType,
+            locationLabel: primaryItem.locationName,
+            durationText: primaryItem.durationText,
+            insuranceName: primaryItem.insurance?.name,
+            extraServiceNames: primaryItem.extraServices.map((x) => x.name),
+            couponCode: primaryItem.couponCode,
+            securityDeposit: primaryItem.securityDeposit,
+          },
+          payment: { grandTotal, payableNow, payableLater },
+        },
       };
 
       const result = await apiFetch<{

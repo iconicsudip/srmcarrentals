@@ -118,6 +118,8 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
             </CardContent>
           </Card>
 
+          {(booking as any).checkoutDetails && <CheckoutDetailsCard details={(booking as any).checkoutDetails} />}
+
           {s && (
             <Card>
               <CardHeader>
@@ -264,5 +266,50 @@ function Row({ label, value, raw }: { label: string; value: string | number; raw
       <span className="text-muted-foreground">{label}</span>
       <span>{raw ? value : formatInr(value)}</span>
     </div>
+  );
+}
+
+
+type Details = import("@/lib/booking-details/types").BookingCheckoutDetails;
+
+function CheckoutDetailsCard({ details }: { details: Details }) {
+  const rows: [string, React.ReactNode][] = [
+    ["City", details.customer.city],
+    ["Driving license no.", details.customer.licenseNumber],
+    ["Aadhaar (masked)", details.customer.aadhaarMasked],
+    ["Email given", details.customer.emailProvided ? "Yes" : "No (guest email generated)"],
+    ["Has valid license", details.customer.hasValidLicense ? "Yes" : "No"],
+    ["Accepted terms", details.customer.agreedToTerms ? "Yes" : "No"],
+    ["Rental mode", details.selection.rentalMode],
+    ["KM limit", details.selection.kmLimit != null ? `${details.selection.kmLimit} km` : undefined],
+    ["Extra KM charge", details.selection.extraKmPrice != null ? formatInr(details.selection.extraKmPrice) : undefined],
+    ["Delivery type", details.selection.deliveryType],
+    ["Handover", details.selection.locationLabel],
+    ["Duration", details.selection.durationText],
+    ["Protection plan", details.selection.insuranceName],
+    ["Add-ons", details.selection.extraServiceNames?.length ? details.selection.extraServiceNames.join(", ") : undefined],
+    ["Coupon", details.selection.couponCode],
+    ["Security deposit", details.selection.securityDeposit != null ? formatInr(details.selection.securityDeposit) : undefined],
+    ["Payment method", details.payment.method === "ONLINE" ? "Online (30% advance)" : "Pay at pickup"],
+    ["Grand total", details.payment.grandTotal != null ? formatInr(details.payment.grandTotal) : undefined],
+    ["Payable now", details.payment.payableNow != null ? formatInr(details.payment.payableNow) : undefined],
+    ["Payable later", details.payment.payableLater != null ? formatInr(details.payment.payableLater) : undefined],
+  ];
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-base">Checkout Details</CardTitle>
+      </CardHeader>
+      <CardContent className="grid gap-x-6 gap-y-2 text-sm sm:grid-cols-2">
+        {rows
+          .filter(([, v]) => v !== undefined && v !== "")
+          .map(([label, value]) => (
+            <div key={label}>
+              <div className="text-muted-foreground text-[11px] font-semibold tracking-wider uppercase">{label}</div>
+              <div className="font-medium break-words">{value}</div>
+            </div>
+          ))}
+      </CardContent>
+    </Card>
   );
 }

@@ -29,6 +29,42 @@ export const createBookingSchema = z
     insuranceId: z.string().optional(),
     couponCode: z.string().optional(),
     paymentMethod: z.enum(["PICKUP", "ONLINE"]).optional().default("PICKUP"),
+    /** Extra checkout details (license, city, selected package, consents…) saved alongside the booking. */
+    details: z
+      .object({
+        customer: z
+          .object({
+            licenseNumber: z.string().max(40).optional(),
+            aadhaarNumber: z.string().max(20).optional(),
+            city: z.string().max(100).optional(),
+            emailProvided: z.boolean().optional(),
+            hasValidLicense: z.boolean().optional(),
+            agreedToTerms: z.boolean().optional(),
+          })
+          .optional(),
+        selection: z
+          .object({
+            rentalMode: z.enum(["DAILY", "HOURLY"]).optional(),
+            kmLimit: z.number().nonnegative().optional(),
+            extraKmPrice: z.number().nonnegative().optional(),
+            deliveryType: z.enum(["BRANCH", "AIRPORT", "DOORSTEP"]).optional(),
+            locationLabel: z.string().max(200).optional(),
+            durationText: z.string().max(60).optional(),
+            insuranceName: z.string().max(120).optional(),
+            extraServiceNames: z.array(z.string().max(120)).max(30).optional(),
+            couponCode: z.string().max(40).optional(),
+            securityDeposit: z.number().nonnegative().optional(),
+          })
+          .optional(),
+        payment: z
+          .object({
+            grandTotal: z.number().nonnegative().optional(),
+            payableNow: z.number().nonnegative().optional(),
+            payableLater: z.number().nonnegative().optional(),
+          })
+          .optional(),
+      })
+      .optional(),
   })
   .refine((data) => data.customerId || data.customer, {
     message: "Either customerId or customer details are required",

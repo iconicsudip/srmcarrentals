@@ -12,6 +12,8 @@ import { generateBookingReference } from "@/modules/bookings/booking-reference";
 import { isCarAvailable, lockCarForBooking } from "@/modules/bookings/availability.service";
 import type { CreateBookingInput } from "@/modules/bookings/bookings.schemas";
 import { splitAdvance } from "@/lib/checkout/advance";
+import { bookingDetailsKey, maskAadhaar, type BookingCheckoutDetails } from "@/lib/booking-details/types";
+import { setSetting } from "@/modules/settings/settings.service";
 import { cancelSmartPaymentLink, createSmartPaymentLink, listSmartLinks } from "@/lib/razorpay/razorpay-service";
 
 const BOOKING_DETAIL_INCLUDE = {
@@ -210,6 +212,39 @@ export async function createBooking(input: CreateBookingInput, origin?: string) 
   await scheduleBookingHoldExpiry(bookingId, holdMinutes * 60_000);
 
   const bookingRecord = await getBookingById(bookingId);
+
+  // Persist everything else the customer entered / selected at checkout (best-effort: never block the booking).
+  try {
+    const d = input.details;
+    const checkoutDetails: BookingCheckoutDetails = {
+      customer: {
+        licenseNumber: d?.customer?.licenseNumber?.trim() || undefined,
+        aadhaarMasked: maskAadhaar(d?.customer?.aadhaarNumber),
+        city: d?.customer?.city?.trim() || undefined,
+        email: input.customer?.email && !input.customer.email.includes("@guest.") ? input.customer.email : undefined,
+        emailProvided: d?.customer?.emailProvided ?? Boolean(input.customer?.email && !input.customer.email.includes("@guest.")),
+        hasValidLicense: d?.customer?.hasValidLicense ?? false,
+        agreedToTerms: d?.customer?.agreedToTerms ?? false,
+      },
+      selection: {
+        ...d?.selection,
+        couponCode: d?.selection?.couponCode || input.couponCode || undefined,
+      },
+      payment: {
+        method: input.paymentMethod,
+        grandTotal: d?.payment?.grandTotal ?? Number(pricing.total),
+        payableNow: input.paymentMethod === "ONLINE" ? splitAdvance(Number(pricing.total)).now : 0,
+        payableLater:
+          input.paymentMethod === "ONLINE"
+            ? Number(pricing.total) - splitAdvance(Number(pricing.total)).now
+            : Number(pricing.total),
+      },
+      capturedAt: new Date().toISOString(),
+    };
+    await setSetting(bookingDetailsKey(bookingReference), checkoutDetails);
+  } catch (err) {
+    console.error("Failed to store checkout details for booking", bookingReference, err);
+  }
 
   let paymentUrl: string | undefined;
   let paymentLinkId: string | undefined;
