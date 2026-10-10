@@ -2,6 +2,7 @@
 
 import * as React from "react";
 
+import { CarWhatsAppBook } from "@/components/website/car-whatsapp-book";
 import { getCarFallbackImage } from "@/lib/car-fallback-image";
 import Image from "next/image";
 import Link from "next/link";
@@ -404,35 +405,35 @@ function CarCardInner({
         </div>
 
         {/* ── 3 Dynamic KM-Basis Packages (Matches Image 2) ── */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 pt-2">
+        <div className="grid grid-cols-3 gap-2 sm:gap-3.5 pt-3">
           {packages.map((pkg) => (
             <div
               key={pkg.id}
-              className={`rounded-2xl p-4 text-center flex flex-col items-center justify-between gap-2 transition-all relative ${
+              className={`rounded-xl sm:rounded-2xl p-2 pt-3.5 sm:p-4 text-center flex flex-col items-center justify-between gap-1 sm:gap-2 transition-all relative ${
                 pkg.isPopular
                   ? "border-2 border-orange-500 bg-gradient-to-b from-orange-500/[0.08] to-orange-500/[0.02] shadow-lg shadow-orange-500/15"
                   : "border border-neutral-200 bg-neutral-50/70 hover:border-orange-500/40 hover:bg-orange-50/20"
               }`}
             >
               {pkg.isPopular && (
-                <span className="shimmer-sheen absolute -top-2.5 bg-orange-500 text-white text-[9px] font-black uppercase px-2.5 py-0.5 rounded-full tracking-wider shadow-md shadow-orange-500/30">
-                  Recommended
+                <span className="shimmer-sheen absolute -top-2.5 bg-orange-500 text-white text-[8px] sm:text-[9px] font-black uppercase px-2 sm:px-2.5 py-0.5 rounded-full tracking-wider shadow-md shadow-orange-500/30 whitespace-nowrap">
+                  <span className="sm:hidden">Popular</span><span className="hidden sm:inline">Recommended</span>
                 </span>
               )}
 
               {/* Price */}
-              <div className="text-2xl md:text-[26px] font-black text-neutral-950 tracking-tight">
+              <div className="text-[15px] leading-tight sm:text-2xl md:text-[26px] font-black text-neutral-950 tracking-tight">
                 ₹{pkg.price.toLocaleString("en-IN")}
               </div>
 
               {/* KM Limit */}
-              <div className="text-xs font-bold text-neutral-800 leading-tight">
-                {pkg.kmLimit} KM Driving Limit
+              <div className="text-[11px] sm:text-xs font-bold text-neutral-800 leading-tight">
+                {pkg.kmLimit} KM<span className="hidden sm:inline"> Driving Limit</span>
               </div>
 
               {/* Extra KM Charge */}
-              <div className="text-[11px] text-neutral-500">
-                (Extra KM charge ₹{pkg.extraKmPrice})
+              <div className="text-[9px] sm:text-[11px] leading-tight text-neutral-500">
+                <span className="sm:hidden">+₹{pkg.extraKmPrice}/extra km</span><span className="hidden sm:inline">(Extra KM charge ₹{pkg.extraKmPrice})</span>
               </div>
 
               {/* Book Now Button */}
@@ -440,19 +441,37 @@ function CarCardInner({
                 href={getBookHref(pkg.kmLimit, pkg.price)}
                 onClick={() => setBookingKey(`${pkg.kmLimit}-${pkg.price}`)}
                 aria-busy={bookingKey === `${pkg.kmLimit}-${pkg.price}`}
-                className="shimmer-sheen w-full mt-1 flex items-center justify-center gap-1 rounded-xl bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold py-2.5 px-3 shadow-md shadow-orange-500/25 hover:shadow-orange-500/40 hover:-translate-y-0.5 active:translate-y-0 transition-all"
+                className="shimmer-sheen w-full mt-1 flex items-center justify-center gap-1 rounded-lg sm:rounded-xl bg-orange-500 hover:bg-orange-600 text-white text-[11px] sm:text-xs font-bold py-2 sm:py-2.5 px-1.5 sm:px-3 shadow-md shadow-orange-500/25 hover:shadow-orange-500/40 hover:-translate-y-0.5 active:translate-y-0 transition-all"
               >
                 {bookingKey === `${pkg.kmLimit}-${pkg.price}` ? (
                   <>
-                    <Loader2 className="size-3.5 animate-spin" /> Booking...
+                    <Loader2 className="size-3.5 animate-spin" /> <span className="hidden sm:inline">Booking...</span>
                   </>
                 ) : (
-                  "Book Now"
+                  <>
+                    <span className="sm:hidden">Book</span>
+                    <span className="hidden sm:inline">Book Now</span>
+                  </>
                 )}
               </Link>
             </div>
           ))}
         </div>
+
+        {/* WhatsApp booking: collects details, saves an enquiry, then opens the chat */}
+        <CarWhatsAppBook
+          car={{
+            id: car.id,
+            slug: car.slug,
+            name: car.name,
+            priceLabel: `From ₹${Math.round(dailyPrice).toLocaleString("en-IN")} / day`,
+          }}
+          pickupDate={pickupDate ?? undefined}
+          dropDate={dropDate ?? undefined}
+          pickupLocation={car.locations?.find((l) => l.locationId === locationId)?.location.name}
+          label="Book on WhatsApp"
+          className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#25D366] py-3 text-xs font-black text-white shadow-md shadow-emerald-500/25 transition hover:bg-[#1ebe5a] active:scale-[0.99] cursor-pointer"
+        />
       </div>
     </div>
   );

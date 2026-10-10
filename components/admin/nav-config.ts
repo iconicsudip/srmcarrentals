@@ -146,6 +146,7 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       { title: "All Bookings", href: "/admin/bookings", icon: ClipboardList, permission: "bookings.view" },
       { title: "Taxi Enquiries", href: "/admin/taxi-enquiries", icon: CarFront, permission: "settings.manage" },
+      { title: "Car Enquiries", href: "/admin/car-enquiries", icon: MessageCircle, permission: "settings.manage" },
       { title: "Pending Bookings", href: "/admin/bookings/pending", icon: Hourglass, permission: "bookings.view" },
       { title: "Confirmed Bookings", href: "/admin/bookings/confirmed", icon: CheckCircle2, permission: "bookings.view" },
       { title: "Active Rentals", href: "/admin/bookings/active", icon: CarFront, permission: "bookings.view" },
