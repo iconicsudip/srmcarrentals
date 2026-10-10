@@ -2,6 +2,7 @@ import { unstable_cache } from "next/cache";
 
 import { prisma } from "@/lib/prisma";
 import { getSetting } from "@/modules/settings/settings.service";
+import { DEFAULT_SITE_TEXT, siteTextSchema, type SiteText } from "@/modules/settings/site-content.schemas";
 import type {
   AboutPageContent,
   CompanyContent,
@@ -888,6 +889,14 @@ export { DEFAULT_AVAILABLE_SERVICES } from "@/modules/settings/settings.service"
 export const getAvailableServices = cached("getAvailableServices", getAvailableServicesUncached);
 
 export const getHomepageContent = cached("getHomepageContent", getHomepageContent_uncached);
+
+/** Site-wide labels & headings, editable in admin ("homepage.text"); missing fields fall back to defaults. */
+async function getSiteText_uncached(): Promise<SiteText> {
+  const stored = await getSetting<unknown>("homepage.text");
+  const parsed = siteTextSchema.safeParse(stored ?? {});
+  return parsed.success ? parsed.data : DEFAULT_SITE_TEXT;
+}
+export const getSiteText = cached("getSiteText", getSiteText_uncached);
 export const getCompanyContent = cached("getCompanyContent", getCompanyContent_uncached);
 export const getAboutPageContent = cached("getAboutPageContent", getAboutPageContent_uncached);
 export const getContactPageContent = cached("getContactPageContent", getContactPageContent_uncached);

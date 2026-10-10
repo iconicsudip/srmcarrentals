@@ -38,16 +38,26 @@ function getTourFallback(categoryName: string): string {
   return TOUR_FALLBACK_IMAGES.default!;
 }
 
-export function ToursSection({ tours }: { tours: TourData[] }) {
+export function ToursSection({
+  tours,
+  heading = {
+    badge: "CURATED EXPEDITIONS",
+    title: "GO BEYOND THE DRIVE.",
+    subtitle: "Handcrafted tours through forts, deserts, and marble palaces, with premium machines and local insider knowledge.",
+  },
+}: {
+  tours: TourData[];
+  heading?: { badge: string; title: string; subtitle?: string };
+}) {
   if (tours.length === 0) return null;
 
   return (
     <section id="tours" className="relative overflow-hidden border-t border-neutral-200/80 bg-[#FAFAFC]">
       <div className="mx-auto max-w-[1520px] px-4 py-20 sm:px-6 lg:px-8">
         <SectionHeading
-          badge="CURATED EXPEDITIONS"
-          title="GO BEYOND THE DRIVE."
-          subtitle="Handcrafted tours through forts, deserts, and marble palaces, with premium machines and local insider knowledge."
+          badge={heading.badge}
+          title={heading.title}
+          subtitle={heading.subtitle}
         />
 
         <div className="mt-10 grid grid-cols-1 gap-6 lg:grid-cols-2">

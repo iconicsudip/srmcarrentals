@@ -10,16 +10,18 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { openCartDrawer, useCart } from "@/lib/cart/cart-store";
 import { useCurrentUser } from "@/hooks/use-auth";
-import type { AvailableServicesConfig } from "@/modules/settings/site-content.schemas";
+import type { AvailableServicesConfig, SiteText } from "@/modules/settings/site-content.schemas";
 
 export function SiteHeader({
   companyName,
   phone,
   services = { cars: true, taxi: true, tours: true },
+  text,
 }: {
   companyName: string;
   phone: string;
   services?: AvailableServicesConfig;
+  text: SiteText["header"];
 }) {
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const pathname = usePathname();
@@ -38,14 +40,14 @@ export function SiteHeader({
 
   const filteredNavLinks = React.useMemo(() => {
     return [
-      services.cars ? { label: "Self Drive", href: "/cars" } : null,
-      services.taxi ? { label: "Taxi", href: "/car-rental" } : null,
-      services.tours ? { label: "Tours", href: "/tours" } : null,
-      { label: "Blog", href: "/blog" },
-      { label: "About", href: "/about-us" },
-      { label: "Contact", href: "/contact-us" },
+      services.cars ? { label: text.navSelfDrive, href: "/cars" } : null,
+      services.taxi ? { label: text.navTaxi, href: "/car-rental" } : null,
+      services.tours ? { label: text.navTours, href: "/tours" } : null,
+      { label: text.navBlog, href: "/blog" },
+      { label: text.navAbout, href: "/about-us" },
+      { label: text.navContact, href: "/contact-us" },
     ].filter(Boolean) as { label: string; href: string }[];
-  }, [services]);
+  }, [services, text]);
 
   const bookNowHref = services.cars ? "/cars" : services.taxi ? "/car-rental" : "/tours";
 
@@ -130,7 +132,7 @@ export function SiteHeader({
           </button>
 
           <Button asChild className="shimmer-sheen relative overflow-hidden rounded-full bg-gradient-to-r from-orange-500 via-orange-500 to-amber-500 px-5 font-bold text-white shadow-lg shadow-orange-500/30 transition hover:from-orange-600 hover:to-amber-600">
-            <Link href={bookNowHref}>Book Now →</Link>
+            <Link href={bookNowHref}>{text.bookNowLabel} →</Link>
           </Button>
         </div>
 
@@ -174,7 +176,7 @@ export function SiteHeader({
             </Link>
           ))}
           <Button asChild className="mt-2 bg-gradient-to-r from-orange-500 to-amber-500 font-bold text-white hover:from-orange-600 hover:to-amber-600">
-            <Link href={bookNowHref}>Book Now</Link>
+            <Link href={bookNowHref}>{text.bookNowLabel}</Link>
           </Button>
         </nav>
       </div>

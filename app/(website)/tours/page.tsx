@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 
 import { BookingWidget } from "@/components/website/booking-widget";
 import { ToursSection } from "@/components/website/tours-section";
-import { listActiveTours, listActiveLocations, getAvailableServices } from "@/modules/website/public-content.service";
+import { listActiveTours, listActiveLocations, getAvailableServices, getSiteText } from "@/modules/website/public-content.service";
 import { getDynamicSeoForPath, DynamicJsonLd } from "@/lib/seo/dynamic-seo";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -16,10 +16,11 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function ToursPage() {
-  const [tours, locations, services] = await Promise.all([
+  const [tours, locations, services, siteText] = await Promise.all([
     listActiveTours(100),
     listActiveLocations(),
     getAvailableServices(),
+    getSiteText(),
   ]);
 
   return (
@@ -31,6 +32,7 @@ export default async function ToursPage() {
           locations={locations.map((l) => ({ id: l.id, name: l.name }))}
           defaultMode="self-drive"
           services={services}
+          text={siteText.bookingWidget}
         />
       </div>
 
@@ -40,7 +42,7 @@ export default async function ToursPage() {
           <p className="mt-4 text-neutral-500">No tours published yet — check back soon.</p>
         </div>
       ) : (
-        <ToursSection tours={tours} />
+        <ToursSection tours={tours} heading={siteText.sections.tours} />
       )}
     </div>
   );

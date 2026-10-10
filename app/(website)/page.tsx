@@ -18,6 +18,7 @@ import {
   getFaqPageContent,
   getFleetCounts,
   getHomepageContent,
+  getSiteText,
   getAvailableServices,
   listActiveBrandsWithCarCounts,
   listActiveCars,
@@ -51,7 +52,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function HomePage() {
-  const [content, company, faqContent, cars, categories, brands, chauffeurServices, tours, testimonials, gallery, locations, counts, services] =
+  const [content, company, faqContent, cars, categories, brands, chauffeurServices, tours, testimonials, gallery, locations, counts, services, siteText] =
     await Promise.all([
       getHomepageContent(),
       getCompanyContent(),
@@ -66,6 +67,7 @@ export default async function HomePage() {
       listActiveLocations(),
       getFleetCounts(),
       getAvailableServices(),
+      getSiteText(),
     ]);
 
   const jsonLd = {
@@ -83,18 +85,18 @@ export default async function HomePage() {
       <DynamicJsonLd path="/" />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
-      <HeroSection content={content.hero} locations={locations} services={services} carCount={counts.carCount} />
+      <HeroSection content={content.hero} locations={locations} services={services} carCount={counts.carCount} text={siteText.hero} widgetText={siteText.bookingWidget} />
       <TrustBadgeRow badges={content.trustBadges} />
-      <CategoryCardsSection counts={counts} services={services} />
-      {services.cars && <FleetSection cars={cars} categories={categories} totalCount={counts.carCount} />}
-      {services.taxi && <ChauffeurSection services={chauffeurServices} phone={company.phone} />}
-      {services.cars && <BrandFleetSection cars={cars} brands={brands} totalCount={counts.carCount} />}
-      {services.tours && <ToursSection tours={tours} />}
-      <PhilosophySection content={content.philosophy} />
+      <CategoryCardsSection counts={counts} services={services} cards={siteText.categoryCards} heading={siteText.sections.categories} />
+      {services.cars && <FleetSection cars={cars} categories={categories} totalCount={counts.carCount} heading={siteText.sections.fleet} text={siteText.fleet} />}
+      {services.taxi && <ChauffeurSection services={chauffeurServices} phone={company.phone} heading={siteText.sections.chauffeur} />}
+      {services.cars && <BrandFleetSection cars={cars} brands={brands} totalCount={counts.carCount} heading={siteText.sections.brands} />}
+      {services.tours && <ToursSection tours={tours} heading={siteText.sections.tours} />}
+      <PhilosophySection content={content.philosophy} text={siteText.philosophy} />
       <VideoShowcaseSection content={content.videoShowcase} />
       <WhyChooseUsSection content={content.whyChooseUs} />
       <FaqSection data={faqContent} phone={company.phone} />
-      <TestimonialsSection testimonials={testimonials} />
+      <TestimonialsSection testimonials={testimonials} heading={siteText.sections.testimonials} />
       <GallerySection images={gallery} company={company} />
       <B2bSection content={content.b2b} phone={company.phone} />
     </>

@@ -51,12 +51,18 @@ export function ChauffeurSection({
   hideHeading = false,
   className = "",
   columnsClassName = "grid-cols-1 md:grid-cols-2",
+  heading = {
+    badge: "CHAUFFEUR FLEET & TRANSFERS",
+    title: "ARRIVE IN COMFORT.",
+    subtitle: "Professional chauffeurs, sparkling clean interiors, and fixed transparent tariffs.",
+  },
 }: {
   services: ChauffeurServiceData[];
   phone?: string;
   hideHeading?: boolean;
   className?: string;
   columnsClassName?: string;
+  heading?: { badge: string; title: string; subtitle?: string };
 }) {
   if (services.length === 0) return null;
 
@@ -64,9 +70,9 @@ export function ChauffeurSection({
     <>
       {!hideHeading && (
         <SectionHeading
-          badge="CHAUFFEUR FLEET & TRANSFERS"
-          title="ARRIVE IN COMFORT."
-          subtitle="Professional chauffeurs, sparkling clean interiors, and fixed transparent tariffs."
+          badge={heading.badge}
+          title={heading.title}
+          subtitle={heading.subtitle}
         />
       )}
 

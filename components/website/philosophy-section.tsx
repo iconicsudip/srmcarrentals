@@ -2,11 +2,11 @@ import Image from "next/image";
 import Link from "next/link";
 import { Award } from "lucide-react";
 
-import type { HomepageContent } from "@/modules/settings/site-content.schemas";
+import type { HomepageContent, SiteText } from "@/modules/settings/site-content.schemas";
 import { stripTrailingPunctuation } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
-export function PhilosophySection({ content }: { content: HomepageContent["philosophy"] }) {
+export function PhilosophySection({ content, text }: { content: HomepageContent["philosophy"]; text: SiteText["philosophy"] }) {
   return (
     <section className="mx-auto max-w-[1520px] px-4 py-20 sm:px-6 lg:px-8">
       <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-2">
@@ -20,8 +20,8 @@ export function PhilosophySection({ content }: { content: HomepageContent["philo
           />
           <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between rounded-2xl border border-neutral-200/80 bg-white/90 px-4 py-3 backdrop-blur-md shadow-lg">
             <div>
-              <div className="text-[10px] font-bold tracking-widest text-orange-700 uppercase">Heritage &amp; Craftsmanship</div>
-              <div className="mt-0.5 text-xs font-black text-neutral-950">UDAIPUR · NAVSARI · JAIPUR</div>
+              <div className="text-[10px] font-bold tracking-widest text-orange-700 uppercase">{text.cardEyebrow}</div>
+              <div className="mt-0.5 text-xs font-black text-neutral-950">{text.cardCities}</div>
             </div>
             <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-orange-500/15 text-orange-600 shadow-xs">
               <Award className="size-4" />
@@ -55,7 +55,7 @@ export function PhilosophySection({ content }: { content: HomepageContent["philo
           )}
 
           <Button asChild size="lg" className="mt-8 bg-orange-500 font-bold text-white shadow-lg shadow-orange-500/25 hover:bg-orange-600 hover:shadow-orange-500/40 hover:-translate-y-0.5 transition-all">
-            <Link href="/cars">Explore The Fleet</Link>
+            <Link href={text.ctaHref}>{text.ctaLabel}</Link>
           </Button>
         </div>
       </div>

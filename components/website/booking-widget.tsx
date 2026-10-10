@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { CheckCircle2, ChevronDown, Headphones, Loader2, MapPin, Search, Sparkles, Tag } from "lucide-react";
 import { TripSchedulePicker } from "@/components/website/datetime-picker";
 import { apiFetch } from "@/lib/api-client";
-import type { AvailableServicesConfig, CompanyContent } from "@/modules/settings/site-content.schemas";
+import type { AvailableServicesConfig, CompanyContent, SiteText } from "@/modules/settings/site-content.schemas";
 
 interface LocationOption {
   id: string;
@@ -18,7 +18,24 @@ interface BookingWidgetProps {
   locations?: LocationOption[];
   defaultMode?: "self-drive" | "chauffeur";
   services?: AvailableServicesConfig;
+  text?: SiteText["bookingWidget"];
 }
+
+/** Fallback copy for pages that don't pass admin-managed text. */
+const DEFAULT_WIDGET_TEXT: SiteText["bookingWidget"] = {
+  selfDriveTab: "SELF DRIVE",
+  taxiTab: "TAXI / CHAUFFEUR",
+  hint: "Instant delivery to Airport, Railway Station or Hotel",
+  searchCarsLabel: "SEARCH CARS",
+  findTaxiLabel: "FIND TAXI",
+  selfDriveNotice: "Pickup and return time must be at least 24 hours apart and maximum 30 days.",
+  taxiNotice: "Flexible hourly packages and outstation taxi routes available across Rajasthan & Gujarat.",
+  trust1Title: "Verified Cars",
+  trust1Detail: "(100% Insured & Cleaned)",
+  trust2Title: "Transparent Pricing",
+  trust2Detail: "(Zero Hidden Extras)",
+  trust3Title: "24/7 Roadside Support",
+};
 
 function defaultDateTimeStr(hoursFromNow: number): string {
   const d = new Date(Date.now() + hoursFromNow * 3_600_000);
@@ -31,6 +48,7 @@ export function BookingWidget({
   locations: initialLocations = [],
   defaultMode = "self-drive",
   services = { cars: true, taxi: true, tours: true },
+  text = DEFAULT_WIDGET_TEXT,
 }: BookingWidgetProps) {
   const router = useRouter();
 
@@ -142,7 +160,7 @@ export function BookingWidget({
                   : "text-neutral-600 hover:text-neutral-950"
               }`}
             >
-              SELF DRIVE
+              {text.selfDriveTab}
             </button>
           )}
           {services.taxi && (
@@ -156,14 +174,14 @@ export function BookingWidget({
                   : "text-neutral-600 hover:text-neutral-950"
               }`}
             >
-              TAXI / CHAUFFEUR
+              {text.taxiTab}
             </button>
           )}
         </div>
 
         <span className="hidden items-center gap-1.5 text-xs text-neutral-500 sm:flex font-medium">
           <Sparkles className="size-3.5 text-orange-500" />
-          Instant delivery to Airport, Railway Station or Hotel
+          {text.hint}
         </span>
       </div>
 
@@ -261,7 +279,7 @@ export function BookingWidget({
               ) : (
                 <>
                   <Search className="size-4 shrink-0 stroke-[2.5]" />
-                  <span>{mode === "self-drive" ? "SEARCH CARS" : "FIND TAXI"}</span>
+                  <span>{mode === "self-drive" ? text.searchCarsLabel : text.findTaxiLabel}</span>
                 </>
               )}
             </button>
@@ -272,8 +290,8 @@ export function BookingWidget({
         <div className="mt-3.5 flex justify-center">
           <div className="w-full sm:w-auto rounded-lg border border-orange-500/20 bg-orange-50/80 px-4 py-1.5 text-center text-xs font-medium text-orange-950">
             {mode === "self-drive"
-              ? "Pickup and return time must be at least 24 hours apart and maximum 30 days."
-              : "Flexible hourly packages and outstation taxi routes available across Rajasthan & Gujarat."}
+              ? text.selfDriveNotice
+              : text.taxiNotice}
           </div>
         </div>
       </form>
@@ -283,21 +301,21 @@ export function BookingWidget({
         <span className="flex items-center gap-1.5 text-[11px] text-neutral-600">
           <CheckCircle2 className="size-3.5 shrink-0 text-orange-500" />
           <span>
-            <span className="font-semibold text-neutral-900">Verified Cars</span>{" "}
-            <span className="text-neutral-500">(100% Insured &amp; Cleaned)</span>
+            <span className="font-semibold text-neutral-900">{text.trust1Title}</span>{" "}
+            <span className="text-neutral-500">{text.trust1Detail}</span>
           </span>
         </span>
         <span className="flex items-center gap-1.5 text-[11px] text-neutral-600">
           <Tag className="size-3.5 shrink-0 text-orange-500" />
           <span>
-            <span className="font-semibold text-neutral-900">Transparent Pricing</span>{" "}
-            <span className="text-neutral-500">(Zero Hidden Extras)</span>
+            <span className="font-semibold text-neutral-900">{text.trust2Title}</span>{" "}
+            <span className="text-neutral-500">{text.trust2Detail}</span>
           </span>
         </span>
         <span className="flex items-center gap-1.5 text-[11px] text-neutral-600">
           <Headphones className="size-3.5 shrink-0 text-orange-500" />
           <span>
-            <span className="font-semibold text-neutral-900">24/7 Roadside Support</span>{" "}
+            <span className="font-semibold text-neutral-900">{text.trust3Title}</span>{" "}
             <span className="text-neutral-500">({phone})</span>
           </span>
         </span>

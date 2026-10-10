@@ -7,6 +7,7 @@ import { ArrowLeft, ArrowRight, Briefcase, Check, Cog, Fuel, Pause, Play, Users 
 
 import type { CarCardData } from "@/components/website/car-card";
 import { CarWhatsAppBook } from "@/components/website/car-whatsapp-book";
+import type { SiteText } from "@/modules/settings/site-content.schemas";
 import { getCarFallbackImage } from "@/lib/car-fallback-image";
 
 interface TabDef {
@@ -29,11 +30,13 @@ export function FleetShowcase({
   tabs,
   viewAllHref,
   totalCount,
+  text,
 }: {
   cars: ShowcaseCar[];
   tabs: TabDef[];
   viewAllHref: string;
   totalCount: number;
+  text: SiteText["fleet"];
 }) {
   const [activeTab, setActiveTab] = React.useState("all");
   const [activeId, setActiveId] = React.useState(cars[0]?.id ?? "");
@@ -199,7 +202,7 @@ export function FleetShowcase({
           <div>
             <div className="flex items-end justify-between gap-3 border-t border-white/10 pt-5">
               <div>
-                <div className="text-[10px] font-bold tracking-[0.2em] text-white/50 uppercase">Starting from</div>
+                <div className="text-[10px] font-bold tracking-[0.2em] text-white/50 uppercase">{text.startingFromLabel}</div>
                 <div className="mt-1 flex items-baseline gap-1.5">
                   <span className="bg-gradient-to-r from-amber-200 via-amber-300 to-orange-400 bg-clip-text text-4xl font-black tracking-tight text-transparent">
                     ₹{price.toLocaleString("en-IN")}
@@ -217,7 +220,7 @@ export function FleetShowcase({
                 href={`/car/${car.slug}`}
                 className="shimmer-sheen relative flex items-center justify-center gap-2 overflow-hidden rounded-2xl bg-gradient-to-r from-orange-500 to-amber-500 py-3.5 text-sm font-black text-white shadow-xl shadow-orange-500/30 transition active:scale-[0.98]"
               >
-                Book this car <ArrowRight className="size-4" />
+                {text.bookLabel} <ArrowRight className="size-4" />
               </Link>
               <CarWhatsAppBook
                 car={{ id: car.id, slug: car.slug, name: car.name, priceLabel: `From ₹${price.toLocaleString("en-IN")} / day` }}
@@ -295,7 +298,7 @@ export function FleetShowcase({
         href={viewAllHref}
         className="mx-auto flex w-fit items-center gap-2 rounded-full border border-white/20 bg-white/5 px-6 py-3 text-sm font-bold text-white backdrop-blur-md transition hover:border-amber-400/60 hover:bg-white/10 hover:text-amber-300"
       >
-        View all {totalCount} cars in fleet <ArrowRight className="size-4" />
+        {text.viewAllLabel.replace("{count}", String(totalCount))} <ArrowRight className="size-4" />
       </Link>
     </div>
   );

@@ -5,9 +5,8 @@ import { CheckCircle2, Loader2, MessageCircle, X } from "lucide-react";
 import { toast } from "sonner";
 
 import { apiFetch } from "@/lib/api-client";
+import type { SiteText } from "@/modules/settings/site-content.schemas";
 import { toTenDigits } from "@/lib/car-enquiry/types";
-
-const INTERESTS = ["Self-drive car rental", "Chauffeur / Taxi", "Tour package", "Corporate / long-term", "Something else"];
 
 const inputClass =
   "w-full rounded-xl border border-neutral-200 bg-white px-3.5 py-2.5 text-sm text-neutral-900 placeholder:text-neutral-400 outline-none transition focus:border-[#25D366] focus:ring-2 focus:ring-[#25D366]/20";
@@ -16,13 +15,13 @@ const inputClass =
  * Floating "chat on WhatsApp" button. Opens a short form (city, need, contact),
  * saves the lead, then opens WhatsApp on the number configured for the chosen city.
  */
-export function WhatsAppFloat({ cities }: { cities: string[] }) {
+export function WhatsAppFloat({ cities, text }: { cities: string[]; text: SiteText["floatingWhatsApp"] }) {
   const [open, setOpen] = React.useState(false);
   const [submitting, setSubmitting] = React.useState(false);
   const [done, setDone] = React.useState(false);
   const [v, setV] = React.useState({
     city: cities[0] ?? "",
-    interest: INTERESTS[0]!,
+    interest: text.interests[0] ?? "",
     name: "",
     phone: "",
     pickupAt: "",
@@ -115,8 +114,8 @@ export function WhatsAppFloat({ cities }: { cities: string[] }) {
                   <MessageCircle className="size-5" />
                 </span>
                 <div>
-                  <div className="text-sm font-black">Chat with SRM Car Rentals</div>
-                  <div className="text-[11px] text-white/80">Pick your city — we&apos;ll connect you to the local team.</div>
+                  <div className="text-sm font-black">{text.title}</div>
+                  <div className="text-[11px] text-white/80">{text.subtitle}</div>
                 </div>
               </div>
             </div>
@@ -125,7 +124,7 @@ export function WhatsAppFloat({ cities }: { cities: string[] }) {
               {done ? (
                 <div className="flex flex-col items-center gap-3 py-6 text-center">
                   <CheckCircle2 className="size-12 text-emerald-500" />
-                  <p className="text-sm font-semibold text-neutral-800">Thanks! We&apos;ve saved your request. Continue the chat in WhatsApp — we reply fast.</p>
+                  <p className="text-sm font-semibold text-neutral-800">{text.successMessage}</p>
                   <button type="button" onClick={() => setOpen(false)} className="mt-1 rounded-xl bg-neutral-900 px-6 py-2.5 text-xs font-black text-white">
                     Close
                   </button>
@@ -159,7 +158,7 @@ export function WhatsAppFloat({ cities }: { cities: string[] }) {
                   <label className="block">
                     <span className="mb-1 block text-[11px] font-bold tracking-wider text-neutral-600 uppercase">I&apos;m looking for *</span>
                     <select value={v.interest} onChange={set("interest")} className={inputClass}>
-                      {INTERESTS.map((i) => (
+                      {text.interests.map((i) => (
                         <option key={i}>{i}</option>
                       ))}
                     </select>
@@ -197,7 +196,7 @@ export function WhatsAppFloat({ cities }: { cities: string[] }) {
                       </>
                     ) : (
                       <>
-                        <MessageCircle className="size-4" /> Start WhatsApp chat
+                        <MessageCircle className="size-4" /> {text.submitLabel}
                       </>
                     )}
                   </button>

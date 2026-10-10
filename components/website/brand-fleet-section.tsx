@@ -1,3 +1,4 @@
+import type { SiteText } from "@/modules/settings/site-content.schemas";
 import Image from "next/image";
 import type { CarCardData } from "@/components/website/car-card";
 import { CarGridWithTabs } from "@/components/website/car-grid-with-tabs";
@@ -7,9 +8,10 @@ interface BrandFleetSectionProps {
   cars: (CarCardData & { brand: { id: string; name: string } })[];
   brands: { id: string; name: string; carCount: number }[];
   totalCount: number;
+  heading: SiteText["sections"]["brands"];
 }
 
-export function BrandFleetSection({ cars, brands, totalCount }: BrandFleetSectionProps) {
+export function BrandFleetSection({ cars, brands, totalCount, heading }: BrandFleetSectionProps) {
   return (
     <section className="relative overflow-hidden border-t border-neutral-200/60">
       {/* ── Background image: luxury car showroom / night city ── */}
@@ -38,9 +40,9 @@ export function BrandFleetSection({ cars, brands, totalCount }: BrandFleetSectio
 
       <div className="relative mx-auto max-w-[1520px] px-4 py-20 sm:px-6 lg:px-8">
         <SectionHeading
-          badge="AUTOMOTIVE SELECTION"
-          title="FIND YOUR FAVOURITE BRAND."
-          subtitle="From precision engineering to invincible off-roaders, select your preferred badge for the journey."
+          badge={heading.badge}
+          title={heading.title}
+          subtitle={heading.subtitle}
           center
         />
 

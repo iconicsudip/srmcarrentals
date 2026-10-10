@@ -1,14 +1,16 @@
 import Link from "next/link";
 import { ArrowLeft, CarFront } from "lucide-react";
 
+import { getSiteText } from "@/modules/website/public-content.service";
 import { ErrorScreen, ghostBtn, primaryBtn } from "@/components/errors/error-screen";
 
-export default function NotFound() {
+export default async function NotFound() {
+  const { errors } = await getSiteText();
   return (
     <ErrorScreen
       code="404"
-      title="Wrong turn"
-      message="The page you're looking for doesn't exist or has moved. Let's get you back on the road."
+      title={errors.notFoundTitle}
+      message={errors.notFoundMessage}
       actions={
         <>
           <Link href="/" className={primaryBtn}>

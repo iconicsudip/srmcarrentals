@@ -122,7 +122,17 @@ function TestimonialCard({ t }: { t: TestimonialData }) {
   );
 }
 
-export function TestimonialsSection({ testimonials }: { testimonials: TestimonialData[] }) {
+export function TestimonialsSection({
+  testimonials,
+  heading = {
+    badge: "VERIFIED EXPERIENCES",
+    title: "DRIVEN BY TRUST.",
+    subtitle: "Stories from travellers who chose us for the road ahead — verified on Google.",
+  },
+}: {
+  testimonials: TestimonialData[];
+  heading?: { badge: string; title: string; subtitle?: string };
+}) {
   if (testimonials.length === 0) return null;
 
   // Show up to 6 reviews in a 3-column grid
@@ -174,9 +184,9 @@ export function TestimonialsSection({ testimonials }: { testimonials: Testimonia
       {/* ── Content ── */}
       <div className="relative mx-auto max-w-[1520px] px-4 py-20 sm:px-6 lg:px-8">
         <SectionHeading
-          badge="VERIFIED EXPERIENCES"
-          title="DRIVEN BY TRUST."
-          subtitle="Stories from travellers who chose us for the road ahead — verified on Google."
+          badge={heading.badge}
+          title={heading.title}
+          subtitle={heading.subtitle}
           center
         />
 

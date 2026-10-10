@@ -6,49 +6,20 @@ import Link from "next/link";
 import { ArrowRight, Star, Zap } from "lucide-react";
 
 import { SectionHeading } from "@/components/website/section-heading";
-import type { AvailableServicesConfig } from "@/modules/settings/site-content.schemas";
+import type { AvailableServicesConfig, SiteText } from "@/modules/settings/site-content.schemas";
 
 interface CategoryCardsProps {
   counts: { carCount: number; chauffeurCount: number; tourCount: number };
   services?: AvailableServicesConfig;
+  cards: SiteText["categoryCards"];
+  heading: SiteText["sections"]["categories"];
 }
-
-const CARDS = [
-  {
-    key: "cars",
-    eyebrow: "Self Drive Fleet",
-    title: "Self Drive",
-    href: "/cars",
-    ctaLabel: "Explore Fleet",
-    rating: 5.0,
-    reviews: "340+",
-    image: "https://images.unsplash.com/photo-1555215695-3004980ad54e?w=800&q=80&auto=format&fit=crop",
-  },
-  {
-    key: "taxi",
-    eyebrow: "Executive Travel",
-    title: "Chauffeur Taxi",
-    href: "/car-rental",
-    ctaLabel: "Book Chauffeur",
-    rating: 4.9,
-    reviews: "520+",
-    image: "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800&q=80&auto=format&fit=crop",
-  },
-  {
-    key: "tours",
-    eyebrow: "Rajasthan Expeditions",
-    title: "Royal Tours",
-    href: "/tours",
-    ctaLabel: "Explore Curated Tours",
-    rating: 5.0,
-    reviews: "213",
-    image: "https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?w=800&q=80&auto=format&fit=crop",
-  },
-];
 
 export function CategoryCardsSection({
   counts,
   services = { cars: true, taxi: true, tours: true },
+  cards,
+  heading,
 }: CategoryCardsProps) {
   const metaCounts: Record<string, number> = {
     cars: counts.carCount,
@@ -57,13 +28,13 @@ export function CategoryCardsSection({
   };
 
   const visibleCards = React.useMemo(() => {
-    return CARDS.filter((card) => {
+    return cards.filter((card) => {
       if (card.key === "cars") return services.cars !== false;
       if (card.key === "taxi") return services.taxi !== false;
       if (card.key === "tours") return services.tours !== false;
       return true;
     });
-  }, [services]);
+  }, [services, cards]);
 
   if (visibleCards.length === 0) return null;
 
@@ -74,7 +45,7 @@ export function CategoryCardsSection({
         <div className="absolute top-1/2 left-1/2 h-[350px] w-[700px] max-w-full -translate-x-1/2 -translate-y-1/2 rounded-full bg-orange-500/[0.08] blur-[150px]" />
       </div>
 
-      <SectionHeading badge="SRM 3D CATEGORIES" title="CHOOSE YOUR DRIVE." center />
+      <SectionHeading badge={heading.badge} title={heading.title} subtitle={heading.subtitle || undefined} center />
 
       {/* Single horizontal auto-scroll row — snaps on mobile, full row on desktop */}
       <div

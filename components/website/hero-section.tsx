@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, Compass, MapPin, Plane } from "lucide-react";
 
-import type { HomepageContent, AvailableServicesConfig } from "@/modules/settings/site-content.schemas";
+import type { HomepageContent, AvailableServicesConfig, SiteText } from "@/modules/settings/site-content.schemas";
 import { resolveIcon } from "@/lib/icon-map";
 import { stripTrailingPunctuation } from "@/lib/utils";
 import { HeroCarousel } from "@/components/website/hero-carousel";
@@ -17,11 +17,15 @@ export function HeroSection({
   locations,
   services,
   carCount,
+  text,
+  widgetText,
 }: {
   content: HomepageContent["hero"];
   locations: { id: string; name: string }[];
   services?: AvailableServicesConfig;
   carCount?: number;
+  text: SiteText["hero"];
+  widgetText: SiteText["bookingWidget"];
 }) {
   const cleanTitle = stripTrailingPunctuation(content.title);
   const titleParts = content.highlightWord ? cleanTitle.split(content.highlightWord) : [cleanTitle, ""];
@@ -33,9 +37,9 @@ export function HeroSection({
   const pickupPoints = locations.slice(0, 5);
 
   const stats = [
-    carCount && carCount > 0 ? { value: `${carCount}+`, label: "Cars in fleet" } : null,
-    locations.length > 0 ? { value: String(locations.length), label: "Pickup cities" } : null,
-    { value: "24/7", label: "Road support" },
+    carCount && carCount > 0 ? { value: `${carCount}+`, label: text.carsStatLabel } : null,
+    locations.length > 0 ? { value: String(locations.length), label: text.citiesStatLabel } : null,
+    { value: text.supportStatValue, label: text.supportStatLabel },
   ].filter((x): x is { value: string; label: string } => x !== null);
 
   return (
@@ -147,7 +151,7 @@ export function HeroSection({
             <div className="relative rounded-[28px] border border-white/20 bg-neutral-950/50 p-6 shadow-2xl shadow-black/40 backdrop-blur-xl">
               <div className="absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-amber-400/80 to-transparent" />
               <div className="flex items-center justify-between">
-                <span className="text-[10px] font-bold tracking-[0.25em] text-amber-300 uppercase">Pickup points</span>
+                <span className="text-[10px] font-bold tracking-[0.25em] text-amber-300 uppercase">{text.pickupCardTitle}</span>
                 <span className="flex items-center gap-1.5 text-[10px] font-semibold text-emerald-300">
                   <span className="size-1.5 animate-pulse rounded-full bg-emerald-400" /> Live
                 </span>
@@ -175,7 +179,7 @@ export function HeroSection({
 
               <div className="mt-6 flex items-center gap-2.5 rounded-2xl border border-white/10 bg-white/5 px-3.5 py-3 text-[11px] leading-snug text-white/70">
                 <Plane className="size-4 shrink-0 text-amber-300" />
-                Delivery to Airport, Railway Station or Hotel
+                {text.pickupCardNote}
               </div>
             </div>
           </aside>
@@ -183,7 +187,7 @@ export function HeroSection({
       </div>
 
       <div className="relative mx-auto max-w-[1520px] px-4 sm:px-6 lg:px-8">
-        <BookingWidget locations={locations} services={services} />
+        <BookingWidget locations={locations} services={services} text={widgetText} />
       </div>
     </section>
   );

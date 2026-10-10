@@ -2,9 +2,16 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowUp, ArrowUpRight, Camera, Mail, MapPin, MessageCircle, Phone, Share2, Video } from "lucide-react";
 
-import type { CompanyContent } from "@/modules/settings/site-content.schemas";
+import type { CompanyContent, SiteText } from "@/modules/settings/site-content.schemas";
 
-export function SiteFooter({ company }: { company: CompanyContent }) {
+export interface FooterBranch {
+  city: string;
+  phone?: string;
+  address: string;
+  mapUrl?: string;
+}
+
+export function SiteFooter({ company, branches = [], text }: { company: CompanyContent; branches?: FooterBranch[]; text: SiteText["footer"] }) {
   const socials = [
     { icon: Camera, href: company.socialLinks.instagram, label: "Instagram" },
     { icon: Share2, href: company.socialLinks.facebook, label: "Facebook" },
@@ -32,12 +39,12 @@ export function SiteFooter({ company }: { company: CompanyContent }) {
         {/* ── CTA band ── */}
         <div className="flex flex-col gap-8 rounded-[28px] border border-white/10 bg-gradient-to-br from-white/[0.07] to-white/[0.02] p-7 backdrop-blur-sm sm:p-10 lg:flex-row lg:items-center lg:justify-between">
           <div className="max-w-xl">
-            <span className="text-[11px] font-bold tracking-[0.28em] text-amber-300 uppercase">Your keys are waiting</span>
+            <span className="text-[11px] font-bold tracking-[0.28em] text-amber-300 uppercase">{text.ctaEyebrow}</span>
             <h2 className="mt-3 text-3xl leading-[1.05] font-black tracking-tight uppercase sm:text-5xl">
-              Ready when <span className="bg-gradient-to-r from-amber-300 via-orange-400 to-amber-500 bg-clip-text text-transparent">you are</span>
+              {text.ctaTitle} <span className="bg-gradient-to-r from-amber-300 via-orange-400 to-amber-500 bg-clip-text text-transparent">{text.ctaHighlight}</span>
               <span className="text-orange-500">.</span>
             </h2>
-            <p className="mt-3 text-sm text-white/60">Talk to a real person, get a quote in minutes, and hit the road today.</p>
+            <p className="mt-3 text-sm text-white/60">{text.ctaSubtitle}</p>
           </div>
           <div className="flex flex-col gap-3 sm:flex-row">
             {company.phone && (
@@ -45,7 +52,7 @@ export function SiteFooter({ company }: { company: CompanyContent }) {
                 href={`tel:${company.phone.replace(/\s/g, "")}`}
                 className="shimmer-sheen relative inline-flex items-center justify-center gap-2.5 overflow-hidden rounded-full bg-gradient-to-r from-orange-500 to-amber-500 px-7 py-3.5 text-sm font-black text-white shadow-xl shadow-orange-500/30 transition hover:shadow-orange-500/50"
               >
-                <Phone className="size-4" /> Call {company.phone}
+                <Phone className="size-4" /> {text.callLabel} {company.phone}
               </a>
             )}
             {whatsappHref && (
@@ -55,7 +62,7 @@ export function SiteFooter({ company }: { company: CompanyContent }) {
                 rel="noreferrer"
                 className="inline-flex items-center justify-center gap-2.5 rounded-full border border-[#25D366]/50 bg-[#25D366]/15 px-7 py-3.5 text-sm font-black text-[#5be28d] transition hover:bg-[#25D366] hover:text-white"
               >
-                <MessageCircle className="size-4" /> WhatsApp us
+                <MessageCircle className="size-4" /> {text.whatsappLabel}
               </a>
             )}
           </div>
@@ -118,7 +125,7 @@ export function SiteFooter({ company }: { company: CompanyContent }) {
           <div className="col-span-2 lg:col-span-2">
             <h4 className="mb-5 flex items-center gap-2 text-[11px] font-bold tracking-[0.25em] text-amber-300 uppercase">
               <span className="h-px w-5 bg-amber-400/70" />
-              Concierge desk
+              {text.conciergeTitle}
             </h4>
             <ul className="flex flex-col gap-4 text-sm text-white/65">
               {company.phone && (
@@ -141,7 +148,7 @@ export function SiteFooter({ company }: { company: CompanyContent }) {
                   </a>
                 </li>
               )}
-              {company.address && (
+              {company.address && branches.length === 0 && (
                 <li className="flex items-start gap-3">
                   <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-white/5 text-amber-300">
                     <MapPin className="size-3.5" />
@@ -152,6 +159,45 @@ export function SiteFooter({ company }: { company: CompanyContent }) {
             </ul>
           </div>
         </div>
+
+        {/* ── Offices ── */}
+        {branches.length > 0 && (
+          <div className="mt-14">
+            <h4 className="mb-5 flex items-center gap-2 text-[11px] font-bold tracking-[0.25em] text-amber-300 uppercase">
+              <span className="h-px w-5 bg-amber-400/70" />
+              {text.officesTitle}
+            </h4>
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+              {branches.slice(0, 3).map((b) => (
+                <div
+                  key={b.city}
+                  className="group relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-white/[0.07] to-white/[0.02] p-5 transition hover:border-amber-400/40"
+                >
+                  <div className="absolute inset-x-5 top-0 h-px bg-gradient-to-r from-transparent via-amber-400/50 to-transparent opacity-0 transition group-hover:opacity-100" />
+                  <div className="flex items-center gap-2.5">
+                    <span className="flex size-8 items-center justify-center rounded-lg bg-amber-400/15 text-amber-300">
+                      <MapPin className="size-4" />
+                    </span>
+                    <span className="text-sm font-black tracking-wide text-white uppercase">{b.city}</span>
+                  </div>
+                  <p className="mt-3 text-sm leading-relaxed text-white/65">{b.address}</p>
+                  <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs font-bold">
+                    {b.phone && (
+                      <a href={`tel:${b.phone.replace(/\s/g, "")}`} className="inline-flex items-center gap-1.5 text-white/80 transition hover:text-amber-300">
+                        <Phone className="size-3.5 text-amber-300" /> {b.phone}
+                      </a>
+                    )}
+                    {b.mapUrl && (
+                      <a href={b.mapUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-amber-300 transition hover:text-amber-200">
+                        Directions <ArrowUpRight className="size-3.5" />
+                      </a>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* ── Giant outlined wordmark ── */}
         <div aria-hidden className="pointer-events-none mt-14 -mb-4 overflow-hidden text-center select-none sm:-mb-8">
@@ -165,7 +211,7 @@ export function SiteFooter({ company }: { company: CompanyContent }) {
       <div className="relative border-t border-white/10 bg-black/40">
         <div className="mx-auto flex max-w-[1520px] flex-col items-center justify-between gap-4 px-4 py-5 text-xs text-white/50 sm:flex-row sm:px-6 lg:px-8">
           <p>
-            © {new Date().getFullYear()} {company.name}. All rights reserved.
+            © {new Date().getFullYear()} {company.name}. {text.copyright}
           </p>
           <div className="flex items-center gap-6">
             <Link href="/privacy-policy" className="transition-colors hover:text-amber-300">

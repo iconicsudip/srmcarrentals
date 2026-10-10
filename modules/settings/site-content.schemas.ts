@@ -199,9 +199,133 @@ export const availableServicesSchema = z.object({
 });
 export type AvailableServicesConfig = z.infer<typeof availableServicesSchema>;
 
+
+const s = (v: string) => z.string().default(v);
+const heading = (badge: string, title: string, subtitle = "") =>
+  z.object({ badge: s(badge), title: s(title), subtitle: s(subtitle) }).prefault({});
+
+/** Setting key: "homepage.text" — every label, heading and button caption that is not part of the
+ * larger content blocks above (header, hero extras, section headings, footer CTA, widgets…).
+ * Defaults match the original copy, so an empty/missing setting changes nothing. */
+export const siteTextSchema = z.object({
+  header: z
+    .object({
+      bookNowLabel: s("Book Now"),
+      navSelfDrive: s("Self Drive"),
+      navTaxi: s("Taxi"),
+      navTours: s("Tours"),
+      navBlog: s("Blog"),
+      navAbout: s("About"),
+      navContact: s("Contact"),
+    })
+    .prefault({}),
+  hero: z
+    .object({
+      pickupCardTitle: s("Pickup points"),
+      pickupCardNote: s("Delivery to Airport, Railway Station or Hotel"),
+      carsStatLabel: s("Cars in fleet"),
+      citiesStatLabel: s("Pickup cities"),
+      supportStatValue: s("24/7"),
+      supportStatLabel: s("Road support"),
+    })
+    .prefault({}),
+  philosophy: z
+    .object({
+      cardEyebrow: s("Heritage & Craftsmanship"),
+      cardCities: s("UDAIPUR · NAVSARI · JAIPUR"),
+      ctaLabel: s("Explore The Fleet"),
+      ctaHref: s("/cars"),
+    })
+    .prefault({}),
+  sections: z
+    .object({
+      categories: heading("SRM 3D CATEGORIES", "CHOOSE YOUR DRIVE."),
+      fleet: heading("Self drive fleet", "Your car. Your journey.", "Pick a ride from the filmstrip — every car is cleaned, insured and ready for delivery."),
+      brands: heading("AUTOMOTIVE SELECTION", "FIND YOUR FAVOURITE BRAND.", "From precision engineering to invincible off-roaders, select your preferred badge for the journey."),
+      chauffeur: heading("CHAUFFEUR FLEET & TRANSFERS", "ARRIVE IN COMFORT.", "Professional chauffeurs, sparkling clean interiors, and fixed transparent tariffs."),
+      tours: heading("CURATED EXPEDITIONS", "GO BEYOND THE DRIVE.", "Handcrafted tours through forts, deserts, and marble palaces, with premium machines and local insider knowledge."),
+      testimonials: heading("VERIFIED EXPERIENCES", "DRIVEN BY TRUST.", "Stories from travellers who chose us for the road ahead — verified on Google."),
+    })
+    .prefault({}),
+  categoryCards: z
+    .array(
+      z.object({
+        key: z.enum(["cars", "taxi", "tours"]),
+        eyebrow: z.string().default(""),
+        title: z.string().min(1),
+        href: z.string().min(1),
+        ctaLabel: z.string().default("Explore"),
+        rating: z.coerce.number().min(0).max(5).default(5),
+        reviews: z.string().default(""),
+        image: z.string().default(""),
+      }),
+    )
+    .default([
+      { key: "cars", eyebrow: "Self Drive Fleet", title: "Self Drive", href: "/cars", ctaLabel: "Explore Fleet", rating: 5, reviews: "340+", image: "https://images.unsplash.com/photo-1555215695-3004980ad54e?w=800&q=80&auto=format&fit=crop" },
+      { key: "taxi", eyebrow: "Executive Travel", title: "Chauffeur Taxi", href: "/car-rental", ctaLabel: "Book Chauffeur", rating: 4.9, reviews: "520+", image: "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800&q=80&auto=format&fit=crop" },
+      { key: "tours", eyebrow: "Rajasthan Expeditions", title: "Royal Tours", href: "/tours", ctaLabel: "Explore Curated Tours", rating: 5, reviews: "213", image: "https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?w=800&q=80&auto=format&fit=crop" },
+    ]),
+  fleet: z
+    .object({
+      viewAllLabel: s("View all {count} cars in fleet"),
+      bookLabel: s("Book this car"),
+      startingFromLabel: s("Starting from"),
+    })
+    .prefault({}),
+  footer: z
+    .object({
+      ctaEyebrow: s("Your keys are waiting"),
+      ctaTitle: s("Ready when"),
+      ctaHighlight: s("you are"),
+      ctaSubtitle: s("Talk to a real person, get a quote in minutes, and hit the road today."),
+      callLabel: s("Call"),
+      whatsappLabel: s("WhatsApp us"),
+      officesTitle: s("Our offices"),
+      conciergeTitle: s("Concierge desk"),
+      copyright: s("All rights reserved."),
+    })
+    .prefault({}),
+  floatingWhatsApp: z
+    .object({
+      title: s("Chat with SRM Car Rentals"),
+      subtitle: s("Pick your city — we'll connect you to the local team."),
+      submitLabel: s("Start WhatsApp chat"),
+      successMessage: s("Thanks! We've saved your request. Continue the chat in WhatsApp — we reply fast."),
+      interests: z.array(z.string().min(1)).default(["Self-drive car rental", "Chauffeur / Taxi", "Tour package", "Corporate / long-term", "Something else"]),
+    })
+    .prefault({}),
+  bookingWidget: z
+    .object({
+      selfDriveTab: s("SELF DRIVE"),
+      taxiTab: s("TAXI / CHAUFFEUR"),
+      hint: s("Instant delivery to Airport, Railway Station or Hotel"),
+      searchCarsLabel: s("SEARCH CARS"),
+      findTaxiLabel: s("FIND TAXI"),
+      selfDriveNotice: s("Pickup and return time must be at least 24 hours apart and maximum 30 days."),
+      taxiNotice: s("Flexible hourly packages and outstation taxi routes available across Rajasthan & Gujarat."),
+      trust1Title: s("Verified Cars"),
+      trust1Detail: s("(100% Insured & Cleaned)"),
+      trust2Title: s("Transparent Pricing"),
+      trust2Detail: s("(Zero Hidden Extras)"),
+      trust3Title: s("24/7 Roadside Support"),
+    })
+    .prefault({}),
+  errors: z
+    .object({
+      notFoundTitle: s("Wrong turn"),
+      notFoundMessage: s("The page you're looking for doesn't exist or has moved. Let's get you back on the road."),
+      serverErrorTitle: s("Something went wrong"),
+      serverErrorMessage: s("An unexpected error occurred on our side. You can try again, or head back to the homepage."),
+    })
+    .prefault({}),
+});
+export type SiteText = z.infer<typeof siteTextSchema>;
+export const DEFAULT_SITE_TEXT: SiteText = siteTextSchema.parse({});
+
 export const SITE_CONTENT_SCHEMAS: Record<string, z.ZodType<unknown>> = {
   "homepage.content": homepageContentSchema,
   "homepage.company": companyContentSchema,
+  "homepage.text": siteTextSchema,
   "pages.about": aboutPageContentSchema,
   "pages.contact": contactPageContentSchema,
   "pages.faq": faqPageContentSchema,
