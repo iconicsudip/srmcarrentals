@@ -145,6 +145,7 @@ export const NAV_GROUPS: NavGroup[] = [
     icon: ClipboardList,
     items: [
       { title: "All Bookings", href: "/admin/bookings", icon: ClipboardList, permission: "bookings.view" },
+      { title: "Taxi Enquiries", href: "/admin/taxi-enquiries", icon: CarFront, permission: "settings.manage" },
       { title: "Pending Bookings", href: "/admin/bookings/pending", icon: Hourglass, permission: "bookings.view" },
       { title: "Confirmed Bookings", href: "/admin/bookings/confirmed", icon: CheckCircle2, permission: "bookings.view" },
       { title: "Active Rentals", href: "/admin/bookings/active", icon: CarFront, permission: "bookings.view" },
@@ -230,6 +231,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { title: "Available Services", href: "/admin/settings/services", icon: Layers, permission: "settings.manage" },
       { title: "Company Settings", href: "/admin/settings/company", icon: Building, permission: "settings.manage" },
       { title: "Checkout Form", href: "/admin/settings/checkout", icon: ClipboardCheck, permission: "settings.manage" },
+      { title: "Taxi Booking Form", href: "/admin/settings/taxi-form", icon: ClipboardList, permission: "settings.manage" },
       { title: "Tax Settings", href: "/admin/settings/tax", icon: Receipt, permission: "settings.manage" },
       { title: "Payment Settings", href: "/admin/settings/payment", icon: CreditCard, permission: "settings.manage" },
       { title: "Email Settings", href: "/admin/settings/email", icon: Mail, permission: "settings.manage" },

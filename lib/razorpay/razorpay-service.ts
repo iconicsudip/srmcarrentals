@@ -1,6 +1,5 @@
 import crypto from "crypto";
 import { getSetting, setSetting } from "@/modules/settings/settings.service";
-import { prisma } from "@/lib/prisma";
 
 export interface RazorpayConfig {
   keyId: string;

@@ -1,4 +1,15 @@
-import React from "react";
+
+// Deterministic particle layout (no Math.random → no hydration mismatch).
+const DUST = [
+  { left: "8%", top: "82%", size: 3, dur: 15, delay: 0, dx: 24 },
+  { left: "17%", top: "64%", size: 2, dur: 18, delay: 3, dx: -18 },
+  { left: "29%", top: "90%", size: 3, dur: 13, delay: 6, dx: 30 },
+  { left: "41%", top: "72%", size: 2, dur: 20, delay: 1, dx: -22 },
+  { left: "55%", top: "88%", size: 3, dur: 16, delay: 8, dx: 16 },
+  { left: "66%", top: "68%", size: 2, dur: 17, delay: 4, dx: -26 },
+  { left: "78%", top: "86%", size: 3, dur: 14, delay: 10, dx: 20 },
+  { left: "90%", top: "70%", size: 2, dur: 19, delay: 2, dx: -14 },
+];
 
 export function AmbientBackground() {
   return (
@@ -6,27 +17,50 @@ export function AmbientBackground() {
       aria-hidden="true"
       className="pointer-events-none fixed inset-0 -z-10 overflow-hidden select-none bg-[#FAFAFC]"
     >
-      {/* 1. Atmospheric Luxury Warm Sunset Orbs (Subtle on White) */}
-      {/* Top right golden orange aura */}
-      <div className="absolute -top-32 -right-32 h-[650px] w-[650px] rounded-full bg-gradient-to-br from-orange-400/[0.12] via-amber-300/[0.08] to-transparent blur-[140px] animate-pulse-slow will-change-transform" />
+      {/* 1. Warm light pools — radial gradients instead of blur filters (cheap to paint) */}
+      <div
+        className="lux-orb absolute -top-40 -right-40 h-[720px] w-[720px] animate-pulse-slow"
+        style={{ ["--orb-color" as string]: "rgba(251, 146, 60, 0.20)" }}
+      />
+      <div
+        className="lux-orb absolute top-[34%] -left-56 h-[680px] w-[680px] animate-pulse-slow [animation-delay:4s]"
+        style={{ ["--orb-color" as string]: "rgba(245, 158, 11, 0.14)" }}
+      />
+      <div
+        className="lux-orb absolute -bottom-48 right-[8%] h-[640px] w-[640px]"
+        style={{ ["--orb-color" as string]: "rgba(249, 115, 22, 0.12)" }}
+      />
 
-      {/* Mid-left warm apricot aura */}
-      <div className="absolute top-[30%] -left-48 h-[650px] w-[650px] rounded-full bg-gradient-to-tr from-orange-500/[0.07] via-amber-400/[0.05] to-transparent blur-[160px] animate-pulse-slow will-change-transform [animation-delay:4s]" />
-
-      {/* Center soft sunbeam glow */}
-      <div className="absolute top-[60%] left-1/2 -translate-x-1/2 h-[500px] w-[900px] rounded-full bg-orange-500/[0.04] blur-[160px] will-change-transform" />
-
-      {/* Bottom right subtle dusk reflection */}
-      <div className="absolute -bottom-40 right-[10%] h-[600px] w-[600px] rounded-full bg-gradient-to-tl from-amber-500/[0.08] via-orange-400/[0.04] to-transparent blur-[150px] will-change-transform" />
-
-      {/* 2. Architectural Luxury Grid Texture Overlay */}
+      {/* 2. Architectural grid texture */}
       <div className="bg-subtle-grid absolute inset-0 opacity-60" />
 
-      {/* 3. Subtle floating golden micro-gleams */}
-      <div className="absolute top-[18%] left-[22%] h-1 w-1 rounded-full bg-orange-400/60 shadow-[0_0_8px_#f97316] animate-float-slow" />
-      <div className="absolute top-[28%] right-[18%] h-1.5 w-1.5 rounded-full bg-amber-400/50 shadow-[0_0_10px_#fbbf24] animate-float-slow [animation-delay:2.5s]" />
-      <div className="absolute top-[52%] left-[12%] h-1 w-1 rounded-full bg-orange-400/50 shadow-[0_0_8px_#fb923c] animate-float-slow [animation-delay:1.2s]" />
-      <div className="absolute top-[75%] right-[25%] h-1 w-1 rounded-full bg-amber-500/50 shadow-[0_0_8px_#f59e0b] animate-float-slow [animation-delay:3.8s]" />
+      {/* 3. Slow-rotating gold instrument rings (speedometer motif) */}
+      <div className="lux-ring absolute -top-[260px] -right-[260px] h-[640px] w-[640px] rounded-full opacity-70" />
+      <div className="lux-ring absolute top-[48%] -left-[320px] h-[560px] w-[560px] rounded-full opacity-50 [animation-direction:reverse]" />
+
+      {/* 4. Headlight light streaks sweeping across */}
+      <div className="lux-streak absolute top-[22%] left-0 h-px w-[40vw]" />
+      <div className="lux-streak absolute top-[68%] left-0 h-px w-[32vw] [animation-delay:7s]" />
+
+      {/* 5. Rising golden dust */}
+      {DUST.map((d, i) => (
+        <span
+          key={i}
+          className="lux-dust absolute rounded-full bg-amber-400/70 shadow-[0_0_8px_#f59e0b]"
+          style={{
+            left: d.left,
+            top: d.top,
+            width: d.size,
+            height: d.size,
+            ["--dust-dur" as string]: `${d.dur}s`,
+            ["--dust-delay" as string]: `${d.delay}s`,
+            ["--drift-x" as string]: `${d.dx}px`,
+          }}
+        />
+      ))}
+
+      {/* 6. Soft vignette for depth */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_55%,rgba(15,23,42,0.04)_100%)]" />
     </div>
   );
 }

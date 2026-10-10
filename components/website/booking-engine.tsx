@@ -2,18 +2,7 @@
 
 import * as React from "react";
 import { useSearchParams } from "next/navigation";
-import {
-  AlertCircle,
-  CheckCircle2,
-  Clock,
-  Loader2,
-  MapPin,
-  Plane,
-  Phone,
-  ShieldCheck,
-  ShoppingBag,
-  Tag,
-} from "lucide-react";
+import { AlertCircle, CheckCircle2, Loader2, MapPin, Plane, Phone, ShieldCheck, ShoppingBag, Tag } from "lucide-react";
 import { toast } from "sonner";
 import type { PricingCalculateResponse } from "@srm/types";
 
@@ -71,12 +60,6 @@ function addHoursToISO(iso: string, hours: number): string {
 }
 
 /** Add days to a "YYYY-MM-DD" string */
-function addDaysToDate(dateISO: string, days: number): string {
-  const d = new Date(`${dateISO}T00:00:00`);
-  d.setDate(d.getDate() + days);
-  return d.toISOString().slice(0, 10);
-}
-
 function calculateDurationText(pickup: string, drop: string): { text: string; hours: number; days: number } {
   const start = new Date(pickup).getTime();
   const end = new Date(drop).getTime();
@@ -150,29 +133,6 @@ export function BookingEngine({
 
   // Derived constraints
   const nowMin = nowMinDateTime();
-  const dropMinDateTime = addHoursToISO(pickup, 24);          // drop must be >= pickup + 24h
-  const dropMaxDate = addDaysToDate(pickup.slice(0, 10), 10); // drop must be <= pickup + 10 days
-
-  // When pickup changes: enforce drop is within [pickup+24h, pickup+10d]
-  const handlePickupChange = (newPickup: string) => {
-    setPickupRaw(newPickup);
-    const minDrop = addHoursToISO(newPickup, 24);
-    const maxDrop = addHoursToISO(newPickup, 24 * 10);
-    setDropRaw((prev) => {
-      if (prev < minDrop) return minDrop;
-      if (prev > maxDrop) return maxDrop;
-      return prev;
-    });
-  };
-
-  // When drop changes: clamp to [pickup+24h, pickup+10d]
-  const handleDropChange = (newDrop: string) => {
-    const minDrop = addHoursToISO(pickup, 24);
-    const maxDrop = addHoursToISO(pickup, 24 * 10);
-    if (newDrop < minDrop) setDropRaw(minDrop);
-    else if (newDrop > maxDrop) setDropRaw(maxDrop);
-    else setDropRaw(newDrop);
-  };
 
   // Locations
   const [deliveryType, setDeliveryType] = React.useState<"BRANCH" | "AIRPORT" | "DOORSTEP">("BRANCH");
@@ -190,7 +150,7 @@ export function BookingEngine({
   const [selectedAirportId, setSelectedAirportId] = React.useState<string>(airports[0]?.id ?? "");
 
   // Distance estimation
-  const [estimatedKm, setEstimatedKm] = React.useState<string>("300");
+  const [estimatedKm] = React.useState<string>("300");
 
   // Add-ons & Protection
   const [selectedInsuranceId, setSelectedInsuranceId] = React.useState<string | undefined>(

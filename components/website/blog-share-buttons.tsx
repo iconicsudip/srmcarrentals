@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Check, Copy, MessageCircle, Share2 } from "lucide-react";
+import { Check, Copy, MessageCircle } from "lucide-react";
 
 export function BlogShareButtons({ title, url }: { title: string; url: string }) {
   const [copied, setCopied] = React.useState(false);

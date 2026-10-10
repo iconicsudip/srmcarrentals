@@ -20,6 +20,7 @@ export function SectionHeading({ badge, title, subtitle, center, className }: Se
         {stripTrailingPunctuation(title)}
         <span className="text-orange-500">.</span>
       </h2>
+      <span className={cn("lux-rule", center && "mx-auto")} />
       {subtitle && <p className={cn("max-w-xl text-neutral-600 text-sm sm:text-base", center && "mx-auto")}>{subtitle}</p>}
     </div>
   );

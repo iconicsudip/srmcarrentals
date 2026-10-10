@@ -4,19 +4,8 @@ import { CarCard } from "@/components/website/car-card";
 import { CarsFilterBar } from "@/components/website/cars-filter-bar";
 import { PaginationBar } from "@/components/website/pagination-bar";
 import { SectionHeading } from "@/components/website/section-heading";
-import {
-  listActiveBrandsWithCarCounts,
-  listActiveCarTypes,
-  listActiveCategories,
-  listActiveFuelTypes,
-  listActiveLocations,
-  listActiveTransmissionTypes,
-  listPublicCars,
-  type PublicCarFilters,
-  getAvailableServices,
-} from "@/modules/website/public-content.service";
+import { listActiveBrandsWithCarCounts, listActiveCarTypes, listActiveCategories, listActiveFuelTypes, listActiveLocations, listActiveTransmissionTypes, listPublicCars, type PublicCarFilters } from "@/modules/website/public-content.service";
 import { getDynamicSeoForPath, DynamicJsonLd } from "@/lib/seo/dynamic-seo";
-import { redirect } from "next/navigation";
 
 export async function generateMetadata(): Promise<Metadata> {
   const fallback: Metadata = {

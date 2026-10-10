@@ -2,17 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import {
-  Calendar,
-  CheckCircle2,
-  ChevronDown,
-  Headphones,
-  Loader2,
-  MapPin,
-  Search,
-  Sparkles,
-  Tag,
-} from "lucide-react";
+import { CheckCircle2, ChevronDown, Headphones, Loader2, MapPin, Search, Sparkles, Tag } from "lucide-react";
 import { TripSchedulePicker } from "@/components/website/datetime-picker";
 import { apiFetch } from "@/lib/api-client";
 import type { AvailableServicesConfig, CompanyContent } from "@/modules/settings/site-content.schemas";

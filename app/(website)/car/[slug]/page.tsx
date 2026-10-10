@@ -1,37 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import {
-  Bluetooth,
-  Briefcase,
-  Camera,
-  CarFront,
-  Check,
-  CheckCircle2,
-  ChevronRight,
-  Clock,
-  Cog,
-  Compass,
-  DoorOpen,
-  Fuel,
-  Gauge,
-  HelpCircle,
-  Info,
-  Key,
-  Lock,
-  MapPin,
-  Phone,
-  ShieldAlert,
-  ShieldCheck,
-  Smartphone,
-  Sparkles,
-  Star,
-  Sun,
-  Tv,
-  Users,
-  Wind,
-  Zap,
-} from "lucide-react";
+import { Bluetooth, Briefcase, Camera, CarFront, Check, CheckCircle2, ChevronRight, Cog, Compass, DoorOpen, Fuel, Gauge, Info, Key, Lock, ShieldCheck, Smartphone, Star, Sun, Tv, Users, Wind, Zap } from "lucide-react";
 
 function DynamicFeatureIcon({ name, className }: { name?: string | null; className?: string }) {
   const n = name?.toLowerCase();
@@ -52,7 +22,6 @@ function DynamicFeatureIcon({ name, className }: { name?: string | null; classNa
 import { Badge } from "@/components/ui/badge";
 import { CarGallery } from "@/components/website/car-gallery";
 import { BookingEngine } from "@/components/website/booking-engine";
-import { CarCard } from "@/components/website/car-card";
 import { SimilarCarsCarousel } from "@/components/website/similar-cars-carousel";
 import {
   getCompanyContent,

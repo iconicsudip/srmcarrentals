@@ -4,8 +4,8 @@ import * as React from "react";
 import { createPortal } from "react-dom";
 import { DayPicker } from "react-day-picker";
 import type { DateBefore, DateAfter, DateRange } from "react-day-picker";
-import { format, parse, isValid, isSameDay, addDays, addMinutes, differenceInMinutes } from "date-fns";
-import { ArrowRight, Calendar, Check, ChevronLeft, ChevronRight, Clock, Sparkles, X } from "lucide-react";
+import { format, parse, isValid, isSameDay, addDays, differenceInMinutes } from "date-fns";
+import { ArrowRight, Calendar, Check, ChevronLeft, ChevronRight, Clock, X } from "lucide-react";
 import { Label } from "@/components/ui/label";
 
 // ─── Internal helpers ─────────────────────────────────────────────────────────
@@ -123,9 +123,6 @@ interface TimeSelectorProps {
 function TimeSelector({ hour12, minute, period, availHours, availMinutes, onChange }: TimeSelectorProps) {
   const cls =
     "rounded-lg border border-neutral-200 bg-white px-2 py-2 text-xs text-neutral-900 outline-none focus:border-orange-500 appearance-none cursor-pointer hover:bg-neutral-50 transition disabled:opacity-30 disabled:cursor-not-allowed shadow-xs";
-
-  const amHours = validHoursForPeriod(undefined, "AM", undefined); // always all for label purposes
-  const pmHours = validHoursForPeriod(undefined, "PM", undefined);
 
   return (
     <div className="flex items-center gap-2 px-3 py-2.5 border-t border-neutral-100">

@@ -76,6 +76,7 @@ export default async function HomePage() {
   return (
     <>
       <DynamicJsonLd path="/" />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
       <HeroSection content={content.hero} locations={locations} services={services} />
       <TrustBadgeRow badges={content.trustBadges} />

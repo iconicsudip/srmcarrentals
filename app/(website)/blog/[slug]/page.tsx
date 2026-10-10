@@ -2,21 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import {
-  ArrowLeft,
-  ArrowRight,
-  Calendar,
-  CheckCircle2,
-  ChevronRight,
-  Clock,
-  Compass,
-  MapPin,
-  Phone,
-  ShieldCheck,
-  Sparkles,
-  Tag,
-  User,
-} from "lucide-react";
+import { ArrowLeft, ArrowRight, Calendar, CheckCircle2, ChevronRight, Clock, Compass, Phone, Sparkles, Tag } from "lucide-react";
 
 import { getDynamicSeoForPath, DynamicJsonLd } from "@/lib/seo/dynamic-seo";
 import {

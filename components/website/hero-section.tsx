@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, Compass, Sparkles } from "lucide-react";
+import { ArrowRight, Compass } from "lucide-react";
 
 import type { HomepageContent, AvailableServicesConfig } from "@/modules/settings/site-content.schemas";
 import { resolveIcon } from "@/lib/icon-map";

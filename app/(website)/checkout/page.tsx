@@ -4,25 +4,7 @@ import * as React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import {
-  Calendar,
-  CarFront,
-  CheckCircle2,
-  ChevronRight,
-  Clock,
-  Info,
-  Loader2,
-  LogIn,
-  LogOut,
-  MapPin,
-  Plane,
-  Receipt,
-  ShieldCheck,
-  ShoppingBag,
-  Sparkles,
-  User,
-  UserCheck,
-} from "lucide-react";
+import { Calendar, CarFront, CheckCircle2, ChevronRight, Clock, Info, Loader2, LogIn, LogOut, Receipt, ShieldCheck, ShoppingBag, User, UserCheck } from "lucide-react";
 import { toast } from "sonner";
 
 import { useCart } from "@/lib/cart/cart-store";
@@ -58,7 +40,7 @@ function formatDate(iso: string) {
 
 export default function CheckoutPage() {
   const router = useRouter();
-  const { items, total, clear, updateItem } = useCart();
+  const { items, clear, updateItem } = useCart();
 
   // Locations for delivery drop charges
   interface LocationOption {
@@ -138,9 +120,6 @@ export default function CheckoutPage() {
 
   // Payment method selection: "PICKUP" (Cash / UPI at handover) or "ONLINE"
   const [paymentMethod, setPaymentMethod] = React.useState<"PICKUP" | "ONLINE">("PICKUP");
-
-  const payableOnDelivery = paymentMethod === "PICKUP" ? grandTotal : 0;
-  const payableNow = paymentMethod === "ONLINE" ? grandTotal : 0;
 
   const handleLocationChange = (locationId: string) => {
     if (!primaryItem) return;

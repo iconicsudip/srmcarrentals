@@ -11,7 +11,7 @@ import { calculatePricing } from "@/modules/pricing/pricing.service";
 import { generateBookingReference } from "@/modules/bookings/booking-reference";
 import { isCarAvailable, lockCarForBooking } from "@/modules/bookings/availability.service";
 import type { CreateBookingInput } from "@/modules/bookings/bookings.schemas";
-import { createSmartPaymentLink, listSmartLinks } from "@/lib/razorpay/razorpay-service";
+import { cancelSmartPaymentLink, createSmartPaymentLink, listSmartLinks } from "@/lib/razorpay/razorpay-service";
 
 const BOOKING_DETAIL_INCLUDE = {
   car: {
@@ -422,10 +422,14 @@ export async function completeTrip(id: string, actualKm?: number) {
 export async function getOrCreateBookingPaymentLink(bookingReference: string, origin?: string) {
   const booking = await getBookingByReference(bookingReference);
   const links = await listSmartLinks();
-  const existingActive = links.find(
-    (l) =>
-      (l.bookingReference === bookingReference || l.bookingId === booking.id) &&
-      (l.status === "ISSUED" || l.status === "PAID"),
+  const amount = Number(booking.pricingSnapshot?.grandTotal || 0);
+  const bookingLinks = links.filter(
+    (l) => l.bookingReference === bookingReference || l.bookingId === booking.id,
+  );
+
+  // Reuse a link only while it still matches the current order value.
+  const existingActive = bookingLinks.find(
+    (l) => l.status === "PAID" || (l.status === "ISSUED" && Math.abs(l.amount - amount) < 0.01),
   );
 
   if (existingActive) {
@@ -437,10 +441,14 @@ export async function getOrCreateBookingPaymentLink(bookingReference: string, or
     };
   }
 
+  // Order value changed since the link was issued: retire the stale link(s).
+  for (const stale of bookingLinks.filter((l) => l.status === "ISSUED")) {
+    await cancelSmartPaymentLink(stale.id);
+  }
+
   const custName = `${booking.customer?.firstName || ""} ${booking.customer?.lastName || ""}`.trim() || "Customer";
   const custPhone = booking.customer?.phone;
   const custEmail = booking.customer?.email;
-  const amount = Number(booking.pricingSnapshot?.grandTotal || 0);
 
   const link = await createSmartPaymentLink({
     amount: amount > 0 ? amount : 1,

@@ -1,36 +1,13 @@
 "use client";
 
 import * as React from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import {
-  AlertCircle,
-  ArrowRight,
-  CarFront,
-  Check,
-  CheckCircle2,
-  Clock,
-  Copy,
-  CreditCard,
-  Download,
-  ExternalLink,
-  HelpCircle,
-  Loader2,
-  Lock,
-  MessageSquare,
-  Phone,
-  Printer,
-  QrCode,
-  ShieldCheck,
-  Sparkles,
-  Zap,
-} from "lucide-react";
+import { AlertCircle, CarFront, CheckCircle2, Clock, Loader2, Lock, Printer, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 
 import { apiFetch } from "@/lib/api-client";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
 function formatInr(amount: number) {

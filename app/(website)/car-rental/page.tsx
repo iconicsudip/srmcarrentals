@@ -1,19 +1,7 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
-import {
-  Award,
-  ChevronRight,
-  Clock,
-  MapPin,
-  MessageSquare,
-  Phone,
-  Plane,
-  RotateCcw,
-  ShieldCheck,
-  Sparkles,
-  Users,
-} from "lucide-react";
+import { Award, ChevronRight, Clock, MessageSquare, Phone, Plane, ShieldCheck, Sparkles } from "lucide-react";
 
 import { ChauffeurSection } from "@/components/website/chauffeur-section";
 import { ChauffeurFilterSidebar } from "@/components/website/chauffeur-filter-sidebar";
@@ -175,7 +163,7 @@ export default async function CarRentalPage({ searchParams }: CarRentalPageProps
                   <div className="mb-6 flex items-center justify-between">
                     <div>
                       <h2 className="text-xl font-black uppercase tracking-tight text-neutral-950">
-                        {selectedCategory ? `${selectedCategory} Collection` : "Available Fleet &amp; Tariffs"}
+                        {selectedCategory ? `${selectedCategory} Collection` : "Available Fleet & Tariffs"}
                       </h2>
                       <p className="text-xs text-neutral-500 mt-0.5">
                         Showing {filteredServices.length} verified chauffeur {filteredServices.length === 1 ? "option" : "options"}
@@ -187,7 +175,7 @@ export default async function CarRentalPage({ searchParams }: CarRentalPageProps
                     services={filteredServices}
                     phone={company.phone}
                     hideHeading={true}
-                    columnsClassName="grid-cols-1 md:grid-cols-2 xl:grid-cols-2 2xl:grid-cols-3"
+                    columnsClassName="grid-cols-1 md:grid-cols-2"
                   />
                 </div>
               )}

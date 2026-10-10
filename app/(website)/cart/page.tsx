@@ -3,24 +3,7 @@
 import * as React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import {
-  Calendar,
-  CarFront,
-  CheckCircle2,
-  ChevronRight,
-  Clock,
-  Fuel,
-  Info,
-  MapPin,
-  MessageSquare,
-  Phone,
-  Receipt,
-  ShieldCheck,
-  ShoppingCart,
-  Sparkles,
-  Tag,
-  Trash2,
-} from "lucide-react";
+import { Calendar, CarFront, CheckCircle2, ChevronRight, Clock, Fuel, MapPin, MessageSquare, Phone, Receipt, ShieldCheck, ShoppingCart, Sparkles, Tag, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { useCart } from "@/lib/cart/cart-store";
@@ -36,18 +19,6 @@ function formatInr(amount: number | null | undefined) {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(amount);
-}
-
-function formatDmy(iso: string) {
-  try {
-    const d = new Date(iso);
-    const day = String(d.getDate()).padStart(2, "0");
-    const month = String(d.getMonth() + 1).padStart(2, "0");
-    const year = d.getFullYear();
-    return `${day}-${month}-${year}`;
-  } catch {
-    return iso;
-  }
 }
 
 function formatDmyTime(iso: string) {
@@ -75,7 +46,7 @@ interface LocationOption {
 }
 
 export default function CartPage() {
-  const { items, count, removeItem, updateItem, clear } = useCart();
+  const { items, count, removeItem, updateItem } = useCart();
   const [phone, setPhone] = React.useState("+91 9414551250");
   const [whatsapp, setWhatsapp] = React.useState("919414551250");
   const [locations, setLocations] = React.useState<LocationOption[]>([]);

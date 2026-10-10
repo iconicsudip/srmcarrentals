@@ -2,23 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import {
-  Calendar,
-  CheckCircle2,
-  Clock,
-  ExternalLink,
-  MapPin,
-  MessageSquare,
-  Phone,
-  Printer,
-  ShieldCheck,
-  Users,
-  Fuel,
-  Cog,
-  ArrowRight,
-  CreditCard,
-  Smartphone,
-} from "lucide-react";
+import { Calendar, CheckCircle2, Clock, MapPin, MessageSquare, Phone, ShieldCheck, Users, Fuel, Cog, ArrowRight, CreditCard, Smartphone } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import {

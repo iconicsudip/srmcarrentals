@@ -22,6 +22,7 @@ export function VideoShowcaseSection({ content }: { content: HomepageContent["vi
         loop
         muted={muted}
         playsInline
+        preload="metadata"
         className="absolute inset-0 size-full object-cover opacity-60"
       />
       <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-black/70" />

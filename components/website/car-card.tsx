@@ -4,20 +4,7 @@ import * as React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import {
-  Briefcase,
-  CarFront,
-  Check,
-  Cog,
-  Eye,
-  Flame,
-  Fuel,
-  Loader2,
-  Sparkles,
-  Star,
-  Users,
-  Zap,
-} from "lucide-react";
+import { Briefcase, Check, Cog, Eye, Fuel, Loader2, Sparkles, Star, Users, Zap } from "lucide-react";
 
 // Unsplash fallback images — keyed by brand name (lowercase) or category (lowercase)
 const BRAND_FALLBACK_IMAGES: Record<string, string> = {
@@ -47,21 +34,6 @@ const BRAND_FALLBACK_IMAGES: Record<string, string> = {
     "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800&q=80&auto=format&fit=crop",
   default:
     "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=800&q=80&auto=format&fit=crop",
-};
-
-const CATEGORY_FALLBACK_IMAGES: Record<string, string> = {
-  hatchback:
-    "https://images.unsplash.com/photo-1535732759880-bbd5c7265e3f?w=800&q=80&auto=format&fit=crop",
-  sedan:
-    "https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?w=800&q=80&auto=format&fit=crop",
-  suv:
-    "https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?w=800&q=80&auto=format&fit=crop",
-  "compact suv":
-    "https://images.unsplash.com/photo-1617814076367-b759c7d7e738?w=800&q=80&auto=format&fit=crop",
-  mpv:
-    "https://images.unsplash.com/photo-1621993202328-de4e0c26c3de?w=800&q=80&auto=format&fit=crop",
-  luxury:
-    "https://images.unsplash.com/photo-1563720223185-11003d516935?w=800&q=80&auto=format&fit=crop",
 };
 
 function getCarFallbackImage(brandName: string, categoryName?: string | null): string {

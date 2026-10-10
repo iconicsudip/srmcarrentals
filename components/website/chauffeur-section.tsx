@@ -1,18 +1,8 @@
 import Image from "next/image";
-import Link from "next/link";
-import {
-  Award,
-  Briefcase,
-  CheckCircle2,
-  Clock,
-  MessageSquare,
-  ShieldCheck,
-  Sparkles,
-  Star,
-  Users,
-} from "lucide-react";
+import { Briefcase, CheckCircle2, Star, Users } from "lucide-react";
 
 import { SectionHeading } from "@/components/website/section-heading";
+import { ChauffeurBookButton } from "@/components/website/chauffeur-book-dialog";
 
 // High-quality Unsplash fallbacks keyed by category (case-insensitive)
 const CATEGORY_FALLBACK_IMAGES: Record<string, string> = {
@@ -60,7 +50,7 @@ export function ChauffeurSection({
   phone = "+91 9414551250",
   hideHeading = false,
   className = "",
-  columnsClassName = "grid-cols-1 md:grid-cols-2 lg:grid-cols-3",
+  columnsClassName = "grid-cols-1 md:grid-cols-2",
 }: {
   services: ChauffeurServiceData[];
   phone?: string;
@@ -69,8 +59,6 @@ export function ChauffeurSection({
   columnsClassName?: string;
 }) {
   if (services.length === 0) return null;
-
-  const whatsappNumber = phone.replace(/[^0-9]/g, "");
 
   const sectionContent = (
     <>
@@ -90,130 +78,103 @@ export function ChauffeurSection({
           return (
             <div
               key={service.id}
-              className="group relative flex flex-col overflow-hidden rounded-3xl border border-neutral-200/90 bg-white shadow-[0_10px_35px_rgba(0,0,0,0.04)] transition-all duration-300 hover:border-orange-500/50 hover:shadow-[0_20px_50px_rgba(249,115,22,0.14)] hover:-translate-y-1.5"
+              className="group relative flex min-h-[540px] flex-col justify-between overflow-hidden rounded-3xl border border-neutral-200/90 bg-neutral-900 shadow-[0_10px_35px_rgba(0,0,0,0.08)] transition-all duration-300 hover:border-orange-500/60 hover:shadow-[0_20px_50px_rgba(249,115,22,0.22)] hover:-translate-y-1.5"
             >
-              {/* ── Visual Media Block ── */}
-              <div className="relative h-64 shrink-0 overflow-hidden bg-neutral-900">
-                <Image
-                  src={service.imageUrl ?? getCategoryFallbackImage(service.category)}
-                  alt={service.name}
-                  fill
-                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 500px"
-                  className="object-cover transition-transform duration-700 ease-out group-hover:scale-108"
-                />
+              {/* ── Full-cover image ── */}
+              <Image
+                src={service.imageUrl ?? getCategoryFallbackImage(service.category)}
+                alt={service.name}
+                fill
+                sizes="(max-width: 768px) 100vw, 50vw"
+                className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+              />
 
-                {/* Subtle Cinematic Vignette */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-black/30 pointer-events-none" />
+              {/* Readability gradient */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/55 to-black/10 pointer-events-none" />
 
-                {/* Top Badges */}
-                <div className="absolute top-4 inset-x-4 flex items-center justify-between pointer-events-none">
-                  {/* Category Pill */}
-                  <span className="rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 px-3 py-1.5 text-[10px] font-black tracking-widest text-white uppercase shadow-lg shadow-orange-500/30 border border-white/20">
-                    {categoryBadge}
-                  </span>
-
-                  {/* Rating / Quality Badge */}
-                  <span className="rounded-xl bg-black/60 backdrop-blur-md px-2.5 py-1.5 text-[10px] font-bold text-neutral-100 border border-white/15 flex items-center gap-1 shadow-md">
-                    <Star className="size-3 text-amber-400 fill-amber-400" />
-                    <span>Verified Chauffeur</span>
-                  </span>
-                </div>
-
-                {/* Bottom Overlay Capacity & Rate Strip */}
-                <div className="absolute inset-x-3.5 bottom-3.5 rounded-2xl bg-black/60 backdrop-blur-md border border-white/15 px-3.5 py-2 flex items-center justify-between text-white shadow-lg">
-                  <span className="flex items-center gap-2 text-xs font-semibold text-white/95">
-                    <Users className="size-3.5 text-orange-400" />
-                    {capacity}
-                  </span>
-                  {service.pricePerKm && (
-                    <span className="text-xs font-extrabold text-orange-400 bg-orange-500/20 px-2 py-0.5 rounded-lg border border-orange-400/30">
-                      ₹{Number(service.pricePerKm)}/km base
-                    </span>
-                  )}
-                </div>
+              {/* Top badges */}
+              <div className="relative z-10 flex items-center justify-between p-5">
+                <span className="rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 px-3 py-1.5 text-[10px] font-black tracking-widest text-white uppercase shadow-lg shadow-orange-500/30 border border-white/20">
+                  {categoryBadge}
+                </span>
+                <span className="rounded-xl bg-black/55 backdrop-blur-md px-2.5 py-1.5 text-[10px] font-bold text-neutral-100 border border-white/15 flex items-center gap-1 shadow-md">
+                  <Star className="size-3 text-amber-400 fill-amber-400" />
+                  <span>Verified Chauffeur</span>
+                </span>
               </div>
 
-              {/* ── Card Content Body ── */}
-              <div className="flex flex-1 flex-col gap-4 p-6 sm:p-7">
-                {/* Title & Category Line */}
+              {/* Content over image */}
+              <div className="relative z-10 flex flex-col gap-4 p-6 sm:p-7 text-white">
                 <div>
-                  <h3 className="text-2xl font-black uppercase tracking-tight text-neutral-950 group-hover:text-orange-600 transition-colors leading-tight">
+                  <h3 className="text-2xl sm:text-3xl font-black uppercase tracking-tight leading-tight group-hover:text-orange-400 transition-colors">
                     {service.name}
                   </h3>
-                  <div className="mt-1 flex items-center gap-2 text-xs font-medium text-neutral-500">
+                  <div className="mt-1 flex items-center gap-2 text-xs font-medium text-white/70">
                     <span className="size-1.5 rounded-full bg-orange-500" />
                     <span>Executive Fleet · {service.category} Class</span>
                   </div>
                 </div>
 
-                {/* Ideal For Callout */}
+                <div className="flex flex-wrap items-center gap-2 text-xs">
+                  <span className="flex items-center gap-2 rounded-xl bg-black/50 backdrop-blur-md border border-white/15 px-3 py-1.5 font-semibold">
+                    <Users className="size-3.5 text-orange-400" />
+                    {capacity}
+                  </span>
+                  {service.pricePerKm && (
+                    <span className="rounded-xl bg-orange-500/25 border border-orange-400/40 px-2.5 py-1.5 font-extrabold text-orange-300">
+                      ₹{Number(service.pricePerKm)}/km base
+                    </span>
+                  )}
+                </div>
+
                 {service.idealFor && (
-                  <div className="rounded-2xl border border-orange-100/90 bg-gradient-to-r from-orange-50/80 via-white to-amber-50/40 p-3.5 text-xs text-neutral-700 leading-relaxed shadow-sm">
-                    <div className="flex items-center gap-1.5 font-bold text-neutral-900 mb-0.5">
-                      <Briefcase className="size-3.5 text-orange-600" />
+                  <div className="rounded-2xl border border-white/15 bg-white/10 backdrop-blur-md p-3.5 text-xs leading-relaxed">
+                    <div className="flex items-center gap-1.5 font-bold mb-0.5">
+                      <Briefcase className="size-3.5 text-orange-400" />
                       <span>Best Suited For</span>
                     </div>
-                    <p className="text-neutral-600 pl-5">{service.idealFor}</p>
+                    <p className="text-white/80 pl-5">{service.idealFor}</p>
                   </div>
                 )}
 
-                {/* Feature Checklist */}
                 {service.features.length > 0 && (
-                  <div className="space-y-2 pt-1">
-                    <div className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">
-                      Included Privileges
-                    </div>
-                    <ul className="grid grid-cols-1 gap-2 text-xs text-neutral-700">
-                      {service.features.slice(0, 4).map((feat) => (
-                        <li key={feat} className="flex items-center gap-2.5 font-medium">
-                          <CheckCircle2 className="size-4 shrink-0 text-orange-500" />
-                          <span>{feat}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
+                  <ul className="grid grid-cols-1 gap-1.5 text-xs sm:grid-cols-2">
+                    {service.features.slice(0, 4).map((feat) => (
+                      <li key={feat} className="flex items-center gap-2 font-medium text-white/90">
+                        <CheckCircle2 className="size-4 shrink-0 text-orange-400" />
+                        <span>{feat}</span>
+                      </li>
+                    ))}
+                  </ul>
                 )}
 
-                {/* Spacer */}
-                <div className="flex-1" />
-
-                {/* Price & Booking Footer */}
-                <div className="flex items-end justify-between border-t border-neutral-150 pt-5 mt-2">
+                {/* Price & booking */}
+                <div className="flex flex-col gap-4 border-t border-white/15 pt-5 mt-1">
                   <div>
-                    <div className="text-[10px] font-extrabold tracking-widest text-neutral-400 uppercase">
+                    <div className="text-[10px] font-extrabold tracking-widest text-white/60 uppercase">
                       Fixed Tariff From
                     </div>
                     <div className="flex items-baseline gap-1 mt-0.5">
-                      <span className="text-3xl font-black text-neutral-950 tracking-tight">
+                      <span className="text-3xl font-black tracking-tight">
                         ₹{Number(service.startingPrice).toLocaleString("en-IN")}
                       </span>
-                      <span className="text-xs font-semibold text-neutral-500">
+                      <span className="text-xs font-semibold text-white/70">
                         / {service.pricingUnit === "PER_KM" ? "km" : "trip"}
                       </span>
                     </div>
                   </div>
 
-                  {(() => {
-                    const whatsappMsg = encodeURIComponent(
-                      `Hello SRM Car Rentals! 👋\n\nI want to book an Executive Chauffeur Taxi:\n\n` +
-                      `• *Service*: ${service.name}\n` +
-                      `• *Category*: ${service.category}\n` +
-                      `• *Capacity*: ${capacity}\n` +
-                      `• *Starting Tariff*: ₹${Number(service.startingPrice).toLocaleString("en-IN")} / ${service.pricingUnit === "PER_KM" ? "km" : "trip"}\n\n` +
-                      `Please confirm chauffeur availability and pickup timing!`,
-                    );
-                    return (
-                      <a
-                        href={`https://wa.me/${whatsappNumber}?text=${whatsappMsg}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-2 rounded-2xl bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 px-5 py-3.5 text-xs font-black uppercase tracking-wider text-white shadow-xl shadow-orange-500/25 transition-all duration-200 active:scale-95 cursor-pointer"
-                      >
-                        <MessageSquare className="size-4" />
-                        <span>Book Taxi →</span>
-                      </a>
-                    );
-                  })()}
+                  <ChauffeurBookButton
+                    phone={phone}
+                    service={{
+                      id: service.id,
+                      name: service.name,
+                      category: service.category,
+                      capacity,
+                      startingPrice: Number(service.startingPrice),
+                      pricingUnit: service.pricingUnit,
+                    }}
+                  />
                 </div>
               </div>
             </div>

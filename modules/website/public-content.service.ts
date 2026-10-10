@@ -1,3 +1,5 @@
+import { unstable_cache } from "next/cache";
+
 import { prisma } from "@/lib/prisma";
 import { getSetting } from "@/modules/settings/settings.service";
 import type {
@@ -334,31 +336,41 @@ const FALLBACK_TERMS: TermsPageContent = {
  * data layer: Decimal -> string, Date -> ISO string, both still safe inputs
  * to the `Number(...)` / `new Date(...)` calls used throughout the UI.
  */
+/** Public pages share one Neon round-trip per cache window instead of one per
+ * request. Only JSON-safe readers are wrapped (cache serialises to JSON). */
+const PUBLIC_REVALIDATE_SECONDS = 60;
+function cached<A extends unknown[], R>(name: string, fn: (...args: A) => Promise<R>) {
+  return unstable_cache(fn, ["public-content", name], {
+    revalidate: PUBLIC_REVALIDATE_SECONDS,
+    tags: ["public-content"],
+  });
+}
+
 function toPlain<T>(data: T): T {
   return JSON.parse(JSON.stringify(data)) as T;
 }
 
-export async function getHomepageContent(): Promise<HomepageContent> {
+async function getHomepageContent_uncached(): Promise<HomepageContent> {
   return (await getSetting<HomepageContent>("homepage.content")) ?? FALLBACK_HOMEPAGE;
 }
 
-export async function getCompanyContent(): Promise<CompanyContent> {
+async function getCompanyContent_uncached(): Promise<CompanyContent> {
   return (await getSetting<CompanyContent>("homepage.company")) ?? FALLBACK_COMPANY;
 }
 
-export async function getAboutPageContent(): Promise<AboutPageContent> {
+async function getAboutPageContent_uncached(): Promise<AboutPageContent> {
   return (await getSetting<AboutPageContent>("pages.about")) ?? FALLBACK_ABOUT;
 }
 
-export async function getContactPageContent(): Promise<ContactPageContent> {
+async function getContactPageContent_uncached(): Promise<ContactPageContent> {
   return (await getSetting<ContactPageContent>("pages.contact")) ?? FALLBACK_CONTACT;
 }
 
-export async function getFaqPageContent(): Promise<FaqPageContent> {
+async function getFaqPageContent_uncached(): Promise<FaqPageContent> {
   return (await getSetting<FaqPageContent>("pages.faq")) ?? FALLBACK_FAQ;
 }
 
-export async function getTermsPageContent(): Promise<TermsPageContent> {
+async function getTermsPageContent_uncached(): Promise<TermsPageContent> {
   return (await getSetting<TermsPageContent>("pages.terms")) ?? FALLBACK_TERMS;
 }
 
@@ -396,7 +408,7 @@ export type PublicCarCard = CarCardData & {
   brand: { id: string; name: string };
 };
 
-export async function listActiveCars(take = 12): Promise<PublicCarCard[]> {
+async function listActiveCars_uncached(take = 12): Promise<PublicCarCard[]> {
   try {
     const cars = await prisma.car.findMany({
       where: { status: "ACTIVE" },
@@ -425,14 +437,14 @@ export async function listActiveCategories() {
   } catch { return []; }
 }
 
-export async function listActiveChauffeurServices(): Promise<ChauffeurServiceData[]> {
+async function listActiveChauffeurServices_uncached(): Promise<ChauffeurServiceData[]> {
   try {
     const services = await prisma.chauffeurService.findMany({ where: { status: "ACTIVE" }, orderBy: { sortOrder: "asc" } });
     return toPlain(services) as unknown as ChauffeurServiceData[];
   } catch { return []; }
 }
 
-export async function listActiveTours(take = 6): Promise<TourData[]> {
+async function listActiveTours_uncached(take = 6): Promise<TourData[]> {
   try {
     const tours = await prisma.tour.findMany({
       where: { status: "ACTIVE" },
@@ -508,35 +520,35 @@ export async function listActiveGalleryImages(take = 8) {
   }
 }
 
-export async function listActiveLocations() {
+async function listActiveLocations_uncached() {
   try {
     const locations = await prisma.location.findMany({ where: { status: "ACTIVE" }, orderBy: { name: "asc" } });
     return toPlain(locations);
   } catch { return []; }
 }
 
-export async function listActiveAirports() {
+async function listActiveAirports_uncached() {
   try {
     const airports = await prisma.airport.findMany({ where: { status: "ACTIVE" }, orderBy: { name: "asc" } });
     return toPlain(airports);
   } catch { return []; }
 }
 
-export async function listActiveInsurances() {
+async function listActiveInsurances_uncached() {
   try {
     const insurances = await prisma.insurance.findMany({ where: { status: "ACTIVE" }, orderBy: { fixedPrice: "asc" } });
     return toPlain(insurances);
   } catch { return []; }
 }
 
-export async function listActiveExtraServices() {
+async function listActiveExtraServices_uncached() {
   try {
     const services = await prisma.extraService.findMany({ where: { status: "ACTIVE" }, orderBy: { price: "asc" } });
     return toPlain(services);
   } catch { return []; }
 }
 
-export async function listSimilarCars(currentCarId: string, categoryId: string, take = 3) {
+async function listSimilarCars_uncached(currentCarId: string, categoryId: string, take = 3) {
   try {
     const similar = await prisma.car.findMany({
       where: { status: "ACTIVE", id: { not: currentCarId }, categoryId },
@@ -595,7 +607,7 @@ export interface PublicCarFilters {
 
 const PAGE_SIZE_DEFAULT = 9;
 
-export async function listPublicCars(filters: PublicCarFilters): Promise<{ cars: PublicCarCard[]; total: number; page: number; pageSize: number }> {
+async function listPublicCars_uncached(filters: PublicCarFilters): Promise<{ cars: PublicCarCard[]; total: number; page: number; pageSize: number }> {
   const page = Math.max(1, filters.page ?? 1);
   const pageSize = filters.pageSize ?? PAGE_SIZE_DEFAULT;
 
@@ -667,7 +679,7 @@ function fetchCarDetailRaw(slug: string) {
   return prisma.car.findUnique({ where: { slug, status: "ACTIVE" }, include: CAR_DETAIL_INCLUDE });
 }
 
-export async function getPublicCarBySlug(slug: string) {
+async function getPublicCarBySlug_uncached(slug: string) {
   try {
     const car = await fetchCarDetailRaw(slug);
     if (!car) return null;
@@ -675,7 +687,7 @@ export async function getPublicCarBySlug(slug: string) {
   } catch { return null; }
 }
 
-export async function getPublicTourBySlug(slug: string) {
+async function getPublicTourBySlug_uncached(slug: string) {
   try {
     const tour = await prisma.tour.findUnique({
       where: { slug, status: "ACTIVE" },
@@ -686,7 +698,7 @@ export async function getPublicTourBySlug(slug: string) {
   } catch { return null; }
 }
 
-export async function getFleetCounts() {
+async function getFleetCounts_uncached() {
   try {
     const [carCount, chauffeurCount, tourCount] = await prisma.$transaction([
       prisma.car.count({ where: { status: "ACTIVE" } }),
@@ -699,7 +711,7 @@ export async function getFleetCounts() {
   }
 }
 
-export async function getPublicBlogs(params?: {
+async function getPublicBlogs_uncached(params?: {
   categorySlug?: string;
   tag?: string;
   search?: string;
@@ -774,7 +786,7 @@ export async function getPublicBlogs(params?: {
   }
 }
 
-export async function getPublicBlogCategories() {
+async function getPublicBlogCategories_uncached() {
   try {
     const categories = await prisma.blogCategory.findMany({
       where: {
@@ -794,7 +806,7 @@ export async function getPublicBlogCategories() {
   }
 }
 
-export async function getPublicBlogBySlug(slug: string) {
+async function getPublicBlogBySlug_uncached(slug: string) {
   try {
     const blog = await prisma.blog.findFirst({
       where: { slug, status: "PUBLISHED" },
@@ -819,7 +831,7 @@ export async function getPublicBlogBySlug(slug: string) {
   }
 }
 
-export async function getRelatedPublicBlogs(currentSlug: string, categoryId?: string, limit = 3) {
+async function getRelatedPublicBlogs_uncached(currentSlug: string, categoryId?: string, limit = 3) {
   try {
     const where: any = {
       status: "PUBLISHED",
@@ -869,6 +881,31 @@ export async function getRelatedPublicBlogs(currentSlug: string, categoryId?: st
   }
 }
 
-export { getAvailableServices, DEFAULT_AVAILABLE_SERVICES } from "@/modules/settings/settings.service";
+import { getAvailableServices as getAvailableServicesUncached } from "@/modules/settings/settings.service";
+export { DEFAULT_AVAILABLE_SERVICES } from "@/modules/settings/settings.service";
+export const getAvailableServices = cached("getAvailableServices", getAvailableServicesUncached);
+
+export const getHomepageContent = cached("getHomepageContent", getHomepageContent_uncached);
+export const getCompanyContent = cached("getCompanyContent", getCompanyContent_uncached);
+export const getAboutPageContent = cached("getAboutPageContent", getAboutPageContent_uncached);
+export const getContactPageContent = cached("getContactPageContent", getContactPageContent_uncached);
+export const getFaqPageContent = cached("getFaqPageContent", getFaqPageContent_uncached);
+export const getTermsPageContent = cached("getTermsPageContent", getTermsPageContent_uncached);
+export const listActiveCars = cached("listActiveCars", listActiveCars_uncached);
+export const listActiveChauffeurServices = cached("listActiveChauffeurServices", listActiveChauffeurServices_uncached);
+export const listActiveTours = cached("listActiveTours", listActiveTours_uncached);
+export const listActiveLocations = cached("listActiveLocations", listActiveLocations_uncached);
+export const listActiveAirports = cached("listActiveAirports", listActiveAirports_uncached);
+export const listActiveInsurances = cached("listActiveInsurances", listActiveInsurances_uncached);
+export const listActiveExtraServices = cached("listActiveExtraServices", listActiveExtraServices_uncached);
+export const listSimilarCars = cached("listSimilarCars", listSimilarCars_uncached);
+export const listPublicCars = cached("listPublicCars", listPublicCars_uncached);
+export const getPublicCarBySlug = cached("getPublicCarBySlug", getPublicCarBySlug_uncached);
+export const getPublicTourBySlug = cached("getPublicTourBySlug", getPublicTourBySlug_uncached);
+export const getFleetCounts = cached("getFleetCounts", getFleetCounts_uncached);
+export const getPublicBlogs = cached("getPublicBlogs", getPublicBlogs_uncached);
+export const getPublicBlogCategories = cached("getPublicBlogCategories", getPublicBlogCategories_uncached);
+export const getPublicBlogBySlug = cached("getPublicBlogBySlug", getPublicBlogBySlug_uncached);
+export const getRelatedPublicBlogs = cached("getRelatedPublicBlogs", getRelatedPublicBlogs_uncached);
 export type { AvailableServicesConfig } from "@/modules/settings/site-content.schemas";
 

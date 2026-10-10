@@ -2,19 +2,7 @@
 
 import * as React from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import {
-  Calendar,
-  Check,
-  Loader2,
-  ChevronDown,
-  Clock,
-  MapPin,
-  RotateCcw,
-  Search,
-  SlidersHorizontal,
-  Sparkles,
-  X,
-} from "lucide-react";
+import { Calendar, Check, Loader2, ChevronDown, MapPin, RotateCcw, Search, SlidersHorizontal, Sparkles, X } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { TripSchedulePicker } from "@/components/website/datetime-picker";
 

@@ -279,3 +279,68 @@
   -webkit-text-fill-color: transparent;
 }
 
+
+/* ============================================================================
+   LUXURY AMBIENT LAYER — transform/opacity-only animation, no blur filters
+   ============================================================================ */
+
+@keyframes driftUp {
+  0%   { transform: translate3d(0, 0, 0); opacity: 0; }
+  15%  { opacity: 1; }
+  85%  { opacity: 1; }
+  100% { transform: translate3d(var(--drift-x, 20px), -120px, 0); opacity: 0; }
+}
+
+@keyframes lightStreak {
+  0%   { transform: translateX(-30vw) rotate(-18deg); opacity: 0; }
+  20%  { opacity: 1; }
+  100% { transform: translateX(130vw) rotate(-18deg); opacity: 0; }
+}
+
+.lux-orb {
+  background: radial-gradient(circle at center, var(--orb-color) 0%, transparent 65%);
+}
+
+.lux-dust {
+  animation: driftUp var(--dust-dur, 14s) ease-in-out infinite;
+  animation-delay: var(--dust-delay, 0s);
+}
+
+.lux-streak {
+  background: linear-gradient(90deg, transparent, rgba(251, 191, 36, 0.35), rgba(249, 115, 22, 0.15), transparent);
+  animation: lightStreak 16s ease-in-out infinite;
+}
+
+.lux-ring {
+  background: conic-gradient(from 0deg, transparent 0deg, rgba(249, 115, 22, 0.28) 70deg, transparent 140deg, rgba(251, 191, 36, 0.2) 250deg, transparent 320deg);
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 1.5px), #000 calc(100% - 1.5px));
+  mask: radial-gradient(farthest-side, transparent calc(100% - 1.5px), #000 calc(100% - 1.5px));
+  animation: spinSlow 60s linear infinite;
+}
+
+/* Gold hairline under section headings */
+.lux-rule {
+  height: 2px;
+  width: 56px;
+  border-radius: 9999px;
+  background: linear-gradient(90deg, #f97316, #fbbf24, transparent);
+}
+
+/* Glass surface for floating panels */
+.lux-glass {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.78), rgba(255, 255, 255, 0.55));
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  box-shadow: 0 10px 40px -12px rgba(15, 23, 42, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lux-dust, .lux-streak, .lux-ring, .animate-pulse-slow, .animate-float-slow {
+    animation: none !important;
+  }
+}
+
+@media (max-width: 767px) {
+  .lux-streak, .lux-ring { display: none; }
+}

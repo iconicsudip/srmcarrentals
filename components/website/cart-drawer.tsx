@@ -1,21 +1,8 @@
 "use client";
 
 import * as React from "react";
-import Image from "next/image";
 import Link from "next/link";
-import {
-  Calendar,
-  CarFront,
-  Clock,
-  ExternalLink,
-  Loader2,
-  MapPin,
-  MessageSquare,
-  ShieldCheck,
-  ShoppingBag,
-  Trash2,
-  X,
-} from "lucide-react";
+import { Calendar, CarFront, Clock, Loader2, MapPin, MessageSquare, ShieldCheck, ShoppingBag, Trash2, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 import { useCart } from "@/lib/cart/cart-store";

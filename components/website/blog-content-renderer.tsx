@@ -1,6 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import { ChevronRight, Info, Lightbulb } from "lucide-react";
+import { Info, Lightbulb } from "lucide-react";
 
 interface BlogContentRendererProps {
   content: string;

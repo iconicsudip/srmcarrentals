@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, BookOpen, Calendar, Clock, Compass, Fuel, ShieldCheck, Sparkles, Tag, User } from "lucide-react";
+import { ArrowRight, BookOpen, Calendar, Clock, Compass, ShieldCheck, Sparkles, User } from "lucide-react";
 
 import { getDynamicSeoForPath, DynamicJsonLd } from "@/lib/seo/dynamic-seo";
 import { getPublicBlogs, getPublicBlogCategories } from "@/modules/website/public-content.service";
@@ -46,7 +46,7 @@ export default async function BlogHubPage({ searchParams }: BlogHubPageProps) {
     }),
   ]);
 
-  const { items: blogs, total, totalPages } = blogsData;
+  const { items: blogs, total } = blogsData;
   const featuredBlog = currentPage === 1 && !currentSearch && currentCategory === "all" && !currentTag ? blogs[0] : null;
   const regularBlogs = featuredBlog ? blogs.slice(1) : blogs;
 

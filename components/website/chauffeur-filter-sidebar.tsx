@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { Award, CheckCircle2, RotateCcw, ShieldCheck, SlidersHorizontal, Sparkles } from "lucide-react";
+import { RotateCcw, ShieldCheck, SlidersHorizontal } from "lucide-react";
 
 interface ChauffeurFilterSidebarProps {
   categories: string[];
