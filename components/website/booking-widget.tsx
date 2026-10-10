@@ -7,6 +7,7 @@ import {
   CheckCircle2,
   ChevronDown,
   Headphones,
+  Loader2,
   MapPin,
   Search,
   Sparkles,
@@ -58,6 +59,7 @@ export function BookingWidget({
 
   // Dynamically fetched company phone and support details
   const [phone, setPhone] = React.useState("+91 9414551250");
+  const [isSearching, setIsSearching] = React.useState(false);
 
   // Load locations and company settings dynamically from server
   React.useEffect(() => {
@@ -130,14 +132,15 @@ export function BookingWidget({
       params.set("dropAddress", dropAddress.trim());
     }
 
+    setIsSearching(true);
     router.push(mode === "self-drive" ? `/cars?${params.toString()}` : `/car-rental?${params.toString()}`);
   };
 
   return (
-    <div className="relative z-20 mx-auto w-full max-w-7xl rounded-3xl border border-white/10 bg-neutral-950/95 shadow-2xl backdrop-blur-xl">
+    <div className="relative z-20 mx-auto w-full max-w-[1520px] rounded-3xl border border-neutral-200/90 bg-white/95 shadow-2xl shadow-neutral-950/10 backdrop-blur-xl">
       {/* Top bar: Tabs + Hint */}
-      <div className="flex items-center justify-between px-5 pt-4 pb-3 border-b border-white/5">
-        <div className="flex w-fit rounded-full bg-white/5 p-1 border border-white/5">
+      <div className="flex items-center justify-between px-5 pt-4 pb-3 border-b border-neutral-100">
+        <div className="flex w-fit rounded-full bg-neutral-100/90 p-1 border border-neutral-200/80">
           {services.cars && (
             <button
               type="button"
@@ -146,7 +149,7 @@ export function BookingWidget({
               className={`rounded-full px-5 py-2 text-xs font-bold tracking-wide transition-all cursor-pointer ${
                 mode === "self-drive"
                   ? "bg-orange-500 text-white shadow-md shadow-orange-500/30"
-                  : "text-white/50 hover:text-white"
+                  : "text-neutral-600 hover:text-neutral-950"
               }`}
             >
               SELF DRIVE
@@ -160,7 +163,7 @@ export function BookingWidget({
               className={`rounded-full px-5 py-2 text-xs font-bold tracking-wide transition-all cursor-pointer ${
                 mode === "chauffeur"
                   ? "bg-orange-500 text-white shadow-md shadow-orange-500/30"
-                  : "text-white/50 hover:text-white"
+                  : "text-neutral-600 hover:text-neutral-950"
               }`}
             >
               TAXI / CHAUFFEUR
@@ -168,8 +171,8 @@ export function BookingWidget({
           )}
         </div>
 
-        <span className="hidden items-center gap-1.5 text-xs text-white/40 sm:flex">
-          <Sparkles className="size-3.5 text-orange-500/60" />
+        <span className="hidden items-center gap-1.5 text-xs text-neutral-500 sm:flex font-medium">
+          <Sparkles className="size-3.5 text-orange-500" />
           Instant delivery to Airport, Railway Station or Hotel
         </span>
       </div>
@@ -185,7 +188,7 @@ export function BookingWidget({
         >
           {/* 1. SELECT LOCATION / CITY (Dynamically Loaded & Grouped) */}
           <div className="flex flex-col gap-1.5 min-w-0">
-            <label className="text-[10px] font-bold tracking-widest text-white/50 uppercase">
+            <label className="text-[10px] font-bold tracking-widest text-neutral-600 uppercase">
               Pickup City / Branch
             </label>
             <div className="relative">
@@ -194,15 +197,15 @@ export function BookingWidget({
                 id="booking-widget-location-select"
                 value={locationId}
                 onChange={(e) => setLocationId(e.target.value)}
-                className="h-11 sm:h-12 w-full appearance-none rounded-xl border border-white/10 bg-white/5 pl-10 pr-9 text-xs sm:text-sm font-semibold text-white outline-none transition hover:border-orange-500/40 hover:bg-white/8 focus:border-orange-500 focus:bg-white/10 cursor-pointer"
+                className="h-11 sm:h-12 w-full appearance-none rounded-xl border border-neutral-200 bg-white pl-10 pr-9 text-xs sm:text-sm font-semibold text-neutral-900 outline-none transition hover:border-orange-500/50 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 cursor-pointer shadow-xs"
               >
                 {Array.from(locationsByCity.entries()).map(([city, locs]) => (
-                  <optgroup key={city} label={city} className="bg-neutral-900 text-white font-bold">
+                  <optgroup key={city} label={city} className="bg-white text-neutral-950 font-bold">
                     {locs.map((loc) => {
                       const charge = Number(loc.dropCharge ?? 0);
                       const priceLabel = charge > 0 ? ` (+₹${charge.toLocaleString("en-IN")} Drop)` : "";
                       return (
-                        <option key={loc.id} value={loc.id} className="bg-neutral-900 text-white font-normal py-1">
+                        <option key={loc.id} value={loc.id} className="bg-white text-neutral-900 font-normal py-1">
                           {loc.name}{priceLabel}
                         </option>
                       );
@@ -210,24 +213,24 @@ export function BookingWidget({
                   </optgroup>
                 ))}
               </select>
-              <ChevronDown className="pointer-events-none absolute right-3.5 top-1/2 size-4 -translate-y-1/2 text-white/40" />
+              <ChevronDown className="pointer-events-none absolute right-3.5 top-1/2 size-4 -translate-y-1/2 text-neutral-400" />
             </div>
           </div>
 
           {/* 2. DROP LOCATION (Only in Chauffeur/Taxi mode) */}
           {mode === "chauffeur" && (
             <div className="flex flex-col gap-1.5 min-w-0">
-              <label className="text-[10px] font-bold tracking-widest text-white/50 uppercase">
+              <label className="text-[10px] font-bold tracking-widest text-neutral-600 uppercase">
                 Drop Location
               </label>
               <div className="relative">
-                <MapPin className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-orange-400" />
+                <MapPin className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-orange-500" />
                 <input
                   type="text"
                   value={dropAddress}
                   onChange={(e) => setDropAddress(e.target.value)}
                   placeholder="Drop Location / Hotel / Airport"
-                  className="h-11 sm:h-12 w-full rounded-xl border border-white/10 bg-white/5 pl-10 pr-4 text-xs sm:text-sm font-medium text-white outline-none placeholder:text-white/30 transition hover:border-orange-500/40 focus:border-orange-500 focus:bg-white/10"
+                  className="h-11 sm:h-12 w-full rounded-xl border border-neutral-200 bg-white pl-10 pr-4 text-xs sm:text-sm font-medium text-neutral-900 outline-none placeholder:text-neutral-400 transition hover:border-orange-500/50 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 shadow-xs"
                 />
               </div>
             </div>
@@ -235,7 +238,7 @@ export function BookingWidget({
 
           {/* 3. UNIFIED TRIP SCHEDULE PICKER (Like Others on Site) */}
           <div className="flex flex-col gap-1.5 min-w-0">
-            <label className="text-[10px] font-bold tracking-widest text-white/50 uppercase">
+            <label className="text-[10px] font-bold tracking-widest text-neutral-600 uppercase">
               Trip Schedule &amp; Dates
             </label>
             <TripSchedulePicker
@@ -257,17 +260,27 @@ export function BookingWidget({
             <button
               type="submit"
               id="booking-widget-search-btn"
-              className="flex h-11 sm:h-12 items-center justify-center gap-2 rounded-xl bg-orange-500 px-7 text-sm font-black text-white shadow-lg shadow-orange-500/25 transition-all hover:bg-orange-600 hover:shadow-orange-500/40 active:scale-95 cursor-pointer whitespace-nowrap"
+              disabled={isSearching}
+              className="flex h-11 sm:h-12 items-center justify-center gap-2 rounded-xl bg-orange-500 px-7 text-sm font-black text-white shadow-lg shadow-orange-500/25 transition-all hover:bg-orange-600 hover:shadow-orange-500/40 active:scale-95 cursor-pointer whitespace-nowrap disabled:opacity-80 disabled:cursor-not-allowed"
             >
-              <Search className="size-4 shrink-0 stroke-[2.5]" />
-              <span>{mode === "self-drive" ? "SEARCH CARS" : "FIND TAXI"}</span>
+              {isSearching ? (
+                <>
+                  <Loader2 className="size-4 shrink-0 animate-spin" />
+                  <span>Searching Fleet...</span>
+                </>
+              ) : (
+                <>
+                  <Search className="size-4 shrink-0 stroke-[2.5]" />
+                  <span>{mode === "self-drive" ? "SEARCH CARS" : "FIND TAXI"}</span>
+                </>
+              )}
             </button>
           </div>
         </div>
 
         {/* Dynamic Duration Info Notice */}
         <div className="mt-3.5 flex justify-center">
-          <div className="w-full sm:w-auto rounded-lg border border-sky-500/20 bg-sky-500/10 px-4 py-1.5 text-center text-xs font-medium text-sky-300">
+          <div className="w-full sm:w-auto rounded-lg border border-orange-500/20 bg-orange-50/80 px-4 py-1.5 text-center text-xs font-medium text-orange-950">
             {mode === "self-drive"
               ? "Pickup and return time must be at least 24 hours apart and maximum 30 days."
               : "Flexible hourly packages and outstation taxi routes available across Rajasthan & Gujarat."}
@@ -276,26 +289,26 @@ export function BookingWidget({
       </form>
 
       {/* Trust Badges Strip (Dynamically Managed Phone/Helpline) */}
-      <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-2 border-t border-white/5 px-5 py-3">
-        <span className="flex items-center gap-1.5 text-[11px] text-white/40">
-          <CheckCircle2 className="size-3.5 shrink-0 text-orange-500/70" />
+      <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-2 border-t border-neutral-100 bg-neutral-50/60 rounded-b-3xl px-5 py-3">
+        <span className="flex items-center gap-1.5 text-[11px] text-neutral-600">
+          <CheckCircle2 className="size-3.5 shrink-0 text-orange-500" />
           <span>
-            <span className="font-semibold text-white/60">Verified Cars</span>{" "}
-            <span className="text-white/30">(100% Insured &amp; Cleaned)</span>
+            <span className="font-semibold text-neutral-900">Verified Cars</span>{" "}
+            <span className="text-neutral-500">(100% Insured &amp; Cleaned)</span>
           </span>
         </span>
-        <span className="flex items-center gap-1.5 text-[11px] text-white/40">
-          <Tag className="size-3.5 shrink-0 text-orange-500/70" />
+        <span className="flex items-center gap-1.5 text-[11px] text-neutral-600">
+          <Tag className="size-3.5 shrink-0 text-orange-500" />
           <span>
-            <span className="font-semibold text-white/60">Transparent Pricing</span>{" "}
-            <span className="text-white/30">(Zero Hidden Extras)</span>
+            <span className="font-semibold text-neutral-900">Transparent Pricing</span>{" "}
+            <span className="text-neutral-500">(Zero Hidden Extras)</span>
           </span>
         </span>
-        <span className="flex items-center gap-1.5 text-[11px] text-white/40">
-          <Headphones className="size-3.5 shrink-0 text-orange-500/70" />
+        <span className="flex items-center gap-1.5 text-[11px] text-neutral-600">
+          <Headphones className="size-3.5 shrink-0 text-orange-500" />
           <span>
-            <span className="font-semibold text-white/60">24/7 Roadside Support</span>{" "}
-            <span className="text-white/30">({phone})</span>
+            <span className="font-semibold text-neutral-900">24/7 Roadside Support</span>{" "}
+            <span className="text-neutral-500">({phone})</span>
           </span>
         </span>
       </div>

@@ -388,6 +388,7 @@ const CAR_CARD_INCLUDE = {
   },
   images: { orderBy: { sortOrder: "asc" as const }, take: 1 },
   pricing: true,
+  locations: { include: { location: true } },
 } as const;
 
 export type PublicCarCard = CarCardData & {
@@ -585,6 +586,7 @@ export interface PublicCarFilters {
   carTypeSlug?: string;
   transmissionTypeId?: string;
   fuelTypeId?: string;
+  locationId?: string;
   search?: string;
   sort?: "featured" | "price-asc" | "price-desc" | "newest";
   page?: number;
@@ -605,6 +607,14 @@ export async function listPublicCars(filters: PublicCarFilters): Promise<{ cars:
       ...(filters.carTypeSlug ? { carType: { slug: filters.carTypeSlug } } : {}),
       ...(filters.transmissionTypeId ? { transmissionTypeId: filters.transmissionTypeId } : {}),
       ...(filters.fuelTypeId ? { fuelTypeId: filters.fuelTypeId } : {}),
+      ...(filters.locationId && filters.locationId !== "all"
+        ? {
+            OR: [
+              { locations: { some: { locationId: filters.locationId } } },
+              { locations: { none: {} } },
+            ],
+          }
+        : {}),
       ...(filters.search
         ? { name: { contains: filters.search, mode: "insensitive" as const } }
         : {}),

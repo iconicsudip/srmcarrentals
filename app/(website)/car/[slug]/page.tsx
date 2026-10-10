@@ -187,39 +187,39 @@ export default async function CarDetailPage({ params }: CarDetailPageProps) {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-[#FAFAFC] text-neutral-900">
       <DynamicJsonLd path={`/car/${car.slug}`} />
       {/* eslint-disable-next-line react/no-danger */}
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
       {/* Top Breadcrumb & Trust Strip */}
-      <div className="border-b border-white/10 bg-neutral-950/60 py-3">
-        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 text-xs sm:px-6 lg:px-8">
-          <nav className="flex items-center gap-1.5 text-white/50">
-            <Link href="/" className="hover:text-white">
+      <div className="border-b border-neutral-200/80 bg-white/80 py-3 backdrop-blur">
+        <div className="mx-auto flex max-w-[1520px] flex-wrap items-center justify-between gap-3 px-4 text-xs sm:px-6 lg:px-8">
+          <nav className="flex items-center gap-1.5 text-neutral-500">
+            <Link href="/" className="hover:text-orange-600">
               Home
             </Link>
             <ChevronRight className="size-3" />
-            <Link href="/cars" className="hover:text-white">
+            <Link href="/cars" className="hover:text-orange-600">
               Self Drive Fleet
             </Link>
             <ChevronRight className="size-3" />
-            <span className="font-semibold text-white/90">{car.name}</span>
+            <span className="font-semibold text-neutral-900">{car.name}</span>
           </nav>
 
-          <div className="flex items-center gap-4 text-white/60">
-            <span className="flex items-center gap-1 text-emerald-400">
-              <ShieldCheck className="size-3.5" /> Free Cancellation up to 48h
+          <div className="flex items-center gap-4 text-neutral-600">
+            <span className="flex items-center gap-1 text-emerald-700 font-medium">
+              <ShieldCheck className="size-3.5 text-emerald-600" /> Free Cancellation up to 48h
             </span>
-            <span className="hidden sm:inline text-white/20">|</span>
-            <span className="hidden sm:flex items-center gap-1 text-amber-400">
-              <Star className="size-3.5 fill-amber-400" /> 4.9 (140+ Reviews)
+            <span className="hidden sm:inline text-neutral-300">|</span>
+            <span className="hidden sm:flex items-center gap-1 text-amber-700 font-medium">
+              <Star className="size-3.5 fill-amber-500 text-amber-500" /> 4.9 (140+ Reviews)
             </span>
           </div>
         </div>
       </div>
 
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-[1520px] px-4 py-8 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 gap-10 lg:grid-cols-3">
           {/* LEFT COLUMN: Media, Specs, Features, Policies */}
           <div className="flex flex-col gap-8 lg:col-span-2">
@@ -227,78 +227,78 @@ export default async function CarDetailPage({ params }: CarDetailPageProps) {
             <CarGallery images={car.images} name={car.name} />
 
             {/* Vehicle Title & Badges */}
-            <div className="rounded-3xl border border-white/10 bg-neutral-900/60 p-6 backdrop-blur">
+            <div className="rounded-3xl border border-neutral-200/90 bg-white p-6 shadow-sm">
               <div className="flex flex-wrap items-center gap-2">
-                <Badge className="border-orange-500/30 bg-orange-500/10 text-orange-400 uppercase">
+                <Badge className="border-orange-500/30 bg-orange-500/10 text-orange-600 uppercase">
                   {car.brand.name}
                 </Badge>
-                <Badge className="border-white/10 bg-white/5 text-white/70">{car.category.name}</Badge>
-                <Badge className="border-white/10 bg-white/5 text-white/70">{car.carType.name}</Badge>
-                <Badge className="border-emerald-500/30 bg-emerald-500/10 text-emerald-300">
-                  <CheckCircle2 className="mr-1 size-3" /> Instant Hold Available
+                <Badge className="border-neutral-200 bg-neutral-100 text-neutral-700">{car.category.name}</Badge>
+                <Badge className="border-neutral-200 bg-neutral-100 text-neutral-700">{car.carType.name}</Badge>
+                <Badge className="border-emerald-500/30 bg-emerald-50 text-emerald-700">
+                  <CheckCircle2 className="mr-1 size-3 text-emerald-600" /> Instant Hold Available
                 </Badge>
               </div>
 
-              <h1 className="mt-4 text-3xl font-black text-white sm:text-4xl">{car.name}</h1>
-              <p className="mt-1 text-sm text-white/50">
+              <h1 className="mt-4 text-3xl font-black text-neutral-950 sm:text-4xl">{car.name}</h1>
+              <p className="mt-1 text-sm text-neutral-500">
                 {car.brand.name} {car.model.name} · Model Year {car.year} · Self-Drive Rental
               </p>
 
               {car.shortDescription && (
-                <p className="mt-4 text-sm leading-relaxed text-white/70">{car.shortDescription}</p>
+                <p className="mt-4 text-sm leading-relaxed text-neutral-600">{car.shortDescription}</p>
               )}
 
               {/* Key Highlights Strip */}
               {car.pricing && (
-                <div className="mt-6 grid grid-cols-2 gap-3 rounded-2xl border border-white/10 bg-black/40 p-4 sm:grid-cols-4">
+                <div className="mt-6 grid grid-cols-2 gap-3 rounded-2xl border border-neutral-200/80 bg-neutral-50/80 p-4 sm:grid-cols-4">
                   <div>
-                    <div className="text-[11px] text-white/40 uppercase">Daily Rate</div>
-                    <div className="text-lg font-black text-orange-400">
+                    <div className="text-[11px] text-neutral-500 uppercase font-medium">Daily Rate</div>
+                    <div className="text-lg font-black text-orange-600">
                       {formatInr(car.pricing.dailyPrice)}
-                      <span className="text-xs font-normal text-white/40"> / day</span>
+                      <span className="text-xs font-normal text-neutral-500"> / day</span>
                     </div>
                   </div>
 
                   {car.pricing.hourlyPrice && Number(car.pricing.hourlyPrice) > 0 && (
                     <div>
-                      <div className="text-[11px] text-white/40 uppercase">Hourly Rate</div>
-                      <div className="text-lg font-black text-white">
+                      <div className="text-[11px] text-neutral-500 uppercase font-medium">Hourly Rate</div>
+                      <div className="text-lg font-black text-neutral-950">
                         {formatInr(car.pricing.hourlyPrice)}
-                        <span className="text-xs font-normal text-white/40"> / hr</span>
+                        <span className="text-xs font-normal text-neutral-500"> / hr</span>
                       </div>
                     </div>
                   )}
 
                   <div>
-                    <div className="text-[11px] text-white/40 uppercase">Included KM</div>
-                    <div className="text-lg font-black text-white">{car.pricing.includedKmPerDay} km / day</div>
+                    <div className="text-[11px] text-neutral-500 uppercase font-medium">Included KM</div>
+                    <div className="text-lg font-black text-neutral-950">{car.pricing.includedKmPerDay} km / day</div>
                   </div>
 
                   <div>
-                    <div className="text-[11px] text-white/40 uppercase">Security Deposit</div>
-                    <div className="text-lg font-black text-emerald-400">₹3,000–₹5,000</div>
+                    <div className="text-[11px] text-neutral-500 uppercase font-medium">Security Deposit</div>
+                    <div className="text-lg font-black text-emerald-700">₹3,000–₹5,000</div>
                   </div>
                 </div>
               )}
             </div>
 
             {/* 8-Card Technical Specs Grid */}
-            <div className="rounded-3xl border border-white/10 bg-neutral-900/60 p-6 backdrop-blur">
+            <div className="rounded-3xl border border-neutral-200/90 bg-white p-6 shadow-sm">
               <div className="flex items-center justify-between">
-                <h2 className="text-lg font-bold text-white">Vehicle Specifications</h2>
-                <span className="text-xs text-white/40">Manufacturer Verified</span>
+                <h2 className="text-lg font-bold text-neutral-950">Vehicle Specifications</h2>
+                <span className="text-xs text-neutral-500 font-medium">Manufacturer Verified</span>
               </div>
 
               <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
                 {specs.map((spec, i) => (
                   <div
                     key={i}
-                    className="flex flex-col rounded-2xl border border-white/10 bg-black/40 p-3.5 transition-all hover:border-orange-500/30"
+                    className="flex flex-col rounded-2xl border border-neutral-200/70 bg-neutral-50/80 p-3.5 transition-all hover:border-orange-500/40 hover:bg-orange-500/[0.02]"
                   >
-                    <spec.icon className="size-5 text-orange-400" />
-                    <div className="mt-3 text-xs font-semibold text-white/50">{spec.label}</div>
-                    <div className="text-sm font-bold text-white">{spec.value}</div>
-                    <div className="mt-0.5 text-[10px] text-white/40">{spec.subtitle}</div>
+                    <spec.icon className="size-5 text-orange-500" />
+                    <div className="mt-3 text-xs font-semibold text-neutral-500">{spec.label}</div>
+                    <div className="text-sm font-bold text-neutral-950">{spec.value}</div>
+                    <div className="mt-0.5 text-[10px] text-neutral-400">{spec.subtitle}</div>
                   </div>
                 ))}
               </div>
@@ -306,9 +306,9 @@ export default async function CarDetailPage({ params }: CarDetailPageProps) {
 
             {/* About & Description */}
             {car.description && (
-              <div className="rounded-3xl border border-white/10 bg-neutral-900/60 p-6 backdrop-blur">
-                <h2 className="text-lg font-bold text-white">About the {car.name}</h2>
-                <div className="mt-3 text-sm leading-relaxed text-white/70 whitespace-pre-line">
+              <div className="rounded-3xl border border-neutral-200/90 bg-white p-6 shadow-sm">
+                <h2 className="text-lg font-bold text-neutral-950">About the {car.name}</h2>
+                <div className="mt-3 text-sm leading-relaxed text-neutral-600 whitespace-pre-line">
                   {car.description}
                 </div>
               </div>
@@ -316,23 +316,23 @@ export default async function CarDetailPage({ params }: CarDetailPageProps) {
 
             {/* Features & Safety Equipment */}
             {(car.features.length > 0 || car.safetyFeatures.length > 0) && (
-              <div className="rounded-3xl border border-white/10 bg-neutral-900/60 p-6 backdrop-blur">
-                <h2 className="text-lg font-bold text-white">Features & Safety Equipment</h2>
+              <div className="rounded-3xl border border-neutral-200/90 bg-white p-6 shadow-sm">
+                <h2 className="text-lg font-bold text-neutral-950">Features & Safety Equipment</h2>
 
                 {car.features.length > 0 && (
                   <div className="mt-4">
-                    <h3 className="text-xs font-bold tracking-wider text-orange-400 uppercase">
+                    <h3 className="text-xs font-bold tracking-wider text-orange-600 uppercase">
                       Comfort & Infotainment
                     </h3>
                     <div className="mt-2.5 grid grid-cols-2 gap-2.5 sm:grid-cols-3">
                       {car.features.map((f) => (
                         <div
                           key={f.feature.id}
-                          className="flex items-center gap-2 rounded-xl border border-white/5 bg-black/30 p-2.5 text-xs text-white/80"
+                          className="flex items-center gap-2 rounded-xl border border-neutral-200/80 bg-neutral-50/70 p-2.5 text-xs text-neutral-800"
                         >
                           <DynamicFeatureIcon
                             name={f.feature.icon}
-                            className="size-3.5 shrink-0 text-orange-400"
+                            className="size-3.5 shrink-0 text-orange-500"
                           />
                           <span>{f.feature.name}</span>
                         </div>
@@ -342,19 +342,19 @@ export default async function CarDetailPage({ params }: CarDetailPageProps) {
                 )}
 
                 {car.safetyFeatures.length > 0 && (
-                  <div className="mt-6 border-t border-white/10 pt-4">
-                    <h3 className="text-xs font-bold tracking-wider text-emerald-400 uppercase">
+                  <div className="mt-6 border-t border-neutral-200/80 pt-4">
+                    <h3 className="text-xs font-bold tracking-wider text-emerald-700 uppercase">
                       Safety & Security Protection
                     </h3>
                     <div className="mt-2.5 grid grid-cols-2 gap-2.5 sm:grid-cols-3">
                       {car.safetyFeatures.map((f) => (
                         <div
                           key={f.safetyFeature.id}
-                          className="flex items-center gap-2 rounded-xl border border-white/5 bg-black/30 p-2.5 text-xs text-white/80"
+                          className="flex items-center gap-2 rounded-xl border border-neutral-200/80 bg-neutral-50/70 p-2.5 text-xs text-neutral-800"
                         >
                           <DynamicFeatureIcon
                             name={f.safetyFeature.icon}
-                            className="size-3.5 shrink-0 text-emerald-400"
+                            className="size-3.5 shrink-0 text-emerald-600"
                           />
                           <span>{f.safetyFeature.name}</span>
                         </div>
@@ -366,56 +366,56 @@ export default async function CarDetailPage({ params }: CarDetailPageProps) {
             )}
 
             {/* Transparent Rental Terms & Policy Accordion */}
-            <div className="rounded-3xl border border-white/10 bg-neutral-900/60 p-6 backdrop-blur">
-              <h2 className="text-lg font-bold text-white">Rental Guidelines & Transparent Policies</h2>
-              <p className="mt-1 text-xs text-white/50">
+            <div className="rounded-3xl border border-neutral-200/90 bg-white p-6 shadow-sm">
+              <h2 className="text-lg font-bold text-neutral-950">Rental Guidelines & Transparent Policies</h2>
+              <p className="mt-1 text-xs text-neutral-500">
                 Everything you need to know before driving. No surprise charges or hidden clauses.
               </p>
 
               <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <div className="rounded-2xl border border-white/10 bg-black/40 p-4">
-                  <div className="flex items-center gap-2 text-xs font-bold text-emerald-400 uppercase">
-                    <CheckCircle2 className="size-4" /> What is Included
+                <div className="rounded-2xl border border-neutral-200/80 bg-neutral-50/70 p-4">
+                  <div className="flex items-center gap-2 text-xs font-bold text-emerald-700 uppercase">
+                    <CheckCircle2 className="size-4 text-emerald-600" /> What is Included
                   </div>
-                  <ul className="mt-2.5 flex flex-col gap-2 text-xs text-white/70">
+                  <ul className="mt-2.5 flex flex-col gap-2 text-xs text-neutral-600">
                     <li className="flex items-start gap-2">
-                      <Check className="mt-0.5 size-3 text-emerald-400" />
+                      <Check className="mt-0.5 size-3 text-emerald-600" />
                       <span>Standard Comprehensive Vehicle Insurance cover</span>
                     </li>
                     <li className="flex items-start gap-2">
-                      <Check className="mt-0.5 size-3 text-emerald-400" />
+                      <Check className="mt-0.5 size-3 text-emerald-600" />
                       <span>300 Included Kilometers per calendar day</span>
                     </li>
                     <li className="flex items-start gap-2">
-                      <Check className="mt-0.5 size-3 text-emerald-400" />
+                      <Check className="mt-0.5 size-3 text-emerald-600" />
                       <span>24/7 Roadside Mechanical Assistance across Rajasthan & Gujarat</span>
                     </li>
                     <li className="flex items-start gap-2">
-                      <Check className="mt-0.5 size-3 text-emerald-400" />
+                      <Check className="mt-0.5 size-3 text-emerald-600" />
                       <span>Sanitized, detailed, and mechanically inspected vehicle</span>
                     </li>
                   </ul>
                 </div>
 
-                <div className="rounded-2xl border border-white/10 bg-black/40 p-4">
-                  <div className="flex items-center gap-2 text-xs font-bold text-orange-400 uppercase">
-                    <Info className="size-4" /> Renter Responsibility
+                <div className="rounded-2xl border border-neutral-200/80 bg-neutral-50/70 p-4">
+                  <div className="flex items-center gap-2 text-xs font-bold text-orange-600 uppercase">
+                    <Info className="size-4 text-orange-500" /> Renter Responsibility
                   </div>
-                  <ul className="mt-2.5 flex flex-col gap-2 text-xs text-white/70">
+                  <ul className="mt-2.5 flex flex-col gap-2 text-xs text-neutral-600">
                     <li className="flex items-start gap-2">
-                      <span className="mt-0.5 size-1.5 shrink-0 rounded-full bg-orange-400" />
+                      <span className="mt-0.5 size-1.5 shrink-0 rounded-full bg-orange-500" />
                       <span>Fuel policy is same-to-same (return with same fuel level)</span>
                     </li>
                     <li className="flex items-start gap-2">
-                      <span className="mt-0.5 size-1.5 shrink-0 rounded-full bg-orange-400" />
+                      <span className="mt-0.5 size-1.5 shrink-0 rounded-full bg-orange-500" />
                       <span>Fastag highway tolls and parking charges paid by customer</span>
                     </li>
                     <li className="flex items-start gap-2">
-                      <span className="mt-0.5 size-1.5 shrink-0 rounded-full bg-orange-400" />
+                      <span className="mt-0.5 size-1.5 shrink-0 rounded-full bg-orange-500" />
                       <span>Original Driving License (min 1+ yrs old) + Govt Photo ID required</span>
                     </li>
                     <li className="flex items-start gap-2">
-                      <span className="mt-0.5 size-1.5 shrink-0 rounded-full bg-orange-400" />
+                      <span className="mt-0.5 size-1.5 shrink-0 rounded-full bg-orange-500" />
                       <span>Speed limit is 80 km/h in city and 100–110 km/h on expressways</span>
                     </li>
                   </ul>
@@ -423,11 +423,11 @@ export default async function CarDetailPage({ params }: CarDetailPageProps) {
               </div>
 
               {/* Security deposit note */}
-              <div className="mt-4 flex items-start gap-3 rounded-2xl border border-emerald-500/20 bg-emerald-500/10 p-4 text-xs text-emerald-300">
-                <ShieldCheck className="mt-0.5 size-5 shrink-0" />
+              <div className="mt-4 flex items-start gap-3 rounded-2xl border border-emerald-500/20 bg-emerald-50 p-4 text-xs text-emerald-800">
+                <ShieldCheck className="mt-0.5 size-5 shrink-0 text-emerald-600" />
                 <div>
                   <div className="font-bold">100% Refundable Security Deposit</div>
-                  <p className="mt-0.5 text-white/70">
+                  <p className="mt-0.5 text-neutral-600">
                     A refundable deposit (₹3,000–₹5,000) is collected during vehicle inspection and released directly to
                     your bank/UPI within 24 to 48 business hours after vehicle return.
                   </p>
@@ -436,34 +436,34 @@ export default async function CarDetailPage({ params }: CarDetailPageProps) {
             </div>
 
             {/* Vehicle FAQs */}
-            <div className="rounded-3xl border border-white/10 bg-neutral-900/60 p-6 backdrop-blur">
-              <h2 className="text-lg font-bold text-white">Frequently Asked Questions</h2>
+            <div className="rounded-3xl border border-neutral-200/90 bg-white p-6 shadow-sm">
+              <h2 className="text-lg font-bold text-neutral-950">Frequently Asked Questions</h2>
               <div className="mt-4 flex flex-col gap-3 text-xs">
-                <details className="group rounded-2xl border border-white/10 bg-black/40 p-4 open:border-orange-500/30">
-                  <summary className="cursor-pointer font-bold text-white hover:text-orange-400">
+                <details className="group rounded-2xl border border-neutral-200/80 bg-neutral-50/70 p-4 open:border-orange-500/40">
+                  <summary className="cursor-pointer font-bold text-neutral-900 hover:text-orange-600">
                     Can I pick up this car at Udaipur Airport?
                   </summary>
-                  <p className="mt-2 text-white/60">
+                  <p className="mt-2 text-neutral-600">
                     Yes! Select &ldquo;Airport Terminal&rdquo; in the booking engine, and our executive will deliver the car
                     directly to Maharana Pratap Airport (UDR) Arrivals gate.
                   </p>
                 </details>
 
-                <details className="group rounded-2xl border border-white/10 bg-black/40 p-4 open:border-orange-500/30">
-                  <summary className="cursor-pointer font-bold text-white hover:text-orange-400">
+                <details className="group rounded-2xl border border-neutral-200/80 bg-neutral-50/70 p-4 open:border-orange-500/40">
+                  <summary className="cursor-pointer font-bold text-neutral-900 hover:text-orange-600">
                     Can I drive to Mount Abu, Kumbhalgarh, or Jaipur?
                   </summary>
-                  <p className="mt-2 text-white/60">
+                  <p className="mt-2 text-neutral-600">
                     Absolutely. All SRM vehicles have all-Rajasthan permits and can be driven across neighboring states
                     (Gujarat, MP). Any inter-state commercial border taxes are paid by the customer at border checkpoints.
                   </p>
                 </details>
 
-                <details className="group rounded-2xl border border-white/10 bg-black/40 p-4 open:border-orange-500/30">
-                  <summary className="cursor-pointer font-bold text-white hover:text-orange-400">
+                <details className="group rounded-2xl border border-neutral-200/80 bg-neutral-50/70 p-4 open:border-orange-500/40">
+                  <summary className="cursor-pointer font-bold text-neutral-900 hover:text-orange-600">
                     What happens if I return the car late?
                   </summary>
-                  <p className="mt-2 text-white/60">
+                  <p className="mt-2 text-neutral-600">
                     Extra hours are calculated transparently at ₹{Number(car.pricing?.extraHourPrice ?? 150)}/hr. Please
                     notify our support team at least 2 hours in advance to extend your reservation.
                   </p>
@@ -495,7 +495,7 @@ export default async function CarDetailPage({ params }: CarDetailPageProps) {
 
         {/* FULL-WIDTH SECTION: Similar Cars single-row carousel (Not restricted to left column) */}
         {similarCars.length > 0 && (
-          <div className="mt-16 border-t border-white/10 pt-12">
+          <div className="mt-16 border-t border-neutral-200/80 pt-12">
             <SimilarCarsCarousel cars={similarCars} />
           </div>
         )}

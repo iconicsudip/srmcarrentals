@@ -5,6 +5,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   Calendar,
   Check,
+  Loader2,
   ChevronDown,
   Clock,
   MapPin,
@@ -100,17 +101,17 @@ function FilterSection({
 }) {
   const [open, setOpen] = React.useState(defaultOpen);
   return (
-    <div className="border-b border-white/8 pb-4">
+    <div className="border-b border-neutral-150 pb-4">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="flex w-full items-center justify-between py-1 text-[10px] font-bold tracking-widest text-white/50 uppercase hover:text-white transition"
+        className="flex w-full items-center justify-between py-1 text-[10px] font-bold tracking-widest text-neutral-600 uppercase hover:text-neutral-950 transition cursor-pointer"
       >
         <span className="flex items-center gap-1.5">
           {icon}
           {title}
         </span>
-        <ChevronDown className={`size-3.5 transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
+        <ChevronDown className={`size-3.5 text-neutral-400 transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
       </button>
       {open && <div className="mt-3 flex flex-col gap-1.5">{children}</div>}
     </div>
@@ -130,13 +131,13 @@ function FilterPill({
     <button
       type="button"
       onClick={onClick}
-      className={`flex items-center gap-2 rounded-lg px-3 py-2 text-left text-xs font-semibold transition-all ${
+      className={`flex items-center gap-2 rounded-lg px-3 py-2 text-left text-xs font-semibold transition-all cursor-pointer ${
         active
-          ? "bg-orange-500/20 text-orange-400 border border-orange-500/40"
-          : "border border-white/8 bg-white/[0.04] text-white/55 hover:border-white/20 hover:text-white"
+          ? "bg-orange-500/10 text-orange-700 border border-orange-500/30 shadow-xs font-bold"
+          : "border border-neutral-200 bg-neutral-50 text-neutral-700 hover:border-neutral-300 hover:text-neutral-950 hover:bg-neutral-100/60"
       }`}
     >
-      {active && <span className="size-1.5 shrink-0 rounded-full bg-orange-400" />}
+      {active && <span className="size-1.5 shrink-0 rounded-full bg-orange-500" />}
       {children}
     </button>
   );
@@ -156,6 +157,7 @@ export function CarsFilterBar({
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const [isPending, startTransition] = React.useTransition();
 
   const currentCategory  = searchParams.get("category") ?? "";
   const currentBrand     = searchParams.get("brand") ?? "";
@@ -215,7 +217,7 @@ export function CarsFilterBar({
       params.set(key, value);
     }
     params.delete("page");
-    router.push(`${pathname}?${params.toString()}`);
+    startTransition(() => router.push(`${pathname}?${params.toString()}`));
   }
 
   function handleApplyDates() {
@@ -224,7 +226,7 @@ export function CarsFilterBar({
     params.set("pickupDate", pickupValue);
     params.set("dropDate", dropValue);
     params.delete("page");
-    router.push(`${pathname}?${params.toString()}`);
+    startTransition(() => router.push(`${pathname}?${params.toString()}`));
   }
 
   function handleClearDates() {
@@ -268,18 +270,18 @@ export function CarsFilterBar({
   }
 
   return (
-    <aside className="flex flex-col gap-5 rounded-2xl border border-white/10 bg-neutral-900 p-5 lg:sticky lg:top-24 lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto lg:overscroll-contain pr-2 [scrollbar-width:thin] [scrollbar-color:rgba(249,115,22,0.3)_transparent]">
+    <aside className="flex flex-col gap-5 rounded-2xl border border-neutral-200/90 bg-white p-5 lg:sticky lg:top-24 lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto lg:overscroll-contain pr-2 [scrollbar-width:thin] [scrollbar-color:rgba(249,115,22,0.4)_transparent] shadow-sm">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <SlidersHorizontal className="size-4 text-orange-500" />
-          <span className="text-sm font-black text-white">Filters</span>
+          <span className="text-sm font-black text-neutral-950">Filters</span>
         </div>
         {activeChips.length > 0 && (
           <button
             type="button"
             onClick={clearAll}
-            className="flex items-center gap-1 text-[10px] font-semibold text-orange-400 hover:text-orange-300 transition"
+            className="flex items-center gap-1 text-[10px] font-semibold text-orange-600 hover:text-orange-700 transition cursor-pointer"
           >
             <RotateCcw className="size-3" /> Clear All
           </button>
@@ -292,13 +294,13 @@ export function CarsFilterBar({
           {activeChips.map((chip) => (
             <span
               key={chip.key}
-              className="flex items-center gap-1.5 rounded-full border border-orange-500/40 bg-orange-500/15 px-2.5 py-1 text-[11px] font-semibold text-orange-400"
+              className="flex items-center gap-1.5 rounded-full border border-orange-500/30 bg-orange-50 px-2.5 py-1 text-[11px] font-semibold text-orange-700 shadow-xs"
             >
               <span className="max-w-[190px] truncate">{chip.label}</span>
               <button
                 type="button"
                 onClick={() => removeChip(chip.key)}
-                className="flex items-center text-orange-400/60 hover:text-orange-300 transition shrink-0"
+                className="flex items-center text-orange-500 hover:text-orange-800 transition shrink-0 cursor-pointer"
                 aria-label={`Remove ${chip.label} filter`}
               >
                 <X className="size-3" />
@@ -309,15 +311,15 @@ export function CarsFilterBar({
       )}
 
       {/* Results + Sort */}
-      <div className="flex flex-col gap-2 rounded-xl border border-white/8 bg-black/30 p-3">
-        <span className="text-xs text-white/45">
-          <span className="font-bold text-white">{total}</span> cars found
+      <div className="flex flex-col gap-2 rounded-xl border border-neutral-200 bg-neutral-50/70 p-3">
+        <span className="text-xs text-neutral-500">
+          <span className="font-bold text-neutral-950">{total}</span> cars found
         </span>
         <Select value={currentSort} onValueChange={(v) => updateParam("sort", v)}>
-          <SelectTrigger className="h-8 w-full border-white/10 bg-black/40 text-xs text-white">
+          <SelectTrigger className="h-8 w-full border-neutral-200 bg-white text-xs text-neutral-900 shadow-xs">
             <SelectValue />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="bg-white border-neutral-200 text-neutral-900 shadow-lg">
             <SelectItem value="featured">Recommended</SelectItem>
             <SelectItem value="price-asc">Price: Low to High</SelectItem>
             <SelectItem value="price-desc">Price: High to Low</SelectItem>
@@ -328,19 +330,19 @@ export function CarsFilterBar({
 
       {/* Search */}
       <form onSubmit={handleSearchSubmit} className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-white/30" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-neutral-400" />
         <input
           type="text"
           placeholder="Search by name..."
           value={searchInput}
           onChange={(e) => setSearchInput(e.target.value)}
-          className="w-full rounded-xl border border-white/10 bg-black/40 py-2.5 pl-8 pr-8 text-xs text-white outline-none placeholder:text-white/30 focus:border-orange-500 transition"
+          className="w-full rounded-xl border border-neutral-200 bg-white py-2.5 pl-8 pr-8 text-xs text-neutral-900 outline-none placeholder:text-neutral-400 focus:border-orange-500 focus:ring-1 focus:ring-orange-500/30 transition shadow-xs"
         />
         {searchInput && (
           <button
             type="button"
             onClick={() => { setSearchInput(""); updateParam("search", ""); }}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-900"
           >
             <X className="size-3.5" />
           </button>
@@ -348,10 +350,10 @@ export function CarsFilterBar({
       </form>
 
       {/* ─── TRIP SCHEDULE & LOCATION (BOOKING ENGINE CONTROLS) ─── */}
-      <div className="rounded-xl border border-orange-500/25 bg-gradient-to-b from-orange-500/[0.08] to-transparent p-3.5 flex flex-col gap-3.5">
+      <div className="rounded-xl border border-orange-500/25 bg-gradient-to-b from-orange-500/[0.06] to-transparent p-3.5 flex flex-col gap-3.5">
         <div className="flex items-center justify-between">
-          <span className="text-[10px] font-bold tracking-widest text-orange-400 uppercase flex items-center gap-1.5">
-            <Sparkles className="size-3 text-orange-400" />
+          <span className="text-[10px] font-bold tracking-widest text-orange-700 uppercase flex items-center gap-1.5">
+            <Sparkles className="size-3 text-orange-500" />
             Trip & Location
           </span>
           {Boolean(currentPickupDate || currentDropDate || currentLocationId) && (
@@ -361,7 +363,7 @@ export function CarsFilterBar({
                 if (currentPickupDate || currentDropDate) handleClearDates();
                 if (currentLocationId) updateParam("locationId", ALL);
               }}
-              className="text-[10px] font-semibold text-white/40 hover:text-orange-400 transition"
+              className="text-[10px] font-semibold text-neutral-500 hover:text-orange-600 transition cursor-pointer"
             >
               Reset
             </button>
@@ -371,38 +373,38 @@ export function CarsFilterBar({
         {/* Pickup & Return Location */}
         {locations.length > 0 && (
           <div className="flex flex-col gap-1.5">
-            <label className="text-[10px] font-bold tracking-wider text-white/50 uppercase flex items-center gap-1.5">
-              <MapPin className="size-3 text-orange-400" />
+            <label className="text-[10px] font-bold tracking-wider text-neutral-600 uppercase flex items-center gap-1.5">
+              <MapPin className="size-3 text-orange-500" />
               Pickup & Return Location
             </label>
             <div className="relative">
               <select
                 value={currentLocationId || ALL}
                 onChange={(e) => updateParam("locationId", e.target.value)}
-                className="w-full appearance-none rounded-xl border border-white/10 bg-black/50 py-2.5 pl-3 pr-8 text-xs text-white outline-none focus:border-orange-500 transition cursor-pointer"
+                className="w-full appearance-none rounded-xl border border-neutral-200 bg-white py-2.5 pl-3 pr-8 text-xs text-neutral-900 outline-none focus:border-orange-500 transition cursor-pointer shadow-xs"
               >
-                <option value={ALL} className="bg-neutral-900 text-white">
+                <option value={ALL} className="bg-white text-neutral-900">
                   All Locations (Any Branch)
                 </option>
                 {locations.map((loc) => {
                   const charge = Number((loc as any).dropCharge ?? 0);
                   const priceLabel = charge > 0 ? ` — ₹${charge.toLocaleString("en-IN")} Drop` : "";
                   return (
-                    <option key={loc.id} value={loc.id} className="bg-neutral-900 text-white">
+                    <option key={loc.id} value={loc.id} className="bg-white text-neutral-900">
                       {loc.name} {loc.city ? `(${loc.city})` : ""}{priceLabel}
                     </option>
                   );
                 })}
               </select>
-              <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 size-3.5 text-white/40" />
+              <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 size-3.5 text-neutral-400" />
             </div>
           </div>
         )}
 
         {/* Unified Trip Schedule Picker */}
         <div className="flex flex-col gap-1.5">
-          <span className="text-[10px] font-bold tracking-wider text-white/50 uppercase flex items-center gap-1.5">
-            <Calendar className="size-3 text-orange-400" />
+          <span className="text-[10px] font-bold tracking-wider text-neutral-600 uppercase flex items-center gap-1.5">
+            <Calendar className="size-3 text-orange-500" />
             Trip Dates & Times
           </span>
           <TripSchedulePicker
@@ -423,21 +425,21 @@ export function CarsFilterBar({
           <button
             type="button"
             onClick={handleApplyDates}
-            disabled={!duration.isValid}
-            className="flex w-full items-center justify-center gap-1.5 rounded-xl bg-orange-500 py-2.5 text-xs font-bold text-white shadow-md shadow-orange-500/20 hover:bg-orange-600 disabled:opacity-50 transition active:scale-[0.98]"
+            disabled={!duration.isValid || isPending}
+            className="flex w-full items-center justify-center gap-1.5 rounded-xl bg-orange-500 py-2.5 text-xs font-bold text-white shadow-md shadow-orange-500/20 hover:bg-orange-600 disabled:opacity-50 transition active:scale-[0.98] cursor-pointer"
           >
-            <Check className="size-3.5" />
-            Apply Trip Dates
+            {isPending ? <Loader2 className="size-3.5 animate-spin" /> : <Check className="size-3.5" />}
+            {isPending ? "Applying..." : "Apply Trip Dates"}
           </button>
         ) : currentPickupDate && currentDropDate ? (
-          <div className="flex items-center justify-between text-[11px] text-emerald-400 font-semibold px-1">
+          <div className="flex items-center justify-between text-[11px] text-emerald-700 font-semibold px-1">
             <span className="flex items-center gap-1">
-              <Check className="size-3" /> Schedule Active
+              <Check className="size-3 text-emerald-600" /> Schedule Active
             </span>
             <button
               type="button"
               onClick={handleClearDates}
-              className="text-white/40 hover:text-white transition text-[10px]"
+              className="text-neutral-500 hover:text-neutral-900 transition text-[10px] cursor-pointer"
             >
               Clear
             </button>
@@ -446,10 +448,11 @@ export function CarsFilterBar({
           <button
             type="button"
             onClick={handleApplyDates}
-            disabled={!duration.isValid}
-            className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-orange-500/40 bg-orange-500/15 py-2 text-xs font-bold text-orange-400 hover:bg-orange-500 hover:text-white disabled:opacity-50 transition"
+            disabled={!duration.isValid || isPending}
+            className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-orange-500/40 bg-orange-50 py-2 text-xs font-bold text-orange-700 hover:bg-orange-500 hover:text-white disabled:opacity-50 transition cursor-pointer"
           >
-            Apply Schedule
+            {isPending && <Loader2 className="size-3.5 animate-spin" />}
+            {isPending ? "Applying..." : "Apply Schedule"}
           </button>
         )}
       </div>

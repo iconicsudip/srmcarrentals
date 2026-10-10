@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { RotateCcw, SlidersHorizontal } from "lucide-react";
+import { Award, CheckCircle2, RotateCcw, ShieldCheck, SlidersHorizontal, Sparkles } from "lucide-react";
 
 interface ChauffeurFilterSidebarProps {
   categories: string[];
@@ -22,14 +22,21 @@ function FilterPill({
     <button
       type="button"
       onClick={onClick}
-      className={`flex items-center gap-2 rounded-lg px-3 py-2 text-left text-xs font-semibold transition-all ${
+      className={`group flex items-center justify-between rounded-2xl px-4 py-3 text-left text-xs font-bold transition-all duration-200 cursor-pointer ${
         active
-          ? "bg-orange-500/20 text-orange-400 border border-orange-500/40"
-          : "border border-white/8 bg-white/4 text-white/55 hover:border-white/20 hover:text-white"
+          ? "bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-lg shadow-orange-500/25 scale-[1.01]"
+          : "border border-neutral-200/90 bg-neutral-50/70 text-neutral-700 hover:border-orange-400 hover:bg-orange-50/40 hover:text-neutral-950"
       }`}
     >
-      {active && <span className="size-1.5 shrink-0 rounded-full bg-orange-400" />}
-      {children}
+      <div className="flex items-center gap-2.5">
+        <span
+          className={`size-2 shrink-0 rounded-full transition-transform ${
+            active ? "bg-white scale-125" : "bg-neutral-300 group-hover:bg-orange-400"
+          }`}
+        />
+        <span>{children}</span>
+      </div>
+      {active && <span className="text-[10px] uppercase tracking-wider text-white/90">Active</span>}
     </button>
   );
 }
@@ -55,44 +62,50 @@ export function ChauffeurFilterSidebar({ categories, total }: ChauffeurFilterSid
   }
 
   return (
-    <aside className="flex flex-col gap-5 rounded-2xl border border-white/10 bg-neutral-900 p-5 lg:sticky lg:top-24 lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto pr-2 [scrollbar-width:thin] [scrollbar-color:rgba(249,115,22,0.3)_transparent]">
+    <aside className="flex flex-col gap-6 rounded-3xl border border-neutral-200/90 bg-white p-6 shadow-xl lg:sticky lg:top-24">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <SlidersHorizontal className="size-4 text-orange-500" />
-          <span className="text-sm font-black text-white">Filters</span>
+      <div className="flex items-center justify-between border-b border-neutral-200/80 pb-4">
+        <div className="flex items-center gap-2.5">
+          <div className="flex size-8 items-center justify-center rounded-xl bg-orange-50 border border-orange-200 text-orange-600">
+            <SlidersHorizontal className="size-4" />
+          </div>
+          <div>
+            <span className="text-sm font-black text-neutral-950 uppercase tracking-tight">Fleet Filters</span>
+            <p className="text-[10px] text-neutral-500">Refine by vehicle tier</p>
+          </div>
         </div>
         {hasActiveFilters && (
           <button
             type="button"
             onClick={clearAll}
-            className="flex items-center gap-1 text-[10px] font-semibold text-orange-400 hover:text-orange-300 transition"
+            className="flex items-center gap-1 rounded-lg bg-orange-50 px-2 py-1 text-[10px] font-bold text-orange-600 hover:bg-orange-100 transition cursor-pointer"
           >
-            <RotateCcw className="size-3" /> Clear All
+            <RotateCcw className="size-3" /> Reset
           </button>
         )}
       </div>
 
-      {/* Stats */}
-      <div className="rounded-xl border border-white/8 bg-black/30 p-3">
-        <span className="text-xs text-white/45">
-          <span className="font-bold text-white">{total}</span> services available
+      {/* Services Count Pill */}
+      <div className="flex items-center justify-between rounded-2xl border border-orange-100 bg-orange-50/60 p-3.5">
+        <span className="text-xs font-semibold text-neutral-700">Available Tiers</span>
+        <span className="rounded-full bg-white px-2.5 py-0.5 text-xs font-black text-orange-600 border border-orange-200 shadow-sm">
+          {total} Options
         </span>
       </div>
 
-      {/* Service Type */}
-      <div className="border-t border-white/8 pt-4">
-        <div className="mb-3 text-[10px] font-bold tracking-widest text-white/50 uppercase">
-          Service Type
+      {/* Service Type Selection */}
+      <div className="space-y-3">
+        <div className="text-[10px] font-black tracking-widest text-neutral-400 uppercase">
+          Select Vehicle Category
         </div>
-        <div className="flex flex-col gap-1.5">
+        <div className="flex flex-col gap-2">
           <FilterPill active={!currentCategory} onClick={() => updateParam("category", "all")}>
-            All Services
+            All Chauffeur Fleet
           </FilterPill>
           {categories.map((cat) => (
             <FilterPill
               key={cat}
-              active={currentCategory === cat}
+              active={currentCategory.toLowerCase().trim() === cat.toLowerCase().trim()}
               onClick={() => updateParam("category", cat)}
             >
               {cat}
@@ -101,10 +114,13 @@ export function ChauffeurFilterSidebar({ categories, total }: ChauffeurFilterSid
         </div>
       </div>
 
-      {/* Info box */}
-      <div className="rounded-xl border border-orange-500/15 bg-orange-500/5 p-3">
-        <p className="text-[11px] leading-relaxed text-white/50">
-          All services include professional chauffeur, transparent pricing, and real-time tracking.
+      {/* Executive Standards Box */}
+      <div className="rounded-2xl border border-emerald-200 bg-gradient-to-br from-emerald-50 via-white to-emerald-50/50 p-4 space-y-2.5 shadow-sm">
+        <div className="flex items-center gap-2 text-[11px] font-extrabold text-emerald-800 uppercase tracking-wider">
+          <ShieldCheck className="size-4 text-emerald-600" /> SRM Executive Standard
+        </div>
+        <p className="text-[11px] leading-relaxed text-emerald-950/80">
+          All bookings include an experienced uniformed chauffeur, vehicle sanitization, chilled mineral water, highway toll assistance, and real-time WhatsApp dispatch support.
         </p>
       </div>
     </aside>

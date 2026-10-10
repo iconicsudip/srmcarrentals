@@ -162,15 +162,15 @@ export function CarGridWithTabs<T extends CarCardData & { tabId: string }>({
       <div className={cn("flex flex-wrap gap-2", centerTabs && "justify-center")}>
         <button
           onClick={() => setActiveTab("all")}
-          className={`flex items-center gap-2 rounded-full px-4 py-2 text-xs font-bold tracking-wide transition-all ${
+          className={`flex items-center gap-2 rounded-full px-4 py-2 text-xs font-bold tracking-wide transition-all cursor-pointer ${
             activeTab === "all"
               ? "bg-orange-500 text-white shadow-lg shadow-orange-500/30"
-              : "border border-white/10 bg-neutral-800 text-white/55 hover:border-white/20 hover:text-white"
+              : "border border-neutral-200 bg-white text-neutral-700 hover:border-neutral-300 hover:text-neutral-950 shadow-xs"
           }`}
         >
           ALL
           <span className={`min-w-[18px] rounded-full px-1.5 text-center text-[10px] font-black leading-[18px] ${
-            activeTab === "all" ? "bg-white/25 text-white" : "bg-white/8 text-white/50"
+            activeTab === "all" ? "bg-white/25 text-white" : "bg-neutral-100 text-neutral-600"
           }`}>
             {totalCount}
           </span>
@@ -180,16 +180,16 @@ export function CarGridWithTabs<T extends CarCardData & { tabId: string }>({
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`flex items-center gap-2 rounded-full px-4 py-2 text-xs font-bold tracking-wide transition-all ${
+            className={`flex items-center gap-2 rounded-full px-4 py-2 text-xs font-bold tracking-wide transition-all cursor-pointer ${
               activeTab === tab.id
                 ? "bg-orange-500 text-white shadow-lg shadow-orange-500/30"
-                : "border border-white/10 bg-neutral-800 text-white/55 hover:border-white/20 hover:text-white"
+                : "border border-neutral-200 bg-white text-neutral-700 hover:border-neutral-300 hover:text-neutral-950 shadow-xs"
             }`}
           >
             {tab.label.toUpperCase()}
             {typeof tab.count === "number" && (
               <span className={`min-w-[18px] rounded-full px-1.5 text-center text-[10px] font-black leading-[18px] ${
-                activeTab === tab.id ? "bg-white/25 text-white" : "bg-white/8 text-white/50"
+                activeTab === tab.id ? "bg-white/25 text-white" : "bg-neutral-100 text-neutral-600"
               }`}>
                 {tab.count}
               </span>
@@ -200,7 +200,7 @@ export function CarGridWithTabs<T extends CarCardData & { tabId: string }>({
 
       {/* ── Car display ── */}
       {visible.length === 0 ? (
-        <p className="py-12 text-center text-white/40">No cars in this category yet — check back soon.</p>
+        <p className="py-12 text-center text-neutral-500 font-medium">No cars in this category yet — check back soon.</p>
       ) : twoRows ? (
         /* ── 2-Row Carousel (Pairs stacked vertically in columns) ── */
         <div className="flex flex-col gap-4">
@@ -236,8 +236,8 @@ export function CarGridWithTabs<T extends CarCardData & { tabId: string }>({
                   type="button"
                   onClick={() => scrollTo(i)}
                   aria-label={`Go to slide ${i + 1} of ${dotCount}`}
-                  className={`rounded-full transition-all duration-300 ${
-                    i === activeIdx ? "w-6 h-2 bg-orange-500" : "w-2 h-2 bg-white/20 hover:bg-white/40"
+                  className={`rounded-full transition-all duration-300 cursor-pointer ${
+                    i === activeIdx ? "w-6 h-2 bg-orange-500" : "w-2 h-2 bg-neutral-300 hover:bg-neutral-400"
                   }`}
                 />
               ))}
@@ -248,7 +248,7 @@ export function CarGridWithTabs<T extends CarCardData & { tabId: string }>({
                 type="button"
                 onClick={() => scrollTo(activeIdx - 1)}
                 disabled={dotCount <= 1 || activeIdx <= 0}
-                className="flex size-8 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/60 transition hover:bg-white/10 hover:text-white disabled:opacity-30"
+                className="flex size-8 items-center justify-center rounded-full border border-neutral-200 bg-white text-neutral-700 transition hover:bg-neutral-100 hover:text-neutral-950 disabled:opacity-30 cursor-pointer shadow-xs"
                 aria-label="Previous"
               >
                 <ArrowLeft className="size-3.5" />
@@ -257,7 +257,7 @@ export function CarGridWithTabs<T extends CarCardData & { tabId: string }>({
               <button
                 type="button"
                 onClick={() => setPlaying((v) => !v)}
-                className="flex size-8 items-center justify-center rounded-full border border-orange-500/40 bg-orange-500/15 text-orange-400 transition hover:bg-orange-500/25"
+                className="flex size-8 items-center justify-center rounded-full border border-orange-500/40 bg-orange-50 text-orange-600 transition hover:bg-orange-100 cursor-pointer shadow-xs"
                 aria-label={playing ? "Pause" : "Play"}
               >
                 {playing ? <Pause className="size-3.5" /> : <Play className="size-3.5" />}
@@ -267,7 +267,7 @@ export function CarGridWithTabs<T extends CarCardData & { tabId: string }>({
                 type="button"
                 onClick={() => scrollTo(activeIdx + 1)}
                 disabled={dotCount <= 1 || activeIdx >= dotCount - 1}
-                className="flex size-8 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/60 transition hover:bg-white/10 hover:text-white disabled:opacity-30"
+                className="flex size-8 items-center justify-center rounded-full border border-neutral-200 bg-white text-neutral-700 transition hover:bg-neutral-100 hover:text-neutral-950 disabled:opacity-30 cursor-pointer shadow-xs"
                 aria-label="Next"
               >
                 <ArrowRight className="size-3.5" />
@@ -312,10 +312,10 @@ export function CarGridWithTabs<T extends CarCardData & { tabId: string }>({
                   type="button"
                   onClick={() => scrollTo(i)}
                   aria-label={`Go to slide ${i + 1} of ${dotCount}`}
-                  className={`rounded-full transition-all duration-300 ${
+                  className={`rounded-full transition-all duration-300 cursor-pointer ${
                     i === activeIdx
                       ? "w-6 h-2 bg-orange-500"
-                      : "w-2 h-2 bg-white/20 hover:bg-white/40"
+                      : "w-2 h-2 bg-neutral-300 hover:bg-neutral-400"
                   }`}
                 />
               ))}
@@ -327,7 +327,7 @@ export function CarGridWithTabs<T extends CarCardData & { tabId: string }>({
                 type="button"
                 onClick={() => scrollTo(activeIdx - 1)}
                 disabled={dotCount <= 1 || activeIdx <= 0}
-                className="flex size-8 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/60 transition hover:bg-white/10 hover:text-white disabled:opacity-30"
+                className="flex size-8 items-center justify-center rounded-full border border-neutral-200 bg-white text-neutral-700 transition hover:bg-neutral-100 hover:text-neutral-950 disabled:opacity-30 cursor-pointer shadow-xs"
                 aria-label="Previous"
               >
                 <ArrowLeft className="size-3.5" />
@@ -336,7 +336,7 @@ export function CarGridWithTabs<T extends CarCardData & { tabId: string }>({
               <button
                 type="button"
                 onClick={() => setPlaying((v) => !v)}
-                className="flex size-8 items-center justify-center rounded-full border border-orange-500/40 bg-orange-500/15 text-orange-400 transition hover:bg-orange-500/25"
+                className="flex size-8 items-center justify-center rounded-full border border-orange-500/40 bg-orange-50 text-orange-600 transition hover:bg-orange-100 cursor-pointer shadow-xs"
                 aria-label={playing ? "Pause" : "Play"}
               >
                 {playing ? <Pause className="size-3.5" /> : <Play className="size-3.5" />}
@@ -346,7 +346,7 @@ export function CarGridWithTabs<T extends CarCardData & { tabId: string }>({
                 type="button"
                 onClick={() => scrollTo(activeIdx + 1)}
                 disabled={dotCount <= 1 || activeIdx >= dotCount - 1}
-                className="flex size-8 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/60 transition hover:bg-white/10 hover:text-white disabled:opacity-30"
+                className="flex size-8 items-center justify-center rounded-full border border-neutral-200 bg-white text-neutral-700 transition hover:bg-neutral-100 hover:text-neutral-950 disabled:opacity-30 cursor-pointer shadow-xs"
                 aria-label="Next"
               >
                 <ArrowRight className="size-3.5" />
@@ -366,7 +366,7 @@ export function CarGridWithTabs<T extends CarCardData & { tabId: string }>({
       {/* ── View all CTA ── */}
       <Link
         href={viewAllHref}
-        className="mx-auto flex w-fit items-center gap-2 rounded-full border border-white/15 bg-white/5 px-6 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
+        className="mx-auto flex w-fit items-center gap-2 rounded-full border border-neutral-300/80 bg-white px-6 py-3 text-sm font-bold text-neutral-900 shadow-sm transition hover:border-orange-500/50 hover:bg-neutral-50 hover:text-orange-950"
       >
         View All {totalCount} Cars in Fleet
         <ArrowRight className="size-4" />

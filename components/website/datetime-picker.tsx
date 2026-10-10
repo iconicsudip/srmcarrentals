@@ -122,14 +122,14 @@ interface TimeSelectorProps {
 
 function TimeSelector({ hour12, minute, period, availHours, availMinutes, onChange }: TimeSelectorProps) {
   const cls =
-    "rounded-lg border border-white/10 bg-white/5 px-2 py-2 text-xs text-white outline-none focus:border-orange-500 appearance-none cursor-pointer hover:bg-white/10 transition disabled:opacity-30 disabled:cursor-not-allowed";
+    "rounded-lg border border-neutral-200 bg-white px-2 py-2 text-xs text-neutral-900 outline-none focus:border-orange-500 appearance-none cursor-pointer hover:bg-neutral-50 transition disabled:opacity-30 disabled:cursor-not-allowed shadow-xs";
 
   const amHours = validHoursForPeriod(undefined, "AM", undefined); // always all for label purposes
   const pmHours = validHoursForPeriod(undefined, "PM", undefined);
 
   return (
-    <div className="flex items-center gap-2 px-3 py-2.5 border-t border-white/8">
-      <Clock className="size-3.5 shrink-0 text-orange-400" />
+    <div className="flex items-center gap-2 px-3 py-2.5 border-t border-neutral-100">
+      <Clock className="size-3.5 shrink-0 text-orange-500" />
       <div className="flex items-center gap-1.5 flex-1 flex-wrap">
         {/* Hour */}
         <select
@@ -139,10 +139,10 @@ function TimeSelector({ hour12, minute, period, availHours, availMinutes, onChan
           aria-label="Hour"
         >
           {availHours.map((h) => (
-            <option key={h} value={h} className="bg-neutral-900">{h}</option>
+            <option key={h} value={h} className="bg-white text-neutral-900">{h}</option>
           ))}
         </select>
-        <span className="text-white/40 text-xs font-bold">:</span>
+        <span className="text-neutral-400 text-xs font-bold">:</span>
         {/* Minute */}
         <select
           value={availMinutes.includes(minute) ? minute : availMinutes[0] ?? minute}
@@ -152,18 +152,18 @@ function TimeSelector({ hour12, minute, period, availHours, availMinutes, onChan
           disabled={availMinutes.length === 0}
         >
           {availMinutes.map((m) => (
-            <option key={m} value={m} className="bg-neutral-900">{m}</option>
+            <option key={m} value={m} className="bg-white text-neutral-900">{m}</option>
           ))}
         </select>
         {/* AM / PM */}
         <select
           value={period}
           onChange={(e) => onChange(hour12, minute, e.target.value as "AM" | "PM")}
-          className={`${cls} font-bold text-orange-400 ml-1`}
+          className={`${cls} font-bold text-orange-600 ml-1`}
           aria-label="AM/PM"
         >
-          <option value="AM" className="bg-neutral-900">AM</option>
-          <option value="PM" className="bg-neutral-900">PM</option>
+          <option value="AM" className="bg-white text-neutral-900">AM</option>
+          <option value="PM" className="bg-white text-neutral-900">PM</option>
         </select>
       </div>
     </div>
@@ -277,7 +277,7 @@ export function DateTimePicker({ label, value, onChange, minDateTime, maxDate }:
 
   return (
     <div className="relative flex flex-col gap-1.5" ref={containerRef}>
-      <Label className="text-xs font-semibold text-white/55">{label}</Label>
+      <Label className="text-xs font-semibold text-neutral-700">{label}</Label>
 
       {/* Trigger */}
       <button
@@ -285,19 +285,19 @@ export function DateTimePicker({ label, value, onChange, minDateTime, maxDate }:
         onClick={() => setOpen((o) => !o)}
         className={`flex items-center gap-2.5 w-full rounded-xl border px-3 py-2.5 text-left text-xs transition ${
           open
-            ? "border-orange-500 bg-orange-500/8 shadow-lg shadow-orange-500/10"
-            : "border-white/10 bg-black/40 hover:border-white/20"
+            ? "border-orange-500 bg-orange-50 shadow-md ring-1 ring-orange-500/30"
+            : "border-neutral-200 bg-white hover:border-orange-500/40 text-neutral-900 shadow-xs"
         }`}
       >
-        <Calendar className="size-3.5 shrink-0 text-orange-400" />
-        <span className={date && isValid(date) ? "text-white font-medium" : "text-white/40"}>
+        <Calendar className="size-3.5 shrink-0 text-orange-500" />
+        <span className={date && isValid(date) ? "text-neutral-900 font-semibold" : "text-neutral-400"}>
           {displayValue}
         </span>
       </button>
 
       {/* Popover */}
       {open && (
-        <div className="absolute top-full left-0 z-50 mt-2 w-72 rounded-2xl border border-white/12 bg-neutral-950/98 backdrop-blur-xl shadow-2xl shadow-black/60 overflow-hidden">
+        <div className="absolute top-full left-0 z-50 mt-2 w-72 rounded-2xl border border-neutral-200 bg-white backdrop-blur-xl shadow-2xl shadow-neutral-950/15 overflow-hidden">
           <DayPicker
             mode="single"
             selected={date}
@@ -309,31 +309,31 @@ export function DateTimePicker({ label, value, onChange, minDateTime, maxDate }:
               months: "flex flex-col",
               month: "space-y-2",
               month_caption: "flex items-center justify-between px-1 py-1",
-              caption_label: "text-sm font-black text-white uppercase tracking-wide",
+              caption_label: "text-sm font-black text-neutral-950 uppercase tracking-wide",
               nav: "flex items-center gap-1",
               button_previous:
-                "inline-flex size-7 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-white/60 hover:bg-white/15 hover:text-white transition",
+                "inline-flex size-7 items-center justify-center rounded-lg border border-neutral-200 bg-neutral-50 text-neutral-700 hover:bg-neutral-100 hover:text-neutral-950 transition",
               button_next:
-                "inline-flex size-7 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-white/60 hover:bg-white/15 hover:text-white transition",
+                "inline-flex size-7 items-center justify-center rounded-lg border border-neutral-200 bg-neutral-50 text-neutral-700 hover:bg-neutral-100 hover:text-neutral-950 transition",
               month_grid: "w-full border-collapse",
               weekdays: "flex",
-              weekday: "flex-1 text-center text-[10px] font-bold text-white/30 pb-1",
+              weekday: "flex-1 text-center text-[10px] font-bold text-neutral-400 pb-1",
               week: "flex mt-1",
               day: "flex-1 relative",
               day_button:
-                "w-full h-8 text-xs rounded-lg font-medium text-white/70 hover:bg-white/10 hover:text-white transition flex items-center justify-center",
+                "w-full h-8 text-xs rounded-lg font-medium text-neutral-700 hover:bg-orange-50 hover:text-orange-950 transition flex items-center justify-center",
               selected: "bg-orange-500 text-white rounded-lg font-bold",
-              today: "text-orange-400 font-bold",
-              outside: "text-white/20",
+              today: "text-orange-600 font-bold",
+              outside: "text-neutral-300",
               disabled: "opacity-20 cursor-not-allowed pointer-events-none",
               hidden: "invisible",
             }}
             components={{
               Chevron: ({ orientation }) =>
                 orientation === "left" ? (
-                  <ChevronLeft className="size-3.5" />
+                  <ChevronLeft className="size-3.5 text-neutral-600" />
                 ) : (
-                  <ChevronRight className="size-3.5" />
+                  <ChevronRight className="size-3.5 text-neutral-600" />
                 ),
             }}
           />
@@ -349,7 +349,7 @@ export function DateTimePicker({ label, value, onChange, minDateTime, maxDate }:
 
           {/* Constraint hint */}
           {(minDT || maxDateObj) && (
-            <div className="px-3 pt-1 text-[10px] text-white/35 text-center">
+            <div className="px-3 pt-1 text-[10px] text-neutral-400 text-center">
               {minDT && maxDateObj
                 ? `From ${format(minDT, "d MMM, h:mm a")} · max ${maxDate ? format(maxDateObj, "d MMM") : ""}`
                 : minDT
@@ -360,11 +360,11 @@ export function DateTimePicker({ label, value, onChange, minDateTime, maxDate }:
             </div>
           )}
 
-          <div className="px-3 py-2.5 border-t border-white/8 mt-1">
+          <div className="px-3 py-2.5 border-t border-neutral-100 mt-1">
             <button
               type="button"
               onClick={() => setOpen(false)}
-              className="w-full rounded-xl bg-orange-500 hover:bg-orange-600 py-2 text-xs font-black text-white transition active:scale-95"
+              className="w-full rounded-xl bg-orange-500 hover:bg-orange-600 py-2 text-xs font-black text-white transition active:scale-95 shadow-md shadow-orange-500/20"
             >
               Confirm
             </button>
@@ -575,6 +575,15 @@ export function TripSchedulePicker({
   const availDropHours = validHoursForPeriod(draftTo, dropPeriod, undefined);
   const availDropMins = validMinutes(draftTo, draftDropH24, undefined);
 
+  const handleConfirm = () => {
+    if (!draftFrom || !draftTo || !isValidSchedule) return;
+    onChange({
+      pickup: buildISO(draftFrom, draftPickupH24, draftPickupMin),
+      drop: buildISO(draftTo, draftDropH24, draftDropMin),
+    });
+    setOpen(false);
+  };
+
   // Trigger displays
   const pickupDispDate = pickupDate && isValid(pickupDate) ? format(pickupDate, "EEE, d MMM") : "Select Pickup";
   const pickupDispTime = h24ToDisplay(pickupH24).hour12 + ":" + pickupMin + " " + h24ToDisplay(pickupH24).period;
@@ -582,17 +591,8 @@ export function TripSchedulePicker({
   const dropDispDate = dropDate && isValid(dropDate) ? format(dropDate, "EEE, d MMM") : "Select Drop";
   const dropDispTime = h24ToDisplay(dropH24).hour12 + ":" + dropMin + " " + h24ToDisplay(dropH24).period;
 
-  // Confirm and save
-  const handleConfirm = () => {
-    if (!isValidSchedule || !draftFrom || !draftTo) return;
-    const newPickup = buildISO(draftFrom, draftPickupH24, draftPickupMin);
-    const newDrop = buildISO(draftTo, draftDropH24, draftDropMin);
-    onChange({ pickup: newPickup, drop: newDrop });
-    setOpen(false);
-  };
-
   return (
-    <div ref={containerRef} className={`relative ${className}`}>
+    <div ref={containerRef} className="relative w-full">
       {/* ── TRIGGER ── */}
       {compact ? (
         <button
@@ -600,23 +600,23 @@ export function TripSchedulePicker({
           onClick={() => setOpen((o) => !o)}
           className={`flex h-11 sm:h-12 w-full items-center justify-between gap-2.5 rounded-xl border px-3 sm:px-4 text-left text-xs sm:text-sm transition-all cursor-pointer ${
             open
-              ? "border-orange-500 bg-orange-500/10 shadow-lg shadow-orange-500/15 ring-1 ring-orange-500/50"
-              : "border-white/10 bg-white/5 hover:border-orange-500/40 hover:bg-white/8 text-white"
+              ? "border-orange-500 bg-orange-50 shadow-md ring-1 ring-orange-500/40"
+              : "border-neutral-200 bg-white hover:border-orange-500/50 hover:bg-neutral-50/50 text-neutral-900 shadow-xs"
           }`}
         >
           <div className="flex items-center gap-2.5 min-w-0">
-            <Calendar className="size-4 shrink-0 text-orange-400" />
+            <Calendar className="size-4 shrink-0 text-orange-500" />
             <div className="min-w-0 flex items-center gap-1.5 sm:gap-2">
-              <span className="truncate text-xs sm:text-sm font-semibold text-white">
-                {pickupDispDate} <span className="text-white/60 font-normal">({pickupDispTime})</span>
+              <span className="truncate text-xs sm:text-sm font-semibold text-neutral-900">
+                {pickupDispDate} <span className="text-neutral-500 font-normal">({pickupDispTime})</span>
               </span>
-              <span className="text-orange-400 text-xs shrink-0">→</span>
-              <span className="truncate text-xs sm:text-sm font-semibold text-white">
-                {dropDispDate} <span className="text-white/60 font-normal">({dropDispTime})</span>
+              <span className="text-orange-500 text-xs shrink-0 font-bold">→</span>
+              <span className="truncate text-xs sm:text-sm font-semibold text-neutral-900">
+                {dropDispDate} <span className="text-neutral-500 font-normal">({dropDispTime})</span>
               </span>
             </div>
           </div>
-          <span className="shrink-0 rounded-lg border border-orange-500/30 bg-orange-500/15 px-2.5 py-1 text-[11px] font-bold text-orange-400 whitespace-nowrap">
+          <span className="shrink-0 rounded-lg border border-orange-500/30 bg-orange-500/10 px-2.5 py-1 text-[11px] font-bold text-orange-700 whitespace-nowrap">
             {durationLabel}
           </span>
         </button>
@@ -625,58 +625,58 @@ export function TripSchedulePicker({
           onClick={() => setOpen((o) => !o)}
           className={`group cursor-pointer rounded-2xl border p-4 transition-all duration-300 ${
             open
-              ? "border-orange-500 bg-orange-500/10 shadow-xl shadow-orange-500/10"
-              : "border-white/10 bg-neutral-900/80 hover:border-orange-500/40 hover:bg-neutral-900"
+              ? "border-orange-500 bg-orange-50 shadow-xl ring-1 ring-orange-500/30"
+              : "border-neutral-200 bg-white hover:border-orange-500/50 hover:shadow-md text-neutral-900 shadow-xs"
           }`}
         >
           {/* Header */}
-          <div className="flex items-center justify-between gap-2 border-b border-white/10 pb-3">
+          <div className="flex items-center justify-between gap-2 border-b border-neutral-150 pb-3">
             <div className="flex items-center gap-2 min-w-0">
-              <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-orange-500/15 text-orange-400">
+              <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-orange-500/15 text-orange-500">
                 <Calendar className="size-3.5" />
               </span>
-              <span className="truncate text-xs font-bold uppercase tracking-wider text-white">
+              <span className="truncate text-xs font-bold uppercase tracking-wider text-neutral-900">
                 {label ?? (rentalMode === "HOURLY" ? "Hourly Rental" : "Trip Schedule")}
               </span>
             </div>
-            <span className="shrink-0 rounded-full border border-orange-500/30 bg-orange-500/15 px-2.5 py-0.5 text-[11px] font-bold text-orange-400 whitespace-nowrap">
+            <span className="shrink-0 rounded-full border border-orange-500/30 bg-orange-500/10 px-2.5 py-0.5 text-[11px] font-bold text-orange-700 whitespace-nowrap">
               {durationLabel}
             </span>
           </div>
 
           {/* Dual Date Strip */}
-          <div className="mt-3.5 grid grid-cols-2 gap-3 divide-x divide-white/10">
+          <div className="mt-3.5 grid grid-cols-2 gap-3 divide-x divide-neutral-200">
             {/* Pickup */}
             <div className="min-w-0">
-              <span className="text-[10px] font-bold tracking-wider text-orange-400 uppercase whitespace-nowrap block">
+              <span className="text-[10px] font-bold tracking-wider text-orange-600 uppercase whitespace-nowrap block">
                 Pickup
               </span>
-              <div className="mt-1 text-sm font-black text-white truncate">{pickupDispDate}</div>
-              <div className="mt-0.5 flex items-center gap-1.5 text-xs text-white/60">
-                <Clock className="size-3 text-orange-400 shrink-0" />
+              <div className="mt-1 text-sm font-black text-neutral-950 truncate">{pickupDispDate}</div>
+              <div className="mt-0.5 flex items-center gap-1.5 text-xs text-neutral-500">
+                <Clock className="size-3 text-orange-500 shrink-0" />
                 <span className="truncate">{pickupDispTime}</span>
               </div>
             </div>
 
             {/* Drop */}
             <div className="pl-3 min-w-0">
-              <span className="text-[10px] font-bold tracking-wider text-orange-400 uppercase whitespace-nowrap block">
+              <span className="text-[10px] font-bold tracking-wider text-orange-600 uppercase whitespace-nowrap block">
                 Drop-off
               </span>
-              <div className="mt-1 text-sm font-black text-white truncate">{dropDispDate}</div>
-              <div className="mt-0.5 flex items-center gap-1.5 text-xs text-white/60">
-                <Clock className="size-3 text-orange-400 shrink-0" />
+              <div className="mt-1 text-sm font-black text-neutral-950 truncate">{dropDispDate}</div>
+              <div className="mt-0.5 flex items-center gap-1.5 text-xs text-neutral-500">
+                <Clock className="size-3 text-orange-500 shrink-0" />
                 <span className="truncate">{dropDispTime}</span>
               </div>
             </div>
           </div>
 
           {/* Footer note */}
-          <div className="mt-3 flex items-center justify-between gap-2 border-t border-white/10 pt-2.5 text-[10px] text-white/40">
+          <div className="mt-3 flex items-center justify-between gap-2 border-t border-neutral-150 pt-2.5 text-[10px] text-neutral-500">
             <span className="truncate">
               {rentalMode === "HOURLY" ? "Flexible hourly package" : "Min 24 hrs • Max 10 days"}
             </span>
-            <span className="shrink-0 flex items-center gap-1 font-semibold text-orange-400 group-hover:text-orange-300">
+            <span className="shrink-0 flex items-center gap-1 font-semibold text-orange-600 group-hover:text-orange-700">
               Change dates & times <ArrowRight className="size-3" />
             </span>
           </div>
@@ -685,7 +685,7 @@ export function TripSchedulePicker({
 
       {/* ── UNIFIED POPOVER / MODAL (PORTALED TO BODY) ── */}
       {open && mounted && createPortal(
-        <div className="fixed inset-0 z-[99999] flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-150">
+        <div className="fixed inset-0 z-[99999] flex items-center justify-center p-3 sm:p-4 bg-neutral-950/60 backdrop-blur-md animate-in fade-in duration-150">
           {/* Backdrop click to close */}
           <div
             className="fixed inset-0 cursor-pointer"
@@ -694,22 +694,22 @@ export function TripSchedulePicker({
           />
 
           {/* Modal Container */}
-          <div className="relative z-10 w-full max-w-[420px] max-h-[90vh] flex flex-col rounded-3xl border border-white/20 bg-neutral-950 p-4 sm:p-5 shadow-2xl shadow-black/90 overflow-hidden">
+          <div className="relative z-10 w-full max-w-[420px] max-h-[90vh] flex flex-col rounded-3xl border border-neutral-200 bg-white p-4 sm:p-5 shadow-2xl shadow-neutral-950/20 overflow-hidden text-neutral-900">
             {/* Header (Always Visible) */}
-            <div className="flex items-center justify-between border-b border-white/10 pb-3 shrink-0">
+            <div className="flex items-center justify-between border-b border-neutral-150 pb-3 shrink-0">
               <div>
-                <h3 className="text-sm font-black uppercase tracking-tight text-white flex items-center gap-2">
-                  <Calendar className="size-4 text-orange-400" />
+                <h3 className="text-sm font-black uppercase tracking-tight text-neutral-950 flex items-center gap-2">
+                  <Calendar className="size-4 text-orange-500" />
                   Trip Dates &amp; Times
                 </h3>
-                <p className="text-[10px] text-white/50">
+                <p className="text-[10px] text-neutral-500">
                   Select your pickup and return date on the calendar.
                 </p>
               </div>
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                className="flex size-7 items-center justify-center rounded-lg border border-white/10 text-white/50 hover:bg-white/10 hover:text-white transition"
+                className="flex size-7 items-center justify-center rounded-lg border border-neutral-200 text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 transition"
                 aria-label="Close"
               >
                 <X className="size-4" />
@@ -720,7 +720,7 @@ export function TripSchedulePicker({
             <div className="flex-1 overflow-y-auto pr-1 -mr-1 space-y-3 py-2.5">
               {/* Quick Duration Presets - Horizontal scrollable chip bar */}
               <div>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-white/40 block mb-1.5">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500 block mb-1.5">
                   Quick Trip Presets:
                 </span>
                 <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
@@ -731,7 +731,7 @@ export function TripSchedulePicker({
                           key={h}
                           type="button"
                           onClick={() => applyPresetHours(h)}
-                          className="shrink-0 rounded-lg border border-white/10 bg-white/5 px-2.5 py-1 text-[11px] font-semibold text-white/80 hover:border-orange-500/50 hover:bg-orange-500/10 hover:text-orange-400 transition"
+                          className="shrink-0 rounded-lg border border-neutral-200 bg-neutral-50 px-2.5 py-1 text-[11px] font-semibold text-neutral-700 hover:border-orange-500/50 hover:bg-orange-50 hover:text-orange-700 transition"
                         >
                           {h === 24 ? "24h (1 Day)" : `${h} Hours`}
                         </button>
@@ -753,8 +753,8 @@ export function TripSchedulePicker({
                           onClick={() => applyPresetDays(item.days)}
                           className={`shrink-0 rounded-lg border px-2.5 py-1 text-[11px] font-semibold transition ${
                             item.days === 10
-                              ? "border-orange-500/30 bg-orange-500/10 text-orange-400 hover:bg-orange-500/20"
-                              : "border-white/10 bg-white/5 text-white/80 hover:border-orange-500/50 hover:bg-orange-500/10 hover:text-orange-400"
+                              ? "border-orange-500/40 bg-orange-500/10 text-orange-700 hover:bg-orange-500/20"
+                              : "border-neutral-200 bg-neutral-50 text-neutral-700 hover:border-orange-500/50 hover:bg-orange-50 hover:text-orange-700"
                           }`}
                         >
                           {item.label}
@@ -766,7 +766,7 @@ export function TripSchedulePicker({
               </div>
 
               {/* Interactive Range Calendar */}
-              <div className="rounded-2xl border border-white/8 bg-black/40 p-2">
+              <div className="rounded-2xl border border-neutral-200 bg-neutral-50/60 p-2">
                 <DayPicker
                   mode="range"
                   selected={{ from: draftFrom, to: draftTo }}
@@ -778,46 +778,46 @@ export function TripSchedulePicker({
                     months: "flex flex-col",
                     month: "space-y-1.5",
                     month_caption: "flex items-center justify-between px-1 py-0.5",
-                    caption_label: "text-xs font-black text-white uppercase tracking-wider",
+                    caption_label: "text-xs font-black text-neutral-950 uppercase tracking-wider",
                     nav: "flex items-center gap-1",
                     button_previous:
-                      "inline-flex size-6 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-white/60 hover:bg-white/15 hover:text-white transition",
+                      "inline-flex size-6 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-600 hover:bg-neutral-100 hover:text-neutral-950 transition",
                     button_next:
-                      "inline-flex size-6 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-white/60 hover:bg-white/15 hover:text-white transition",
+                      "inline-flex size-6 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-600 hover:bg-neutral-100 hover:text-neutral-950 transition",
                     month_grid: "w-full border-collapse",
                     weekdays: "flex",
-                    weekday: "flex-1 text-center text-[10px] font-bold text-white/30 pb-1",
+                    weekday: "flex-1 text-center text-[10px] font-bold text-neutral-400 pb-1",
                     week: "flex mt-0.5",
                     day: "flex-1 relative p-0 text-center",
                     day_button:
-                      "w-full h-7 text-xs font-medium text-white/70 hover:bg-white/15 hover:text-white transition flex items-center justify-center rounded-lg",
+                      "w-full h-7 text-xs font-medium text-neutral-700 hover:bg-orange-100/70 hover:text-neutral-950 transition flex items-center justify-center rounded-lg",
                     range_start: "bg-orange-500 text-white font-bold rounded-l-lg rounded-r-none",
-                    range_middle: "bg-orange-500/20 text-orange-200 rounded-none",
+                    range_middle: "bg-orange-100 text-orange-950 rounded-none font-semibold",
                     range_end: "bg-orange-500 text-white font-bold rounded-r-lg rounded-l-none",
                     selected: "bg-orange-500 text-white font-bold",
-                    today: "text-orange-400 font-bold",
-                    outside: "text-white/20",
+                    today: "text-orange-600 font-bold",
+                    outside: "text-neutral-300",
                     disabled: "opacity-20 cursor-not-allowed pointer-events-none",
                     hidden: "invisible",
                   }}
                   components={{
                     Chevron: ({ orientation }) =>
                       orientation === "left" ? (
-                        <ChevronLeft className="size-3.5" />
+                        <ChevronLeft className="size-3.5 text-neutral-600" />
                       ) : (
-                        <ChevronRight className="size-3.5" />
+                        <ChevronRight className="size-3.5 text-neutral-600" />
                       ),
                   }}
                 />
               </div>
 
               {/* Time Selection Rows (Zero horizontal clipping, stacked for clean mobile and desktop fit) */}
-              <div className="space-y-2 border-t border-white/10 pt-2.5">
+              <div className="space-y-2 border-t border-neutral-150 pt-2.5">
                 {/* Pickup Time */}
-                <div className="flex items-center justify-between rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2">
+                <div className="flex items-center justify-between rounded-xl border border-neutral-200 bg-white px-3 py-2 shadow-xs">
                   <div className="flex items-center gap-2">
-                    <span className="size-2 rounded-full bg-emerald-400" />
-                    <span className="text-[11px] font-bold text-white uppercase tracking-wider">
+                    <span className="size-2 rounded-full bg-emerald-500" />
+                    <span className="text-[11px] font-bold text-neutral-900 uppercase tracking-wider">
                       Pickup Time
                     </span>
                   </div>
@@ -828,23 +828,23 @@ export function TripSchedulePicker({
                         const h24 = h12ToH24(e.target.value, pickupPeriod);
                         setDraftPickupH24(h24);
                       }}
-                      className="rounded-lg border border-white/15 bg-neutral-900 px-2 py-1 text-xs font-bold text-white outline-none focus:border-orange-500 cursor-pointer"
+                      className="rounded-lg border border-neutral-200 bg-neutral-50 px-2 py-1 text-xs font-bold text-neutral-900 outline-none focus:border-orange-500 cursor-pointer shadow-xs"
                     >
                       {availPickupHours.map((h) => (
-                        <option key={h} value={h} className="bg-neutral-900">{h}</option>
+                        <option key={h} value={h} className="bg-white text-neutral-900">{h}</option>
                       ))}
                     </select>
-                    <span className="text-white/40 font-bold">:</span>
+                    <span className="text-neutral-400 font-bold">:</span>
                     <select
                       value={availPickupMins.includes(draftPickupMin) ? draftPickupMin : availPickupMins[0] ?? draftPickupMin}
                       onChange={(e) => setDraftPickupMin(e.target.value)}
-                      className="rounded-lg border border-white/15 bg-neutral-900 px-2 py-1 text-xs font-bold text-white outline-none focus:border-orange-500 cursor-pointer"
+                      className="rounded-lg border border-neutral-200 bg-neutral-50 px-2 py-1 text-xs font-bold text-neutral-900 outline-none focus:border-orange-500 cursor-pointer shadow-xs"
                     >
                       {availPickupMins.map((m) => (
-                        <option key={m} value={m} className="bg-neutral-900">{m}</option>
+                        <option key={m} value={m} className="bg-white text-neutral-900">{m}</option>
                       ))}
                     </select>
-                    <div className="flex rounded-lg border border-white/15 bg-neutral-900 p-0.5">
+                    <div className="flex rounded-lg border border-neutral-200 bg-neutral-50 p-0.5">
                       <button
                         type="button"
                         onClick={() => {
@@ -852,7 +852,7 @@ export function TripSchedulePicker({
                           setDraftPickupH24(h24);
                         }}
                         className={`rounded px-1.5 py-0.5 text-[11px] font-black transition ${
-                          pickupPeriod === "AM" ? "bg-orange-500 text-white" : "text-white/40 hover:text-white"
+                          pickupPeriod === "AM" ? "bg-orange-500 text-white" : "text-neutral-500 hover:text-neutral-900"
                         }`}
                       >
                         AM
@@ -864,7 +864,7 @@ export function TripSchedulePicker({
                           setDraftPickupH24(h24);
                         }}
                         className={`rounded px-1.5 py-0.5 text-[11px] font-black transition ${
-                          pickupPeriod === "PM" ? "bg-orange-500 text-white" : "text-white/40 hover:text-white"
+                          pickupPeriod === "PM" ? "bg-orange-500 text-white" : "text-neutral-500 hover:text-neutral-900"
                         }`}
                       >
                         PM
@@ -874,10 +874,10 @@ export function TripSchedulePicker({
                 </div>
 
                 {/* Drop-off Time */}
-                <div className="flex items-center justify-between rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2">
+                <div className="flex items-center justify-between rounded-xl border border-neutral-200 bg-white px-3 py-2 shadow-xs">
                   <div className="flex items-center gap-2">
-                    <span className="size-2 rounded-full bg-orange-400" />
-                    <span className="text-[11px] font-bold text-white uppercase tracking-wider">
+                    <span className="size-2 rounded-full bg-orange-500" />
+                    <span className="text-[11px] font-bold text-neutral-900 uppercase tracking-wider">
                       Drop-off Time
                     </span>
                   </div>
@@ -888,23 +888,23 @@ export function TripSchedulePicker({
                         const h24 = h12ToH24(e.target.value, dropPeriod);
                         setDraftDropH24(h24);
                       }}
-                      className="rounded-lg border border-white/15 bg-neutral-900 px-2 py-1 text-xs font-bold text-white outline-none focus:border-orange-500 cursor-pointer"
+                      className="rounded-lg border border-neutral-200 bg-neutral-50 px-2 py-1 text-xs font-bold text-neutral-900 outline-none focus:border-orange-500 cursor-pointer shadow-xs"
                     >
                       {availDropHours.map((h) => (
-                        <option key={h} value={h} className="bg-neutral-900">{h}</option>
+                        <option key={h} value={h} className="bg-white text-neutral-900">{h}</option>
                       ))}
                     </select>
-                    <span className="text-white/40 font-bold">:</span>
+                    <span className="text-neutral-400 font-bold">:</span>
                     <select
                       value={availDropMins.includes(draftDropMin) ? draftDropMin : availDropMins[0] ?? draftDropMin}
                       onChange={(e) => setDraftDropMin(e.target.value)}
-                      className="rounded-lg border border-white/15 bg-neutral-900 px-2 py-1 text-xs font-bold text-white outline-none focus:border-orange-500 cursor-pointer"
+                      className="rounded-lg border border-neutral-200 bg-neutral-50 px-2 py-1 text-xs font-bold text-neutral-900 outline-none focus:border-orange-500 cursor-pointer shadow-xs"
                     >
                       {availDropMins.map((m) => (
-                        <option key={m} value={m} className="bg-neutral-900">{m}</option>
+                        <option key={m} value={m} className="bg-white text-neutral-900">{m}</option>
                       ))}
                     </select>
-                    <div className="flex rounded-lg border border-white/15 bg-neutral-900 p-0.5">
+                    <div className="flex rounded-lg border border-neutral-200 bg-neutral-50 p-0.5">
                       <button
                         type="button"
                         onClick={() => {
@@ -912,7 +912,7 @@ export function TripSchedulePicker({
                           setDraftDropH24(h24);
                         }}
                         className={`rounded px-1.5 py-0.5 text-[11px] font-black transition ${
-                          dropPeriod === "AM" ? "bg-orange-500 text-white" : "text-white/40 hover:text-white"
+                          dropPeriod === "AM" ? "bg-orange-500 text-white" : "text-neutral-500 hover:text-neutral-900"
                         }`}
                       >
                         AM
@@ -924,7 +924,7 @@ export function TripSchedulePicker({
                           setDraftDropH24(h24);
                         }}
                         className={`rounded px-1.5 py-0.5 text-[11px] font-black transition ${
-                          dropPeriod === "PM" ? "bg-orange-500 text-white" : "text-white/40 hover:text-white"
+                          dropPeriod === "PM" ? "bg-orange-500 text-white" : "text-neutral-500 hover:text-neutral-900"
                         }`}
                       >
                         PM
@@ -936,22 +936,22 @@ export function TripSchedulePicker({
             </div>
 
             {/* Fixed Footer (Always visible without scrolling) */}
-            <div className="mt-2 pt-2.5 border-t border-white/10 shrink-0 space-y-2">
+            <div className="mt-2 pt-2.5 border-t border-neutral-150 shrink-0 space-y-2">
               {/* Validation & Duration Status Bar */}
-              <div className="rounded-xl border border-white/10 bg-white/[0.02] px-3 py-1.5 text-center text-xs">
+              <div className="rounded-xl border border-neutral-200 bg-neutral-50 px-3 py-1.5 text-center text-xs">
                 {isTooShort ? (
-                  <span className="font-semibold text-amber-400 text-[11px]">
+                  <span className="font-semibold text-amber-700 text-[11px]">
                     ⚠️ Minimum {minHours} hours required ({rentalMode === "HOURLY" ? "hourly rental" : "daily 24h formula"})
                   </span>
                 ) : isTooLong ? (
-                  <span className="font-semibold text-red-400 text-[11px]">
+                  <span className="font-semibold text-rose-700 text-[11px]">
                     ⚠️ Maximum rental duration is {maxDays} days
                   </span>
                 ) : (
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-white/60 text-[11px]">Selected Duration:</span>
-                    <span className="font-black text-emerald-400 text-xs flex items-center gap-1">
-                      {durationLabel} <Check className="size-3 text-emerald-400" />
+                    <span className="text-neutral-600 text-[11px]">Selected Duration:</span>
+                    <span className="font-black text-emerald-700 text-xs flex items-center gap-1">
+                      {durationLabel} <Check className="size-3 text-emerald-600" />
                     </span>
                   </div>
                 )}
@@ -962,7 +962,7 @@ export function TripSchedulePicker({
                 <button
                   type="button"
                   onClick={() => setOpen(false)}
-                  className="flex-1 rounded-xl border border-white/10 bg-white/5 py-2.5 text-xs font-semibold text-white/70 hover:bg-white/10 transition"
+                  className="flex-1 rounded-xl border border-neutral-200 bg-neutral-50 py-2.5 text-xs font-semibold text-neutral-700 hover:bg-neutral-100 transition shadow-xs"
                 >
                   Cancel
                 </button>

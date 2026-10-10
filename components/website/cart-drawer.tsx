@@ -8,6 +8,7 @@ import {
   CarFront,
   Clock,
   ExternalLink,
+  Loader2,
   MapPin,
   MessageSquare,
   ShieldCheck,
@@ -15,6 +16,7 @@ import {
   Trash2,
   X,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 import { useCart } from "@/lib/cart/cart-store";
 import { Button } from "@/components/ui/button";
@@ -44,7 +46,24 @@ function formatDate(iso: string) {
 }
 
 export function CartDrawer({ phone = "+91 9414551250" }: { phone?: string }) {
+  const router = useRouter();
   const { items, count, total, isDrawerOpen, closeCart, removeItem, clear } = useCart();
+  const [isCheckingOut, setIsCheckingOut] = React.useState(false);
+  const [deletingId, setDeletingId] = React.useState<string | null>(null);
+
+  const handleProceedCheckout = () => {
+    setIsCheckingOut(true);
+    closeCart();
+    router.push("/checkout");
+  };
+
+  const handleDeleteItem = (id: string) => {
+    setDeletingId(id);
+    setTimeout(() => {
+      removeItem(id);
+      setDeletingId(null);
+    }, 200);
+  };
 
   // Escape key closes drawer
   React.useEffect(() => {
@@ -94,16 +113,16 @@ export function CartDrawer({ phone = "+91 9414551250" }: { phone?: string }) {
       />
 
       {/* Slide-over Content */}
-      <div className="relative z-10 flex h-full w-full max-w-md flex-col border-l border-white/10 bg-neutral-950 p-6 shadow-2xl overflow-hidden">
+      <div className="relative z-10 flex h-full w-full max-w-md flex-col border-l border-neutral-200 bg-white p-6 shadow-2xl overflow-hidden text-neutral-900">
         {/* Drawer Header */}
-        <div className="flex items-center justify-between border-b border-white/10 pb-4">
+        <div className="flex items-center justify-between border-b border-neutral-150 pb-4">
           <div className="flex items-center gap-2">
-            <span className="flex size-9 items-center justify-center rounded-xl bg-orange-500/15 text-orange-400">
+            <span className="flex size-9 items-center justify-center rounded-xl bg-orange-500/10 text-orange-600 shadow-xs">
               <ShoppingBag className="size-5" />
             </span>
             <div>
-              <h2 className="text-base font-black text-white uppercase tracking-tight">Your Cart</h2>
-              <p className="text-[11px] text-white/50">
+              <h2 className="text-base font-black text-neutral-950 uppercase tracking-tight">Your Cart</h2>
+              <p className="text-[11px] text-neutral-500 font-medium">
                 {count === 0 ? "No cars selected" : `${count} vehicle${count > 1 ? "s" : ""} selected`}
               </p>
             </div>
@@ -114,7 +133,7 @@ export function CartDrawer({ phone = "+91 9414551250" }: { phone?: string }) {
               <button
                 type="button"
                 onClick={clear}
-                className="text-xs text-white/40 hover:text-red-400 transition"
+                className="text-xs text-neutral-400 hover:text-red-500 transition cursor-pointer font-medium"
               >
                 Clear all
               </button>
@@ -122,7 +141,7 @@ export function CartDrawer({ phone = "+91 9414551250" }: { phone?: string }) {
             <button
               type="button"
               onClick={closeCart}
-              className="rounded-lg p-1.5 text-white/50 hover:bg-white/10 hover:text-white transition"
+              className="rounded-lg p-1.5 text-neutral-400 hover:bg-neutral-100 hover:text-neutral-900 transition cursor-pointer"
             >
               <X className="size-5" />
             </button>
@@ -130,15 +149,15 @@ export function CartDrawer({ phone = "+91 9414551250" }: { phone?: string }) {
         </div>
 
         {/* Drawer Items */}
-        <div className="flex-1 overflow-y-auto py-4 space-y-3.5 divide-y divide-white/5">
+        <div className="flex-1 overflow-y-auto py-4 space-y-3.5 divide-y divide-neutral-150">
           {items.length === 0 ? (
-            <div className="flex h-full flex-col items-center justify-center text-center p-6 text-white/50">
-              <CarFront className="size-16 text-white/20 mb-3 stroke-[1.5]" />
-              <h3 className="text-sm font-bold text-white">Your cart is empty</h3>
-              <p className="mt-1 text-xs text-white/40 max-w-[220px]">
+            <div className="flex h-full flex-col items-center justify-center text-center p-6 text-neutral-500">
+              <CarFront className="size-16 text-neutral-300 mb-3 stroke-[1.5]" />
+              <h3 className="text-sm font-bold text-neutral-950">Your cart is empty</h3>
+              <p className="mt-1 text-xs text-neutral-500 max-w-[220px]">
                 Browse our fleet of self-drive hatchbacks, sedans, and SUVs to add a car.
               </p>
-              <Button asChild onClick={closeCart} className="mt-4 bg-orange-500 text-white font-semibold">
+              <Button asChild onClick={closeCart} className="mt-4 bg-orange-500 text-white font-bold shadow-md shadow-orange-500/25 hover:bg-orange-600">
                 <Link href="/cars">Explore Fleet →</Link>
               </Button>
             </div>
@@ -148,72 +167,76 @@ export function CartDrawer({ phone = "+91 9414551250" }: { phone?: string }) {
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <div className="flex items-center gap-1.5">
-                      <span className="rounded bg-orange-500/15 px-1.5 py-0.5 text-[9px] font-black text-orange-400 uppercase">
+                      <span className="rounded bg-orange-500/10 px-1.5 py-0.5 text-[9px] font-black text-orange-700 uppercase">
                         {item.rentalMode === "HOURLY" ? "Hourly" : "24h Daily"}
                       </span>
                       {item.carSlug ? (
                         <Link
                           href={`/car/${item.carSlug}`}
                           onClick={closeCart}
-                          className="font-black text-sm text-white hover:text-orange-400 transition"
+                          className="font-black text-sm text-neutral-950 hover:text-orange-600 transition"
                         >
                           {item.carName}
                         </Link>
                       ) : (
-                        <span className="font-black text-sm text-white">{item.carName}</span>
+                        <span className="font-black text-sm text-neutral-950">{item.carName}</span>
                       )}
                     </div>
 
-                    <div className="mt-1 flex flex-col gap-1 text-[11px] text-white/60">
+                    <div className="mt-1 flex flex-col gap-1 text-[11px] text-neutral-600">
                       <div className="flex items-center gap-1.5">
-                        <Calendar className="size-3 text-orange-400 shrink-0" />
+                        <Calendar className="size-3 text-orange-500 shrink-0" />
                         <span>
                           {formatDate(item.pickup)} → {formatDate(item.drop)}
                         </span>
                       </div>
                       <div className="flex items-center gap-1.5">
-                        <Clock className="size-3 text-orange-400 shrink-0" />
-                        <span className="font-bold text-white/80">{item.durationText}</span>
+                        <Clock className="size-3 text-orange-500 shrink-0" />
+                        <span className="font-bold text-neutral-900">{item.durationText}</span>
                       </div>
                       <div className="flex items-center gap-1.5">
-                        <MapPin className="size-3 text-orange-400 shrink-0" />
+                        <MapPin className="size-3 text-orange-500 shrink-0" />
                         <span className="truncate max-w-[220px]">{item.locationName}</span>
                       </div>
                     </div>
                   </div>
-
                   <div className="text-right flex flex-col items-end gap-1">
-                    <span className="text-sm font-black text-emerald-400">{formatInr(item.total)}</span>
+                    <span className="text-sm font-black text-neutral-950">{formatInr(item.total)}</span>
                     <button
                       type="button"
-                      onClick={() => removeItem(item.id)}
-                      className="text-white/30 hover:text-red-400 transition p-1"
+                      disabled={deletingId === item.id}
+                      onClick={() => handleDeleteItem(item.id)}
+                      className="text-neutral-400 hover:text-red-500 transition p-1 cursor-pointer disabled:opacity-50"
                       title="Remove item"
                     >
-                      <Trash2 className="size-3.5" />
+                      {deletingId === item.id ? (
+                        <Loader2 className="size-3.5 animate-spin text-red-500" />
+                      ) : (
+                        <Trash2 className="size-3.5" />
+                      )}
                     </button>
                   </div>
                 </div>
 
                 {/* Protection / Addons pill */}
                 {(item.insurance || (item.extraServices?.length ?? 0) > 0) && (
-                  <div className="flex flex-wrap items-center gap-1 text-[10px] text-white/50 pt-1">
+                  <div className="flex flex-wrap items-center gap-1 text-[10px] text-neutral-600 pt-1">
                     {item.insurance && (
-                      <span className="inline-flex items-center gap-1 rounded bg-white/5 px-1.5 py-0.5 border border-white/10">
-                        <ShieldCheck className="size-2.5 text-emerald-400" />
+                      <span className="inline-flex items-center gap-1 rounded bg-neutral-100 px-1.5 py-0.5 border border-neutral-200">
+                        <ShieldCheck className="size-2.5 text-emerald-600" />
                         {item.insurance.name}
                       </span>
                     )}
                     {item.extraServices?.map((a) => (
                       <span
                         key={a.id}
-                        className="rounded bg-white/5 px-1.5 py-0.5 border border-white/10"
+                        className="rounded bg-neutral-100 px-1.5 py-0.5 border border-neutral-200"
                       >
                         +{a.name}
                       </span>
                     ))}
                     {(item.locationDropCharge ?? 0) > 0 && (
-                      <span className="rounded bg-orange-500/10 px-1.5 py-0.5 border border-orange-500/20 text-orange-400">
+                      <span className="rounded bg-orange-500/10 px-1.5 py-0.5 border border-orange-500/20 text-orange-700">
                         +₹{Number(item.locationDropCharge).toLocaleString("en-IN")} Drop Fee
                       </span>
                     )}
@@ -226,30 +249,37 @@ export function CartDrawer({ phone = "+91 9414551250" }: { phone?: string }) {
 
         {/* Drawer Footer */}
         {items.length > 0 && (
-          <div className="border-t border-white/10 pt-4 space-y-3">
-            <div className="flex items-center justify-between text-xs text-white/60">
+          <div className="border-t border-neutral-150 pt-4 space-y-3">
+            <div className="flex items-center justify-between text-xs text-neutral-600">
               <span>Vehicles ({count})</span>
-              <span>{formatInr(total)}</span>
+              <span className="font-semibold text-neutral-900">{formatInr(total)}</span>
             </div>
 
-            <div className="flex items-center justify-between text-base font-black text-white">
+            <div className="flex items-center justify-between text-base font-black text-neutral-950">
               <span>Total Payable</span>
-              <span className="text-lg text-orange-400">{formatInr(total)}</span>
+              <span className="text-lg text-orange-600">{formatInr(total)}</span>
             </div>
 
-            <div className="text-[11px] text-emerald-400">
+            <div className="text-[11px] text-emerald-700 font-semibold">
               ✓ Refundable Security Deposit ₹3,000–₹5,000 (at pickup)
             </div>
 
             {/* Proceed to Checkout CTA */}
             <Button
-              asChild
-              onClick={closeCart}
-              className="w-full rounded-2xl bg-orange-500 hover:bg-orange-600 py-3.5 text-sm font-black text-white shadow-xl shadow-orange-500/25 transition active:scale-[0.98]"
+              type="button"
+              onClick={handleProceedCheckout}
+              disabled={isCheckingOut}
+              className="w-full rounded-2xl bg-orange-500 hover:bg-orange-600 py-3.5 text-sm font-black text-white shadow-xl shadow-orange-500/25 transition active:scale-[0.98] cursor-pointer"
             >
-              <Link href="/checkout" className="flex items-center justify-center gap-2">
-                Proceed to Checkout • {formatInr(total)} →
-              </Link>
+              {isCheckingOut ? (
+                <span className="flex items-center justify-center gap-2">
+                  <Loader2 className="size-4 animate-spin" /> Preparing Checkout...
+                </span>
+              ) : (
+                <span className="flex items-center justify-center gap-2">
+                  Proceed to Checkout • {formatInr(total)} →
+                </span>
+              )}
             </Button>
 
             {/* Direct WhatsApp Confirmation Button */}
@@ -257,7 +287,7 @@ export function CartDrawer({ phone = "+91 9414551250" }: { phone?: string }) {
               href={whatsappUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600/90 hover:bg-emerald-500 py-3 text-xs font-bold text-white shadow-lg shadow-emerald-600/20 transition active:scale-95"
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 py-3 text-xs font-bold text-white shadow-lg shadow-emerald-600/20 transition active:scale-95"
             >
               <MessageSquare className="size-4" /> Instant Book via WhatsApp
             </a>
@@ -267,7 +297,7 @@ export function CartDrawer({ phone = "+91 9414551250" }: { phone?: string }) {
               asChild
               variant="outline"
               onClick={closeCart}
-              className="w-full border-white/15 bg-white/5 text-xs text-white hover:bg-white/10"
+              className="w-full border-neutral-200 bg-neutral-50 text-xs text-neutral-800 hover:bg-neutral-100 hover:text-neutral-950"
             >
               <Link href="/cart">View Full Cart Details</Link>
             </Button>

@@ -72,13 +72,13 @@ export function BlogSearchAndFilter({
       {/* Search Input Bar */}
       <form onSubmit={handleSearchSubmit} className="relative mx-auto w-full max-w-xl">
         <div className="relative flex items-center">
-          <Search className="pointer-events-none absolute left-4 size-5 text-white/40" />
+          <Search className="pointer-events-none absolute left-4 size-5 text-neutral-400" />
           <input
             type="text"
             value={searchValue}
             onChange={(e) => setSearchValue(e.target.value)}
             placeholder="Search road trips, destinations, SUV comparisons..."
-            className="w-full rounded-2xl border border-white/10 bg-white/5 py-3.5 pr-24 pl-12 text-sm text-white placeholder-white/40 backdrop-blur-md outline-none transition-all focus:border-orange-500/50 focus:bg-white/10 focus:ring-1 focus:ring-orange-500"
+            className="w-full rounded-2xl border border-neutral-200 bg-white py-3.5 pr-24 pl-12 text-sm text-neutral-900 placeholder-neutral-400 shadow-sm outline-none transition-all focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
           />
           {searchValue && (
             <button
@@ -87,14 +87,14 @@ export function BlogSearchAndFilter({
                 setSearchValue("");
                 updateFilters(undefined, "");
               }}
-              className="absolute right-14 text-white/40 hover:text-white"
+              className="absolute right-16 text-neutral-400 hover:text-neutral-800"
             >
               <X className="size-4" />
             </button>
           )}
           <button
             type="submit"
-            className="absolute right-2 rounded-xl bg-orange-500 px-4 py-2 text-xs font-bold uppercase tracking-wider text-black transition-all hover:bg-orange-400"
+            className="absolute right-2 rounded-xl bg-orange-500 px-4 py-2 text-xs font-bold uppercase tracking-wider text-white shadow-sm transition-all hover:bg-orange-600"
           >
             Search
           </button>
@@ -108,8 +108,8 @@ export function BlogSearchAndFilter({
           onClick={() => updateFilters("all")}
           className={`shrink-0 rounded-full px-4 py-2 text-xs font-bold uppercase tracking-wider transition-all ${
             activeCategory === "all"
-              ? "bg-orange-500 text-black shadow-lg shadow-orange-500/20"
-              : "border border-white/10 bg-white/5 text-white/70 hover:border-white/20 hover:bg-white/10 hover:text-white"
+              ? "bg-orange-500 text-white shadow-md shadow-orange-500/20"
+              : "border border-neutral-200 bg-white text-neutral-700 hover:border-orange-500 hover:text-orange-600 shadow-sm"
           }`}
         >
           All Topics
@@ -124,15 +124,15 @@ export function BlogSearchAndFilter({
               onClick={() => updateFilters(cat.slug)}
               className={`shrink-0 rounded-full px-4 py-2 text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-1.5 ${
                 isActive
-                  ? "bg-orange-500 text-black shadow-lg shadow-orange-500/20"
-                  : "border border-white/10 bg-white/5 text-white/70 hover:border-white/20 hover:bg-white/10 hover:text-white"
+                  ? "bg-orange-500 text-white shadow-md shadow-orange-500/20"
+                  : "border border-neutral-200 bg-white text-neutral-700 hover:border-orange-500 hover:text-orange-600 shadow-sm"
               }`}
             >
               <span>{cat.name}</span>
               {cat._count?.blogs ? (
                 <span
                   className={`rounded-full px-1.5 py-0.2 text-[10px] ${
-                    isActive ? "bg-black/20 text-black" : "bg-white/10 text-white/50"
+                    isActive ? "bg-white/20 text-white" : "bg-neutral-100 text-neutral-500"
                   }`}
                 >
                   {cat._count.blogs}
@@ -145,14 +145,14 @@ export function BlogSearchAndFilter({
 
       {/* Active tag indicator if filtered by tag */}
       {currentTag && (
-        <div className="flex items-center justify-center gap-2 text-xs text-white/60">
+        <div className="flex items-center justify-center gap-2 text-xs text-neutral-600">
           <span>Filtering by tag:</span>
-          <span className="inline-flex items-center gap-1 rounded-md bg-orange-500/10 border border-orange-500/30 px-2.5 py-1 font-semibold text-orange-400">
+          <span className="inline-flex items-center gap-1 rounded-md bg-orange-500/10 border border-orange-500/30 px-2.5 py-1 font-semibold text-orange-600">
             #{currentTag}
             <button
               type="button"
               onClick={() => updateFilters(undefined, undefined, true)}
-              className="ml-1 text-orange-400 hover:text-orange-200"
+              className="ml-1 text-orange-600 hover:text-orange-800"
             >
               <X className="size-3" />
             </button>

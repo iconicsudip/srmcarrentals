@@ -201,6 +201,8 @@ export function BookingEngine({
   // Coupon
   const [couponInput, setCouponInput] = React.useState("");
   const [appliedCoupon, setAppliedCoupon] = React.useState<string | undefined>(undefined);
+  const [isApplyingCoupon, setIsApplyingCoupon] = React.useState(false);
+  const [isAdding, setIsAdding] = React.useState(false);
 
   // Availability check state
   const [availLoading, setAvailLoading] = React.useState(false);
@@ -308,8 +310,10 @@ export function BookingEngine({
   const handleApplyCoupon = (e: React.FormEvent) => {
     e.preventDefault();
     if (!couponInput.trim()) return;
+    setIsApplyingCoupon(true);
     setAppliedCoupon(couponInput.trim().toUpperCase());
     toast.success(`Checking coupon ${couponInput.trim().toUpperCase()}...`);
+    setTimeout(() => setIsApplyingCoupon(false), 800);
   };
 
   const handleRemoveCoupon = () => {
@@ -323,6 +327,7 @@ export function BookingEngine({
 
   // Add configuration directly to Cart
   const handleAddToCart = () => {
+    if (isAdding) return;
     if (!pickup || !drop || new Date(drop) <= new Date(pickup)) {
       toast.error("Please select valid pickup and drop dates.");
       return;
@@ -399,37 +404,39 @@ export function BookingEngine({
       city: selectedBranch?.city ?? "Udaipur",
     });
 
+    setIsAdding(true);
+    setTimeout(() => setIsAdding(false), 700);
     toast.success(`${carName} added to your cart!`);
   };
 
   return (
-    <div className="rounded-3xl border border-white/10 bg-neutral-900/90 p-6 shadow-2xl backdrop-blur-xl ring-1 ring-white/5">
+    <div className="rounded-3xl border border-neutral-200/90 bg-white p-6 shadow-xl shadow-neutral-900/5 ring-1 ring-neutral-900/5">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-white/10 pb-4">
+      <div className="flex items-center justify-between border-b border-neutral-200/80 pb-4">
         <div>
-          <span className="text-[10px] font-bold tracking-wider text-orange-400 uppercase">Self-Drive Reservation</span>
-          <h3 className="text-xl font-black text-white">{carName}</h3>
+          <span className="text-[10px] font-bold tracking-wider text-orange-600 uppercase">Self-Drive Reservation</span>
+          <h3 className="text-xl font-black text-neutral-950">{carName}</h3>
         </div>
         <div className="text-right">
-          <div className="text-xl font-black text-orange-400">
+          <div className="text-xl font-black text-orange-600">
             {rentalMode === "HOURLY" && hasHourly
               ? `₹${Number(hourlyPrice).toLocaleString("en-IN")}/hr`
               : `₹${Number(dailyPrice).toLocaleString("en-IN")}/day`}
           </div>
-          <span className="text-[10px] text-white/50">{rentalMode === "HOURLY" ? "Flexible Hours" : "24-Hour Block"}</span>
+          <span className="text-[10px] text-neutral-500">{rentalMode === "HOURLY" ? "Flexible Hours" : "24-Hour Block"}</span>
         </div>
       </div>
 
       {/* Mode Switch: Daily vs Hourly */}
       {hasHourly && (
-        <div className="mt-4 flex rounded-xl border border-white/10 bg-black/40 p-1">
+        <div className="mt-4 flex rounded-xl border border-neutral-200 bg-neutral-100/70 p-1">
           <button
             type="button"
             onClick={() => handleModeToggle("DAILY")}
             className={`flex-1 rounded-lg py-2 text-xs font-bold transition-all ${
               rentalMode === "DAILY"
                 ? "bg-orange-500 text-white shadow-md shadow-orange-500/20"
-                : "text-white/60 hover:text-white"
+                : "text-neutral-600 hover:text-neutral-950"
             }`}
           >
             Daily Rental (24h)
@@ -440,7 +447,7 @@ export function BookingEngine({
             className={`flex-1 rounded-lg py-2 text-xs font-bold transition-all ${
               rentalMode === "HOURLY"
                 ? "bg-orange-500 text-white shadow-md shadow-orange-500/20"
-                : "text-white/60 hover:text-white"
+                : "text-neutral-600 hover:text-neutral-950"
             }`}
           >
             Hourly Rental (₹{Number(hourlyPrice).toLocaleString("en-IN")}/hr)
@@ -469,10 +476,10 @@ export function BookingEngine({
           <div
             className={`flex items-center gap-2 rounded-xl border px-3 py-2 text-xs font-semibold ${
               availLoading
-                ? "border-white/10 bg-white/5 text-white/50"
+                ? "border-neutral-200 bg-neutral-50 text-neutral-500"
                 : isAvailable
-                  ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-400"
-                  : "border-red-500/30 bg-red-500/10 text-red-400"
+                  ? "border-emerald-500/30 bg-emerald-50 text-emerald-700"
+                  : "border-red-500/30 bg-red-50 text-red-700"
             }`}
           >
             {availLoading ? (
@@ -482,12 +489,12 @@ export function BookingEngine({
             ) : isAvailable ? (
               <>
                 <CheckCircle2 className="size-3.5" /> Available for selected dates
-                <span className="ml-auto text-[10px] font-normal text-emerald-400/60">✓ Instant Selection</span>
+                <span className="ml-auto text-[10px] font-normal text-emerald-600">✓ Instant Selection</span>
               </>
             ) : (
               <>
                 <AlertCircle className="size-3.5" /> Not available for selected dates
-                <span className="ml-auto text-[10px] font-normal text-red-400/60">Try other dates</span>
+                <span className="ml-auto text-[10px] font-normal text-red-600">Try other dates</span>
               </>
             )}
           </div>
@@ -495,15 +502,15 @@ export function BookingEngine({
 
         {/* Delivery Mode: Branch / Airport */}
         <div>
-          <Label className="text-xs text-white/60">Delivery & Handover Point</Label>
+          <Label className="text-xs text-neutral-700 font-medium">Delivery & Handover Point</Label>
           <div className="mt-1.5 grid grid-cols-2 gap-2">
             <button
               type="button"
               onClick={() => setDeliveryType("BRANCH")}
               className={`flex items-center justify-center gap-1.5 rounded-xl border p-2.5 text-xs font-semibold transition-all ${
                 deliveryType === "BRANCH"
-                  ? "border-orange-500 bg-orange-500/10 text-orange-400"
-                  : "border-white/10 bg-black/30 text-white/60 hover:text-white"
+                  ? "border-orange-500 bg-orange-500/10 text-orange-600 shadow-sm"
+                  : "border-neutral-200 bg-neutral-50 text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100"
               }`}
             >
               <MapPin className="size-3.5" /> City Branch Office
@@ -514,8 +521,8 @@ export function BookingEngine({
               onClick={() => setDeliveryType("AIRPORT")}
               className={`flex items-center justify-center gap-1.5 rounded-xl border p-2.5 text-xs font-semibold transition-all ${
                 deliveryType === "AIRPORT"
-                  ? "border-orange-500 bg-orange-500/10 text-orange-400"
-                  : "border-white/10 bg-black/30 text-white/60 hover:text-white"
+                  ? "border-orange-500 bg-orange-500/10 text-orange-600 shadow-sm"
+                  : "border-neutral-200 bg-neutral-50 text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100"
               }`}
             >
               <Plane className="size-3.5" /> Airport Terminal
@@ -528,11 +535,11 @@ export function BookingEngine({
           <div className="space-y-3">
             <div>
               <div className="flex items-center justify-between">
-                <Label className="text-xs text-white/60">
+                <Label className="text-xs text-neutral-700 font-medium">
                   {differentDropLocation ? "Pickup Branch Office" : "Branch Office (Pickup & Drop)"}
                 </Label>
                 {!differentDropLocation && (
-                  <span className={`text-[11px] font-semibold ${Number(locations.find((l) => l.id === selectedLocationId)?.dropCharge ?? 0) > 0 ? "text-orange-400" : "text-emerald-400"}`}>
+                  <span className={`text-[11px] font-semibold ${Number(locations.find((l) => l.id === selectedLocationId)?.dropCharge ?? 0) > 0 ? "text-orange-600" : "text-emerald-600"}`}>
                     {Number(locations.find((l) => l.id === selectedLocationId)?.dropCharge ?? 0) > 0
                       ? `Drop Fee: ₹${Number(locations.find((l) => l.id === selectedLocationId)?.dropCharge).toLocaleString("en-IN")}`
                       : "Free Drop (₹0)"}
@@ -547,13 +554,13 @@ export function BookingEngine({
                     setSelectedDropLocationId(e.target.value);
                   }
                 }}
-                className="mt-1 w-full rounded-xl border border-white/10 bg-black/50 p-2.5 text-xs text-white outline-none focus:border-orange-500 cursor-pointer"
+                className="mt-1 w-full rounded-xl border border-neutral-200 bg-white p-2.5 text-xs text-neutral-900 outline-none focus:border-orange-500 cursor-pointer shadow-sm"
               >
                 {locations.map((loc) => {
                   const charge = Number(loc.dropCharge ?? 0);
                   const priceLabel = charge > 0 ? ` — ₹${charge.toLocaleString("en-IN")} Drop Fee` : " — Free Drop (₹0)";
                   return (
-                    <option key={loc.id} value={loc.id} className="bg-neutral-900 text-white">
+                    <option key={loc.id} value={loc.id} className="bg-white text-neutral-900">
                       {loc.name} ({loc.city}){priceLabel}
                     </option>
                   );
@@ -561,7 +568,7 @@ export function BookingEngine({
               </select>
             </div>
 
-            <label className="flex items-center gap-2 cursor-pointer text-xs text-white/70 hover:text-white select-none">
+            <label className="flex items-center gap-2 cursor-pointer text-xs text-neutral-700 hover:text-neutral-900 select-none">
               <input
                 type="checkbox"
                 checked={differentDropLocation}
@@ -572,7 +579,7 @@ export function BookingEngine({
                     setSelectedDropLocationId(selectedLocationId);
                   }
                 }}
-                className="rounded border-white/20 bg-black/40 accent-orange-500"
+                className="rounded border-neutral-300 bg-white accent-orange-500"
               />
               <span>Drop-off at a different branch office</span>
             </label>
@@ -580,8 +587,8 @@ export function BookingEngine({
             {differentDropLocation && (
               <div>
                 <div className="flex items-center justify-between">
-                  <Label className="text-xs text-white/60">Drop-off Branch Office</Label>
-                  <span className={`text-[11px] font-semibold ${Number(locations.find((l) => l.id === selectedDropLocationId)?.dropCharge ?? 0) > 0 ? "text-orange-400" : "text-emerald-400"}`}>
+                  <Label className="text-xs text-neutral-700 font-medium">Drop-off Branch Office</Label>
+                  <span className={`text-[11px] font-semibold ${Number(locations.find((l) => l.id === selectedDropLocationId)?.dropCharge ?? 0) > 0 ? "text-orange-600" : "text-emerald-600"}`}>
                     {Number(locations.find((l) => l.id === selectedDropLocationId)?.dropCharge ?? 0) > 0
                       ? `Drop Fee: ₹${Number(locations.find((l) => l.id === selectedDropLocationId)?.dropCharge).toLocaleString("en-IN")}`
                       : "Free Drop (₹0)"}
@@ -590,13 +597,13 @@ export function BookingEngine({
                 <select
                   value={selectedDropLocationId}
                   onChange={(e) => setSelectedDropLocationId(e.target.value)}
-                  className="mt-1 w-full rounded-xl border border-white/10 bg-black/50 p-2.5 text-xs text-white outline-none focus:border-orange-500 cursor-pointer"
+                  className="mt-1 w-full rounded-xl border border-neutral-200 bg-white p-2.5 text-xs text-neutral-900 outline-none focus:border-orange-500 cursor-pointer shadow-sm"
                 >
                   {locations.map((loc) => {
                     const charge = Number(loc.dropCharge ?? 0);
                     const priceLabel = charge > 0 ? ` — ₹${charge.toLocaleString("en-IN")} Drop Fee` : " — Free Drop (₹0)";
                     return (
-                      <option key={loc.id} value={loc.id} className="bg-neutral-900 text-white">
+                      <option key={loc.id} value={loc.id} className="bg-white text-neutral-900">
                         {loc.name} ({loc.city}){priceLabel}
                       </option>
                     );
@@ -607,19 +614,19 @@ export function BookingEngine({
           </div>
         ) : (
           <div>
-            <Label className="text-xs text-white/60">Select Airport Terminal</Label>
+            <Label className="text-xs text-neutral-700 font-medium">Select Airport Terminal</Label>
             <select
               value={selectedAirportId}
               onChange={(e) => setSelectedAirportId(e.target.value)}
-              className="mt-1 w-full rounded-xl border border-white/10 bg-black/50 p-2.5 text-xs text-white outline-none focus:border-orange-500"
+              className="mt-1 w-full rounded-xl border border-neutral-200 bg-white p-2.5 text-xs text-neutral-900 outline-none focus:border-orange-500 shadow-sm"
             >
               {airports.map((ap) => (
-                <option key={ap.id} value={ap.id} className="bg-neutral-900 text-white">
+                <option key={ap.id} value={ap.id} className="bg-white text-neutral-900">
                   {ap.name} ({ap.city})
                 </option>
               ))}
             </select>
-            <p className="mt-1 text-[11px] text-white/40">
+            <p className="mt-1 text-[11px] text-neutral-500">
               Vehicle will be waiting at Arrivals gate with flight-tracked handover.
             </p>
           </div>
@@ -627,12 +634,12 @@ export function BookingEngine({
 
         {/* Protection Plan */}
         {insurances.length > 0 && (
-          <div className="rounded-2xl border border-white/10 bg-black/30 p-3.5">
-            <div className="flex items-center justify-between text-xs font-bold text-white">
+          <div className="rounded-2xl border border-neutral-200 bg-neutral-50/70 p-3.5">
+            <div className="flex items-center justify-between text-xs font-bold text-neutral-950">
               <span className="flex items-center gap-1.5">
-                <ShieldCheck className="size-4 text-emerald-400" /> Protection Plan
+                <ShieldCheck className="size-4 text-emerald-600" /> Protection Plan
               </span>
-              <span className="text-[11px] text-emerald-400">Recommended</span>
+              <span className="text-[11px] text-emerald-600 font-semibold">Recommended</span>
             </div>
             <div className="mt-2.5 flex flex-col gap-2">
               {insurances.map((ins) => {
@@ -647,8 +654,8 @@ export function BookingEngine({
                     key={ins.id}
                     className={`flex cursor-pointer items-start justify-between rounded-xl border p-2.5 text-xs transition-all ${
                       isSelected
-                        ? "border-emerald-500/50 bg-emerald-500/10 text-white"
-                        : "border-white/5 bg-white/5 text-white/60 hover:text-white"
+                        ? "border-emerald-500/50 bg-emerald-50/50 text-neutral-950 shadow-sm"
+                        : "border-neutral-200 bg-white text-neutral-700 hover:border-neutral-300"
                     }`}
                   >
                     <div className="flex items-start gap-2">
@@ -661,10 +668,10 @@ export function BookingEngine({
                       />
                       <div>
                         <div className="font-semibold">{ins.name}</div>
-                        {ins.description && <div className="text-[10px] text-white/40">{ins.description}</div>}
+                        {ins.description && <div className="text-[10px] text-neutral-500">{ins.description}</div>}
                       </div>
                     </div>
-                    <span className="font-bold whitespace-nowrap text-emerald-400">{priceLabel}</span>
+                    <span className="font-bold whitespace-nowrap text-emerald-600">{priceLabel}</span>
                   </label>
                 );
               })}
@@ -674,8 +681,8 @@ export function BookingEngine({
 
         {/* Extra Services Checklist */}
         {extraServices.length > 0 && (
-          <div className="rounded-2xl border border-white/10 bg-black/30 p-3.5">
-            <div className="text-xs font-bold text-white">Convenience Add-ons</div>
+          <div className="rounded-2xl border border-neutral-200 bg-neutral-50/70 p-3.5">
+            <div className="text-xs font-bold text-neutral-950">Convenience Add-ons</div>
             <div className="mt-2 flex flex-col gap-1.5">
               {extraServices.map((srv) => {
                 const checked = selectedExtraIds.includes(srv.id);
@@ -684,8 +691,8 @@ export function BookingEngine({
                     key={srv.id}
                     className={`flex cursor-pointer items-center justify-between rounded-xl border p-2 text-xs transition-all ${
                       checked
-                        ? "border-orange-500/40 bg-orange-500/10 text-white"
-                        : "border-white/5 bg-white/5 text-white/60 hover:text-white"
+                        ? "border-orange-500/40 bg-orange-500/10 text-neutral-950 shadow-sm"
+                        : "border-neutral-200 bg-white text-neutral-700 hover:border-neutral-300"
                     }`}
                   >
                     <div className="flex items-center gap-2">
@@ -697,7 +704,7 @@ export function BookingEngine({
                       />
                       <span>{srv.name}</span>
                     </div>
-                    <span className="font-bold text-orange-400">+₹{Number(srv.price).toLocaleString("en-IN")}</span>
+                    <span className="font-bold text-orange-600">+₹{Number(srv.price).toLocaleString("en-IN")}</span>
                   </label>
                 );
               })}
@@ -706,16 +713,16 @@ export function BookingEngine({
         )}
 
         {/* Coupon Code Accordion */}
-        <div className="rounded-xl border border-white/10 bg-black/20 p-2.5">
+        <div className="rounded-xl border border-neutral-200 bg-neutral-50/70 p-2.5">
           {appliedCoupon ? (
-            <div className="flex items-center justify-between text-xs text-emerald-400">
+            <div className="flex items-center justify-between text-xs text-emerald-600">
               <span className="flex items-center gap-1 font-bold">
                 <Tag className="size-3.5" /> Coupon &ldquo;{appliedCoupon}&rdquo; applied!
               </span>
               <button
                 type="button"
                 onClick={handleRemoveCoupon}
-                className="text-[11px] text-white/50 underline hover:text-white"
+                className="text-[11px] text-neutral-500 underline hover:text-neutral-900"
               >
                 Remove
               </button>
@@ -726,10 +733,10 @@ export function BookingEngine({
                 placeholder="Promo Code (e.g. SRM10)"
                 value={couponInput}
                 onChange={(e) => setCouponInput(e.target.value)}
-                className="h-8 border-white/10 bg-black/40 text-xs uppercase"
+                className="h-8 border-neutral-200 bg-white text-xs uppercase text-neutral-900"
               />
-              <Button type="submit" size="sm" variant="outline" className="h-8 border-white/20 text-xs">
-                Apply
+              <Button type="submit" size="sm" variant="outline" disabled={isApplyingCoupon} className="h-8 border-neutral-200 bg-white text-xs hover:border-orange-500 hover:text-orange-600">
+                {isApplyingCoupon ? <Loader2 className="size-3 animate-spin" /> : "Apply"}
               </Button>
             </form>
           )}
@@ -737,72 +744,72 @@ export function BookingEngine({
 
         {/* Pricing Breakdown Summary */}
         {calcLoading ? (
-          <div className="flex items-center justify-center py-4 text-xs text-white/50">
-            <Loader2 className="mr-2 size-4 animate-spin text-orange-400" /> Updating live price...
+          <div className="flex items-center justify-center py-4 text-xs text-neutral-500">
+            <Loader2 className="mr-2 size-4 animate-spin text-orange-500" /> Updating live price...
           </div>
         ) : pricingResult ? (
-          <div className="rounded-2xl border border-white/10 bg-black/40 p-4 text-xs">
+          <div className="rounded-2xl border border-neutral-200 bg-neutral-50/70 p-4 text-xs">
             <div className="flex flex-col gap-2">
-              <div className="flex justify-between text-white/70">
+              <div className="flex justify-between text-neutral-600">
                 <span>Base Rental ({pricingResult.duration.fullDays || 1} day(s))</span>
                 <span>{formatInr(pricingResult.rental.basePrice)}</span>
               </div>
 
               {pricingResult.rental.extraHourCharge > 0 && (
-                <div className="flex justify-between text-white/70">
+                <div className="flex justify-between text-neutral-600">
                   <span>Extra Hours ({pricingResult.duration.extraHours}h)</span>
                   <span>{formatInr(pricingResult.rental.extraHourCharge)}</span>
                 </div>
               )}
 
               {pricingResult.airport.pickupCharge + pricingResult.airport.dropCharge > 0 && (
-                <div className="flex justify-between text-white/70">
+                <div className="flex justify-between text-neutral-600">
                   <span>Airport Delivery Fee</span>
                   <span>{formatInr(pricingResult.airport.pickupCharge + pricingResult.airport.dropCharge)}</span>
                 </div>
               )}
 
               {pricingResult.locationDropCharge > 0 && (
-                <div className="flex justify-between text-white/70">
+                <div className="flex justify-between text-neutral-600">
                   <span>Drop Location Fee</span>
                   <span>{formatInr(pricingResult.locationDropCharge)}</span>
                 </div>
               )}
 
               {pricingResult.insurance && pricingResult.insurance.price > 0 && (
-                <div className="flex justify-between text-white/70">
+                <div className="flex justify-between text-neutral-600">
                   <span>Protection Plan</span>
                   <span>{formatInr(pricingResult.insurance.price)}</span>
                 </div>
               )}
 
               {pricingResult.services && pricingResult.services.length > 0 && (
-                <div className="flex justify-between text-white/70">
+                <div className="flex justify-between text-neutral-600">
                   <span>Add-ons</span>
                   <span>{formatInr(pricingResult.services.reduce((sum, s) => sum + s.price, 0))}</span>
                 </div>
               )}
 
               {pricingResult.discount > 0 && (
-                <div className="flex justify-between font-bold text-emerald-400">
+                <div className="flex justify-between font-bold text-emerald-600">
                   <span>Discount</span>
                   <span>-{formatInr(pricingResult.discount)}</span>
                 </div>
               )}
 
               {pricingResult.totalTax > 0 && (
-                <div className="flex justify-between text-white/40">
+                <div className="flex justify-between text-neutral-500">
                   <span>GST (Taxes)</span>
                   <span>{formatInr(pricingResult.totalTax)}</span>
                 </div>
               )}
 
-              <div className="flex items-center justify-between border-t border-white/10 pt-2 text-sm font-black text-white">
+              <div className="flex items-center justify-between border-t border-neutral-200 pt-2 text-sm font-black text-neutral-950">
                 <span>Total Payable</span>
-                <span className="text-base text-orange-400">{formatInr(pricingResult.total)}</span>
+                <span className="text-base text-orange-600">{formatInr(pricingResult.total)}</span>
               </div>
 
-              <div className="mt-1 flex items-center justify-between text-[11px] text-emerald-400">
+              <div className="mt-1 flex items-center justify-between text-[11px] text-emerald-600">
                 <span>Refundable Security Deposit</span>
                 <span>₹3,000–₹5,000 (at pickup)</span>
               </div>
@@ -810,16 +817,20 @@ export function BookingEngine({
           </div>
         ) : null}
 
-        {calcError && <p className="text-xs text-red-400">{calcError}</p>}
+        {calcError && <p className="text-xs text-red-500">{calcError}</p>}
 
         {/* Primary CTA: Add to Cart */}
         <Button
           type="button"
           onClick={handleAddToCart}
-          disabled={availLoading || isAvailable === false || calcLoading}
+          disabled={availLoading || isAvailable === false || calcLoading || isAdding}
           className="mt-3 w-full rounded-2xl bg-orange-500 py-3.5 text-sm font-black text-white shadow-xl shadow-orange-500/25 transition-all hover:bg-orange-600 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {availLoading || calcLoading ? (
+          {isAdding ? (
+            <>
+              <Loader2 className="mr-2 size-4 animate-spin" /> Adding to Cart...
+            </>
+          ) : availLoading || calcLoading ? (
             <>
               <Loader2 className="mr-2 size-4 animate-spin" /> Checking availability & rates…
             </>
@@ -836,12 +847,12 @@ export function BookingEngine({
 
       {/* Support call fallback */}
       {phone && (
-        <div className="mt-4 border-t border-white/10 pt-3 text-center">
+        <div className="mt-4 border-t border-neutral-200 pt-3 text-center">
           <a
             href={`tel:${phone.replace(/\s/g, "")}`}
-            className="inline-flex items-center gap-1.5 text-xs text-white/50 hover:text-white"
+            className="inline-flex items-center gap-1.5 text-xs text-neutral-500 hover:text-orange-600 transition"
           >
-            <Phone className="size-3.5 text-orange-400" /> Prefer booking over phone? Call {phone}
+            <Phone className="size-3.5 text-orange-500" /> Prefer booking over phone? Call {phone}
           </a>
         </div>
       )}

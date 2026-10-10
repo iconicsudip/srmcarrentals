@@ -4,7 +4,10 @@ import { Providers } from "@/components/providers";
 
 import "./globals.css";
 
+const siteUrl = process.env.NEXT_PUBLIC_APP_URL || "https://srmcarrentals.com";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
   title: {
     default: "SRM Car Rentals",
     template: "%s | SRM Car Rentals",

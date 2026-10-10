@@ -523,6 +523,7 @@ model Car {
   bookings             Booking[]
   seoMetadata          SeoMetadata?
   tours                Tour[]
+  locations            CarLocation[]
 
   @@index([brandId])
   @@index([modelId])
@@ -550,6 +551,21 @@ model CarSafetyFeatureOnCar {
 
   @@id([carId, safetyFeatureId])
   @@map("car_safety_feature_links")
+}
+
+model CarLocation {
+  carId        String
+  car          Car      @relation(fields: [carId], references: [id], onDelete: Cascade)
+  locationId   String
+  location     Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  dailyPrice   Decimal? @db.Decimal(10, 2)
+  extraKmPrice Decimal? @db.Decimal(10, 2)
+  isAvailable  Boolean  @default(true)
+  createdAt    DateTime @default(now())
+
+  @@id([carId, locationId])
+  @@index([locationId])
+  @@map("car_locations")
 }
 
 model CarImage {
@@ -678,6 +694,7 @@ model Location {
   pickupBookings     Booking[]                @relation("PickupLocation")
   dropBookings       Booking[]                @relation("DropLocation")
   seoMetadata        SeoMetadata?
+  cars               CarLocation[]
 
   @@map("locations")
 }
@@ -1339,4 +1356,15 @@ model GalleryImage {
 
   @@index([status])
   @@map("gallery_images")
+}
+
+model StoredImage {
+  id        String   @id @default(cuid())
+  filename  String
+  mimeType  String   @default("image/webp")
+  sizeBytes Int
+  data      Bytes
+  createdAt DateTime @default(now())
+
+  @@map("stored_images")
 }

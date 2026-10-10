@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 
 export function B2bSection({ content, phone }: { content: HomepageContent["b2b"]; phone: string }) {
   return (
-    <section className="relative overflow-hidden border-t border-white/5 bg-neutral-950">
+    <section className="relative overflow-hidden border-t border-neutral-200/80 bg-[#FAFAFC]">
       {/* ── Background corporate fleet image ── */}
       <div className="pointer-events-none absolute inset-0" aria-hidden>
         <Image
@@ -17,52 +17,53 @@ export function B2bSection({ content, phone }: { content: HomepageContent["b2b"]
           alt=""
           fill
           sizes="100vw"
-          className="object-cover opacity-10"
+          className="object-cover opacity-5"
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-neutral-950 via-neutral-950/90 to-neutral-950/50" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#FAFAFC]/95 via-white/85 to-[#FAFAFC]/60" />
       </div>
 
-      <div className="relative mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
+      <div className="relative mx-auto max-w-[1520px] px-4 py-20 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 items-center gap-14 lg:grid-cols-2">
           {/* ── Left: text content ── */}
           <div>
             {content.badge && (
-              <span className="inline-flex rounded-full border border-white/15 bg-white/5 px-3 py-1 text-[11px] font-semibold tracking-widest text-orange-500">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-orange-500/30 bg-orange-500/10 px-3.5 py-1 text-[11px] font-bold tracking-widest text-orange-700 shadow-xs">
+                <span className="h-1.5 w-1.5 rounded-full bg-orange-500 animate-pulse" />
                 {content.badge}
               </span>
             )}
-            <h2 className="mt-4 max-w-2xl text-3xl leading-tight font-black text-white uppercase sm:text-5xl">
+            <h2 className="mt-4 max-w-2xl text-3xl leading-tight font-black text-neutral-950 uppercase sm:text-5xl">
               {stripTrailingPunctuation(content.title)}
               <span className="text-orange-500">.</span>
             </h2>
-            {content.subtitle && <p className="mt-4 max-w-xl text-white/50">{content.subtitle}</p>}
+            {content.subtitle && <p className="mt-4 max-w-xl text-neutral-600 leading-relaxed">{content.subtitle}</p>}
 
             <div className="mt-8 flex flex-wrap gap-3">
-              <Button asChild size="lg" className="bg-orange-500 font-bold text-white hover:bg-orange-600">
+              <Button asChild size="lg" className="bg-orange-500 font-bold text-white shadow-lg shadow-orange-500/25 hover:bg-orange-600 hover:shadow-orange-500/40 hover:-translate-y-0.5 transition-all">
                 <Link href={content.ctaHref}>
                   {content.ctaLabel} <ArrowRight className="size-4" />
                 </Link>
               </Button>
               {phone && (
-                <Button asChild size="lg" variant="outline" className="border-white/20 bg-transparent text-white hover:bg-white/10">
+                <Button asChild size="lg" variant="outline" className="border-neutral-300 bg-white text-neutral-800 hover:bg-neutral-50 hover:text-neutral-950 shadow-xs">
                   <a href={`tel:${phone.replace(/\s/g, "")}`}>
-                    <Phone className="size-4" /> Talk to Our Team
+                    <Phone className="size-4 text-orange-500" /> Talk to Our Team
                   </a>
                 </Button>
               )}
             </div>
 
             {content.items.length > 0 && (
-              <div className="mt-10 grid grid-cols-1 gap-4 border-t border-white/10 pt-10 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="mt-10 grid grid-cols-1 gap-4 border-t border-neutral-200 pt-10 sm:grid-cols-2 lg:grid-cols-3">
                 {content.items.map((item, i) => {
                   const Icon = resolveIcon(item.icon);
                   return (
-                    <div key={i} className="rounded-xl border border-white/10 bg-neutral-900 p-5">
-                      <span className="flex size-9 items-center justify-center rounded-lg bg-orange-500/15 text-orange-500">
+                    <div key={i} className="rounded-2xl border border-neutral-200/90 bg-white p-5 shadow-xs hover:border-orange-500/40 hover:shadow-md transition-all">
+                      <span className="flex size-9 items-center justify-center rounded-xl bg-orange-500/10 text-orange-600 shadow-xs">
                         <Icon className="size-4" />
                       </span>
-                      <h3 className="mt-3 text-sm font-bold text-white">{item.title}</h3>
-                      <p className="mt-1 text-xs text-white/50">{item.description}</p>
+                      <h3 className="mt-3 text-sm font-bold text-neutral-950">{item.title}</h3>
+                      <p className="mt-1 text-xs text-neutral-600 leading-relaxed">{item.description}</p>
                     </div>
                   );
                 })}
@@ -72,7 +73,7 @@ export function B2bSection({ content, phone }: { content: HomepageContent["b2b"]
 
           {/* ── Right: decorative image panel ── */}
           <div className="relative hidden lg:block">
-            <div className="relative aspect-[4/5] overflow-hidden rounded-2xl border border-white/10">
+            <div className="relative aspect-[4/5] overflow-hidden rounded-3xl border border-neutral-200/90 shadow-xl">
               <Image
                 src="https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=900&q=80&auto=format&fit=crop"
                 alt="Premium corporate fleet for business travel"
@@ -80,29 +81,29 @@ export function B2bSection({ content, phone }: { content: HomepageContent["b2b"]
                 sizes="45vw"
                 className="object-cover"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
 
               {/* Floating stat badge */}
-              <div className="absolute bottom-5 left-5 right-5 flex items-center gap-4 rounded-xl border border-white/10 bg-black/70 px-5 py-4 backdrop-blur">
+              <div className="absolute bottom-5 left-5 right-5 flex items-center justify-around rounded-2xl border border-neutral-200/80 bg-white/95 px-5 py-4 backdrop-blur-md shadow-xl">
                 <div className="text-center">
-                  <div className="text-2xl font-black text-white">500+</div>
-                  <div className="text-[11px] text-white/50">Corporate Clients</div>
+                  <div className="text-2xl font-black text-neutral-950">500+</div>
+                  <div className="text-[11px] text-neutral-500 font-medium">Corporate Clients</div>
                 </div>
-                <div className="h-10 w-px bg-white/10" />
+                <div className="h-10 w-px bg-neutral-200" />
                 <div className="text-center">
-                  <div className="text-2xl font-black text-white">24/7</div>
-                  <div className="text-[11px] text-white/50">Fleet Support</div>
+                  <div className="text-2xl font-black text-neutral-950">24/7</div>
+                  <div className="text-[11px] text-neutral-500 font-medium">Fleet Support</div>
                 </div>
-                <div className="h-10 w-px bg-white/10" />
+                <div className="h-10 w-px bg-neutral-200" />
                 <div className="text-center">
-                  <div className="text-2xl font-black text-orange-500">B2B</div>
-                  <div className="text-[11px] text-white/50">Preferred Rates</div>
+                  <div className="text-2xl font-black text-orange-600">B2B</div>
+                  <div className="text-[11px] text-neutral-500 font-medium">Preferred Rates</div>
                 </div>
               </div>
             </div>
 
             {/* Ambient glow */}
-            <div className="pointer-events-none absolute -inset-6 -z-10 rounded-3xl bg-orange-500/5 blur-3xl" />
+            <div className="pointer-events-none absolute -inset-6 -z-10 rounded-3xl bg-orange-500/10 blur-3xl" />
           </div>
         </div>
       </div>

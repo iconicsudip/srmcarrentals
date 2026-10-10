@@ -32,5 +32,6 @@ export const GET = withErrorHandling(async (req) => {
 
 export const POST = withErrorHandling(async (req) => {
   const body = createBookingSchema.parse(await req.json());
-  return created(await createBooking(body));
+  const origin = new URL(req.url).origin;
+  return created(await createBooking(body, origin));
 });

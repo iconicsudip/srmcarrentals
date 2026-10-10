@@ -33,6 +33,7 @@ interface CarListItem {
   carType: { name: string };
   images: { url: string; altText: string | null }[];
   pricing: { dailyPrice: string } | null;
+  locations?: { locationId: string; location: { id: string; name: string } }[];
 }
 
 const STATUS_BADGE: Record<CarListItem["status"], "success" | "muted" | "warning"> = {
@@ -49,10 +50,12 @@ export default function CarsPage() {
   const [status, setStatus] = React.useState<string>("ALL");
   const [brandId, setBrandId] = React.useState<string>("ALL");
   const [categoryId, setCategoryId] = React.useState<string>("ALL");
+  const [locationId, setLocationId] = React.useState<string>("ALL");
   const [deletingCar, setDeletingCar] = React.useState<CarListItem | null>(null);
 
   const brands = useLookupOptions<{ id: string; name: string }>("/cars/brands", "name");
   const categories = useLookupOptions<{ id: string; name: string }>("/cars/categories", "name");
+  const locations = useLookupOptions<{ id: string; name: string }>("/locations", "name");
 
   const { data, isLoading, isFetching } = useCarList<CarListItem>({
     page,
@@ -61,6 +64,7 @@ export default function CarsPage() {
     status: status !== "ALL" ? status : undefined,
     brandId: brandId !== "ALL" ? brandId : undefined,
     categoryId: categoryId !== "ALL" ? categoryId : undefined,
+    locationId: locationId !== "ALL" ? locationId : undefined,
   });
 
   const deleteMutation = useDeleteCar();
@@ -116,6 +120,25 @@ export default function CarsPage() {
     },
     { id: "category", header: "Category", cell: ({ row }) => row.original.category.name },
     { id: "type", header: "Type", cell: ({ row }) => row.original.carType.name },
+    {
+      id: "locations",
+      header: "Locations",
+      cell: ({ row }) => {
+        const locs = row.original.locations;
+        if (!locs || locs.length === 0) {
+          return <Badge variant="outline" className="text-xs">All Locations</Badge>;
+        }
+        return (
+          <div className="flex flex-wrap gap-1 max-w-[160px]">
+            {locs.map((l) => (
+              <Badge key={l.locationId} variant="secondary" className="text-[10px] px-1.5 py-0">
+                {l.location.name}
+              </Badge>
+            ))}
+          </div>
+        );
+      },
+    },
     {
       id: "price",
       header: "24hr Price",
@@ -219,6 +242,25 @@ export default function CarsPage() {
             <SelectContent>
               <SelectItem value="ALL">All categories</SelectItem>
               {categories.options.map((opt) => (
+                <SelectItem key={opt.value} value={opt.value}>
+                  {opt.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select
+            value={locationId}
+            onValueChange={(v) => {
+              setLocationId(v);
+              setPage(1);
+            }}
+          >
+            <SelectTrigger className="w-40">
+              <SelectValue placeholder="Location" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="ALL">All locations</SelectItem>
+              {locations.options.map((opt) => (
                 <SelectItem key={opt.value} value={opt.value}>
                   {opt.label}
                 </SelectItem>

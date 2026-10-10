@@ -4,32 +4,29 @@ export function AmbientBackground() {
   return (
     <div
       aria-hidden="true"
-      className="pointer-events-none fixed inset-0 -z-10 overflow-hidden select-none"
+      className="pointer-events-none fixed inset-0 -z-10 overflow-hidden select-none bg-[#FAFAFC]"
     >
-      {/* 1. Atmospheric Ambient Color Orbs */}
+      {/* 1. Atmospheric Luxury Warm Sunset Orbs (Subtle on White) */}
       {/* Top right golden orange aura */}
-      <div className="absolute -top-32 -right-32 h-[550px] w-[550px] rounded-full bg-gradient-to-br from-orange-500/15 via-amber-500/10 to-transparent blur-[140px] animate-pulse-slow will-change-transform" />
+      <div className="absolute -top-32 -right-32 h-[650px] w-[650px] rounded-full bg-gradient-to-br from-orange-400/[0.12] via-amber-300/[0.08] to-transparent blur-[140px] animate-pulse-slow will-change-transform" />
 
-      {/* Mid-left deep bronze aura */}
-      <div className="absolute top-[35%] -left-48 h-[600px] w-[600px] rounded-full bg-gradient-to-tr from-amber-600/10 via-orange-600/6 to-transparent blur-[160px] animate-pulse-slow will-change-transform [animation-delay:4s]" />
+      {/* Mid-left warm apricot aura */}
+      <div className="absolute top-[30%] -left-48 h-[650px] w-[650px] rounded-full bg-gradient-to-tr from-orange-500/[0.07] via-amber-400/[0.05] to-transparent blur-[160px] animate-pulse-slow will-change-transform [animation-delay:4s]" />
 
-      {/* Center subtle warm glow */}
-      <div className="absolute top-[60%] left-1/2 -translate-x-1/2 h-[450px] w-[800px] rounded-full bg-orange-500/[0.04] blur-[150px] will-change-transform" />
+      {/* Center soft sunbeam glow */}
+      <div className="absolute top-[60%] left-1/2 -translate-x-1/2 h-[500px] w-[900px] rounded-full bg-orange-500/[0.04] blur-[160px] will-change-transform" />
 
-      {/* Bottom right sunset reflection */}
-      <div className="absolute -bottom-40 right-[10%] h-[500px] w-[500px] rounded-full bg-gradient-to-tl from-orange-500/10 via-amber-600/5 to-transparent blur-[140px] will-change-transform" />
+      {/* Bottom right subtle dusk reflection */}
+      <div className="absolute -bottom-40 right-[10%] h-[600px] w-[600px] rounded-full bg-gradient-to-tl from-amber-500/[0.08] via-orange-400/[0.04] to-transparent blur-[150px] will-change-transform" />
 
-      {/* 2. Cyber-Luxury Grid Texture Masked Overlay */}
-      <div className="bg-subtle-grid absolute inset-0 opacity-40 mix-blend-screen" />
+      {/* 2. Architectural Luxury Grid Texture Overlay */}
+      <div className="bg-subtle-grid absolute inset-0 opacity-60" />
 
-      {/* 3. Floating Micro-Gleams (Subtle Floating Stars/Gleams) */}
-      <div className="absolute top-[18%] left-[22%] h-1 w-1 rounded-full bg-orange-400/50 shadow-[0_0_8px_#f97316] animate-float-slow" />
-      <div className="absolute top-[28%] right-[18%] h-1.5 w-1.5 rounded-full bg-amber-300/40 shadow-[0_0_10px_#fbbf24] animate-float-slow [animation-delay:2.5s]" />
-      <div className="absolute top-[52%] left-[12%] h-1 w-1 rounded-full bg-orange-300/40 shadow-[0_0_8px_#fb923c] animate-float-slow [animation-delay:1.2s]" />
-      <div className="absolute top-[75%] right-[25%] h-1 w-1 rounded-full bg-amber-400/40 shadow-[0_0_8px_#f59e0b] animate-float-slow [animation-delay:3.8s]" />
-
-      {/* 4. Vignette Shadow Overlay (Depth Enhancer) */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_40%,rgba(0,0,0,0.6)_100%)] pointer-events-none" />
+      {/* 3. Subtle floating golden micro-gleams */}
+      <div className="absolute top-[18%] left-[22%] h-1 w-1 rounded-full bg-orange-400/60 shadow-[0_0_8px_#f97316] animate-float-slow" />
+      <div className="absolute top-[28%] right-[18%] h-1.5 w-1.5 rounded-full bg-amber-400/50 shadow-[0_0_10px_#fbbf24] animate-float-slow [animation-delay:2.5s]" />
+      <div className="absolute top-[52%] left-[12%] h-1 w-1 rounded-full bg-orange-400/50 shadow-[0_0_8px_#fb923c] animate-float-slow [animation-delay:1.2s]" />
+      <div className="absolute top-[75%] right-[25%] h-1 w-1 rounded-full bg-amber-500/50 shadow-[0_0_8px_#f59e0b] animate-float-slow [animation-delay:3.8s]" />
     </div>
   );
 }

@@ -54,6 +54,7 @@ const carFormSchema = z.object({
   interiorColorId: z.string().optional().or(z.literal("")),
   featureIds: z.array(z.string()),
   safetyFeatureIds: z.array(z.string()),
+  locationIds: z.array(z.string()),
 });
 type CarFormValues = z.infer<typeof carFormSchema>;
 
@@ -110,6 +111,7 @@ export interface CarDetailDto {
   interiorColorId?: string | null;
   features: { feature: { id: string; name: string } }[];
   safetyFeatures: { safetyFeature: { id: string; name: string } }[];
+  locations?: { locationId: string; location: { id: string; name: string; city?: string } }[];
 }
 
 function toDefaultValues(car?: CarDetailDto): CarFormValues {
@@ -138,6 +140,7 @@ function toDefaultValues(car?: CarDetailDto): CarFormValues {
       interiorColorId: "",
       featureIds: [],
       safetyFeatureIds: [],
+      locationIds: [],
     };
   }
 
@@ -165,6 +168,7 @@ function toDefaultValues(car?: CarDetailDto): CarFormValues {
     interiorColorId: car.interiorColorId ?? "",
     featureIds: car.features.map((f) => f.feature.id),
     safetyFeatureIds: car.safetyFeatures.map((f) => f.safetyFeature.id),
+    locationIds: car.locations ? car.locations.map((l) => l.locationId) : [],
   };
 }
 
@@ -207,6 +211,7 @@ export function CarForm({ car }: { car?: CarDetailDto }) {
   const doors = useLookupOptions<CountRow>("/cars/doors", "count");
   const features = useLookupOptions<EntityRow>("/cars/features", "name");
   const safetyFeatures = useLookupOptions<EntityRow>("/cars/safety-features", "name");
+  const locations = useLookupOptions<EntityRow & { city?: string; dropCharge?: number }>("/locations", "name");
 
   const seatOptions = seats.rows.map((r) => ({ label: r.label || `${r.count} Seats`, value: r.id }));
   const cylinderOptions = cylinders.rows.map((r) => ({ label: r.label || `${r.count} Cylinders`, value: r.id }));
@@ -251,6 +256,7 @@ export function CarForm({ car }: { car?: CarDetailDto }) {
             <TabsTrigger value="appearance">Appearance</TabsTrigger>
             <TabsTrigger value="features">Features</TabsTrigger>
             <TabsTrigger value="safety">Safety Features</TabsTrigger>
+            <TabsTrigger value="locations">Locations</TabsTrigger>
             {isEdit && <TabsTrigger value="images">Images</TabsTrigger>}
           </TabsList>
 
@@ -491,6 +497,96 @@ export function CarForm({ car }: { car?: CarDetailDto }) {
                     </FormItem>
                   )}
                 />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="locations">
+            <Card>
+              <CardContent className="pt-6 flex flex-col gap-4">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b pb-4">
+                  <div>
+                    <h3 className="font-semibold text-base">Location Availability &amp; Stationing</h3>
+                    <p className="text-muted-foreground text-sm">
+                      Select which pickup/drop locations this car is assigned to. If no locations are selected, the car is available fleet-wide across all locations.
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => form.setValue("locationIds", locations.rows.map((l) => l.id))}
+                    >
+                      Select All
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => form.setValue("locationIds", [])}
+                    >
+                      Clear (Fleet-Wide)
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-3">
+                  {locations.rows.map((loc) => (
+                    <FormField
+                      key={loc.id}
+                      control={form.control}
+                      name="locationIds"
+                      render={({ field }) => {
+                        const checked = field.value?.includes(loc.id);
+                        return (
+                          <div
+                            className={`flex items-start gap-3 p-3 rounded-lg border transition-all cursor-pointer ${
+                              checked
+                                ? "border-primary bg-primary/5 shadow-xs"
+                                : "border-border hover:border-muted-foreground/40 bg-card"
+                            }`}
+                            onClick={() => {
+                              field.onChange(
+                                checked
+                                  ? field.value.filter((id) => id !== loc.id)
+                                  : [...(field.value || []), loc.id],
+                              );
+                            }}
+                          >
+                            <Checkbox
+                              checked={checked}
+                              onCheckedChange={(value) => {
+                                field.onChange(
+                                  value
+                                    ? [...(field.value || []), loc.id]
+                                    : field.value.filter((id) => id !== loc.id),
+                                );
+                              }}
+                              id={`loc-${loc.id}`}
+                              className="mt-0.5"
+                            />
+                            <div className="flex flex-col">
+                              <Label htmlFor={`loc-${loc.id}`} className="font-medium cursor-pointer">
+                                {loc.name}
+                              </Label>
+                              <span className="text-xs text-muted-foreground">
+                                {loc.city ? `${loc.city}` : "Rajasthan"}
+                                {loc.dropCharge && Number(loc.dropCharge) > 0 ? ` • ₹${loc.dropCharge} Drop fee` : ""}
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      }}
+                    />
+                  ))}
+                </div>
+
+                {locations.rows.length === 0 && (
+                  <p className="text-muted-foreground text-sm">
+                    No locations configured yet — add some under Locations &amp; Pricing &gt; Locations.
+                  </p>
+                )}
               </CardContent>
             </Card>
           </TabsContent>

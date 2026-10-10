@@ -51,32 +51,32 @@ export default async function BlogHubPage({ searchParams }: BlogHubPageProps) {
   const regularBlogs = featuredBlog ? blogs.slice(1) : blogs;
 
   return (
-    <div className="min-h-screen bg-neutral-950 text-white selection:bg-orange-500/30">
+    <div className="min-h-screen bg-[#FAFAFC] text-neutral-900 selection:bg-orange-500/20">
       <DynamicJsonLd path="/blog" />
 
       {/* ── Hero Section ── */}
-      <section className="relative overflow-hidden border-b border-white/10 bg-gradient-to-b from-neutral-900 via-neutral-950 to-neutral-950 pt-28 pb-20 sm:pt-36 sm:pb-24">
-        {/* Subtle grid pattern background */}
+      <section className="relative overflow-hidden border-b border-neutral-200/80 bg-white/80 pt-28 pb-20 sm:pt-36 sm:pb-24">
+        {/* Subtle radial warmth background */}
         <div
-          className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(249,115,22,0.15),rgba(255,255,255,0))]"
+          className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(249,115,22,0.12),rgba(255,255,255,0))]"
           aria-hidden
         />
 
-        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="relative mx-auto max-w-[1520px] px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col items-center text-center">
-            <span className="inline-flex items-center gap-2 rounded-full border border-orange-500/30 bg-orange-500/10 px-4 py-1.5 text-xs font-bold tracking-widest text-orange-400 uppercase">
+            <span className="inline-flex items-center gap-2 rounded-full border border-orange-500/30 bg-orange-500/10 px-4 py-1.5 text-xs font-bold tracking-widest text-orange-600 uppercase">
               <Compass className="size-3.5" />
               SRM Travel & Self-Drive Journal
             </span>
 
-            <h1 className="mt-6 max-w-4xl text-4xl font-black tracking-tight uppercase sm:text-6xl lg:text-7xl">
+            <h1 className="mt-6 max-w-4xl text-4xl font-black tracking-tight uppercase sm:text-6xl lg:text-7xl text-neutral-950">
               Road Trips, Guides & <br />
-              <span className="bg-gradient-to-r from-orange-400 via-amber-300 to-orange-500 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-orange-600 via-amber-500 to-orange-500 bg-clip-text text-transparent">
                 Rajasthan Travel Stories
               </span>
             </h1>
 
-            <p className="mt-6 max-w-2xl text-base sm:text-lg text-white/60 leading-relaxed">
+            <p className="mt-6 max-w-2xl text-base sm:text-lg text-neutral-600 leading-relaxed">
               Insider self-drive itineraries, SUV comparisons, destination road guides, and essential rental tips for Udaipur, Mount Abu, Kumbhalgarh, and beyond.
             </p>
           </div>
@@ -94,21 +94,21 @@ export default async function BlogHubPage({ searchParams }: BlogHubPageProps) {
       </section>
 
       {/* ── Main Content Section ── */}
-      <main className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+      <main className="mx-auto max-w-[1520px] px-4 py-16 sm:px-6 lg:px-8">
         {/* Featured Hero Card (Shown only on first page without search filters) */}
         {featuredBlog && (
           <section className="mb-16">
             <div className="mb-6 flex items-center justify-between">
-              <div className="flex items-center gap-2 text-xs font-bold tracking-widest text-orange-400 uppercase">
+              <div className="flex items-center gap-2 text-xs font-bold tracking-widest text-orange-600 uppercase">
                 <Sparkles className="size-4" />
                 Featured Editorial
               </div>
             </div>
 
-            <article className="group relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-neutral-900 via-neutral-900/80 to-neutral-950 p-1 sm:p-2 transition-all hover:border-orange-500/40 hover:shadow-2xl hover:shadow-orange-500/5">
+            <article className="group relative overflow-hidden rounded-3xl border border-neutral-200/90 bg-white p-1 sm:p-2 shadow-sm transition-all hover:border-orange-500/40 hover:shadow-xl">
               <div className="grid grid-cols-1 gap-8 lg:grid-cols-12 lg:items-center">
                 {/* Featured Image */}
-                <div className="relative aspect-[16/10] w-full overflow-hidden rounded-2xl lg:col-span-7">
+                <div className="relative aspect-[16/10] w-full overflow-hidden rounded-2xl lg:col-span-7 bg-neutral-100">
                   <Image
                     src={
                       featuredBlog.featuredImage ||
@@ -120,9 +120,8 @@ export default async function BlogHubPage({ searchParams }: BlogHubPageProps) {
                     className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
                     priority
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-neutral-950/80 via-transparent to-transparent" />
                   <div className="absolute top-4 left-4">
-                    <span className="rounded-full bg-orange-500/90 px-3.5 py-1 text-xs font-bold uppercase tracking-wider text-black backdrop-blur-md">
+                    <span className="rounded-full bg-white/95 border border-neutral-200 px-3.5 py-1 text-xs font-bold uppercase tracking-wider text-orange-600 shadow-sm backdrop-blur-md">
                       {featuredBlog.category?.name || "Featured Guide"}
                     </span>
                   </div>
@@ -130,9 +129,9 @@ export default async function BlogHubPage({ searchParams }: BlogHubPageProps) {
 
                 {/* Content */}
                 <div className="flex flex-col justify-center p-4 sm:p-6 lg:col-span-5">
-                  <div className="flex items-center gap-4 text-xs text-white/50">
+                  <div className="flex items-center gap-4 text-xs text-neutral-500">
                     <span className="flex items-center gap-1.5">
-                      <Calendar className="size-3.5 text-orange-400" />
+                      <Calendar className="size-3.5 text-orange-500" />
                       {new Date(featuredBlog.publishDate || featuredBlog.createdAt).toLocaleDateString("en-IN", {
                         month: "short",
                         day: "numeric",
@@ -141,18 +140,18 @@ export default async function BlogHubPage({ searchParams }: BlogHubPageProps) {
                     </span>
                     <span>•</span>
                     <span className="flex items-center gap-1.5">
-                      <Clock className="size-3.5 text-orange-400" />
+                      <Clock className="size-3.5 text-orange-500" />
                       {featuredBlog.readTimeMinutes} min read
                     </span>
                   </div>
 
-                  <h2 className="mt-4 text-2xl font-black uppercase tracking-tight text-white group-hover:text-orange-400 transition-colors sm:text-3xl lg:text-4xl">
+                  <h2 className="mt-4 text-2xl font-black uppercase tracking-tight text-neutral-950 group-hover:text-orange-600 transition-colors sm:text-3xl lg:text-4xl">
                     <Link href={`/blog/${featuredBlog.slug}`}>
                       {featuredBlog.title}
                     </Link>
                   </h2>
 
-                  <p className="mt-4 line-clamp-3 text-sm sm:text-base text-white/60 leading-relaxed">
+                  <p className="mt-4 line-clamp-3 text-sm sm:text-base text-neutral-600 leading-relaxed">
                     {featuredBlog.content
                       .replace(/<[^>]*>/g, "")
                       .replace(/#+\s+/g, "")
@@ -160,23 +159,23 @@ export default async function BlogHubPage({ searchParams }: BlogHubPageProps) {
                     ...
                   </p>
 
-                  <div className="mt-8 flex items-center justify-between border-t border-white/10 pt-6">
+                  <div className="mt-8 flex items-center justify-between border-t border-neutral-200/80 pt-6">
                     <div className="flex items-center gap-3">
-                      <div className="flex size-9 items-center justify-center rounded-full bg-orange-500/20 text-orange-400 font-bold text-xs uppercase border border-orange-500/30">
+                      <div className="flex size-9 items-center justify-center rounded-full bg-orange-500/10 text-orange-600 font-bold text-xs uppercase border border-orange-500/20">
                         {featuredBlog.author?.firstName?.[0] || "S"}
                         {featuredBlog.author?.lastName?.[0] || "R"}
                       </div>
                       <div className="text-xs">
-                        <div className="font-semibold text-white">
+                        <div className="font-semibold text-neutral-950">
                           {featuredBlog.author?.firstName} {featuredBlog.author?.lastName}
                         </div>
-                        <div className="text-white/40">SRM Editorial Team</div>
+                        <div className="text-neutral-500">SRM Editorial Team</div>
                       </div>
                     </div>
 
                     <Link
                       href={`/blog/${featuredBlog.slug}`}
-                      className="inline-flex items-center gap-2 rounded-xl bg-orange-500 px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-black transition-all hover:bg-orange-400"
+                      className="inline-flex items-center gap-2 rounded-xl bg-orange-500 px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-white shadow-md shadow-orange-500/20 transition-all hover:bg-orange-600"
                     >
                       Read Full Article
                       <ArrowRight className="size-3.5" />
@@ -189,8 +188,8 @@ export default async function BlogHubPage({ searchParams }: BlogHubPageProps) {
         )}
 
         {/* Regular Articles Section Header */}
-        <div className="mb-8 flex items-center justify-between border-b border-white/10 pb-4">
-          <h2 className="text-xl font-bold uppercase tracking-wider text-white flex items-center gap-2 sm:text-2xl">
+        <div className="mb-8 flex items-center justify-between border-b border-neutral-200/80 pb-4">
+          <h2 className="text-xl font-bold uppercase tracking-wider text-neutral-950 flex items-center gap-2 sm:text-2xl">
             <BookOpen className="size-5 text-orange-500" />
             {currentCategory !== "all"
               ? categories.find((c: any) => c.slug === currentCategory)?.name || "Category Articles"
@@ -198,7 +197,7 @@ export default async function BlogHubPage({ searchParams }: BlogHubPageProps) {
               ? `Search Results for "${currentSearch}"`
               : "Latest Road Trip Guides & Tips"}
           </h2>
-          <span className="text-xs font-semibold text-white/50 tracking-wider">
+          <span className="text-xs font-semibold text-neutral-500 tracking-wider">
             {total} {total === 1 ? "Article" : "Articles"}
           </span>
         </div>
@@ -209,10 +208,10 @@ export default async function BlogHubPage({ searchParams }: BlogHubPageProps) {
             {regularBlogs.map((blog: any) => (
               <article
                 key={blog.id}
-                className="group flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-neutral-900/60 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-orange-500/40 hover:bg-neutral-900/90 hover:shadow-xl hover:shadow-orange-500/5"
+                className="group flex flex-col overflow-hidden rounded-2xl border border-neutral-200/90 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-orange-500/40 hover:shadow-lg"
               >
                 {/* Card Image */}
-                <Link href={`/blog/${blog.slug}`} className="relative aspect-[16/10] w-full overflow-hidden bg-neutral-800">
+                <Link href={`/blog/${blog.slug}`} className="relative aspect-[16/10] w-full overflow-hidden bg-neutral-100">
                   <Image
                     src={
                       blog.featuredImage ||
@@ -223,10 +222,9 @@ export default async function BlogHubPage({ searchParams }: BlogHubPageProps) {
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                     className="object-cover transition-transform duration-500 ease-out group-hover:scale-105"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-neutral-950/70 via-transparent to-transparent" />
                   {blog.category && (
                     <div className="absolute top-3 left-3">
-                      <span className="rounded-full bg-black/60 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-orange-400 backdrop-blur-md border border-white/10">
+                      <span className="rounded-full bg-white/95 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-orange-600 shadow-sm border border-neutral-200 backdrop-blur-md">
                         {blog.category.name}
                       </span>
                     </div>
@@ -236,9 +234,9 @@ export default async function BlogHubPage({ searchParams }: BlogHubPageProps) {
                 {/* Card Body */}
                 <div className="flex flex-1 flex-col justify-between p-6">
                   <div>
-                    <div className="flex items-center gap-3 text-xs text-white/50">
+                    <div className="flex items-center gap-3 text-xs text-neutral-500">
                       <span className="flex items-center gap-1">
-                        <Calendar className="size-3 text-orange-400" />
+                        <Calendar className="size-3 text-orange-500" />
                         {new Date(blog.publishDate || blog.createdAt).toLocaleDateString("en-IN", {
                           month: "short",
                           day: "numeric",
@@ -247,16 +245,16 @@ export default async function BlogHubPage({ searchParams }: BlogHubPageProps) {
                       </span>
                       <span>•</span>
                       <span className="flex items-center gap-1">
-                        <Clock className="size-3 text-orange-400" />
+                        <Clock className="size-3 text-orange-500" />
                         {blog.readTimeMinutes} min read
                       </span>
                     </div>
 
-                    <h3 className="mt-3 text-lg font-black uppercase tracking-tight text-white transition-colors group-hover:text-orange-400 sm:text-xl line-clamp-2">
+                    <h3 className="mt-3 text-lg font-black uppercase tracking-tight text-neutral-950 transition-colors group-hover:text-orange-600 sm:text-xl line-clamp-2">
                       <Link href={`/blog/${blog.slug}`}>{blog.title}</Link>
                     </h3>
 
-                    <p className="mt-3 text-sm text-white/60 leading-relaxed line-clamp-3">
+                    <p className="mt-3 text-sm text-neutral-600 leading-relaxed line-clamp-3">
                       {blog.content
                         .replace(/<[^>]*>/g, "")
                         .replace(/#+\s+/g, "")
@@ -266,14 +264,14 @@ export default async function BlogHubPage({ searchParams }: BlogHubPageProps) {
                   </div>
 
                   {/* Footer info & CTA */}
-                  <div className="mt-6 border-t border-white/10 pt-4">
+                  <div className="mt-6 border-t border-neutral-200/80 pt-4">
                     {/* Tags preview */}
                     {blog.tags && blog.tags.length > 0 && (
                       <div className="mb-4 flex flex-wrap gap-1.5">
                         {blog.tags.slice(0, 3).map((tag: string) => (
                           <span
                             key={tag}
-                            className="rounded-md bg-white/5 px-2 py-0.5 text-[11px] font-medium text-white/50"
+                            className="rounded-md bg-neutral-100 px-2 py-0.5 text-[11px] font-medium text-neutral-600"
                           >
                             #{tag}
                           </span>
@@ -282,8 +280,8 @@ export default async function BlogHubPage({ searchParams }: BlogHubPageProps) {
                     )}
 
                     <div className="flex items-center justify-between">
-                      <div className="text-xs text-white/50 flex items-center gap-1.5">
-                        <User className="size-3.5 text-white/40" />
+                      <div className="text-xs text-neutral-500 flex items-center gap-1.5">
+                        <User className="size-3.5 text-neutral-400" />
                         <span>
                           {blog.author?.firstName || "SRM"} {blog.author?.lastName || "Expert"}
                         </span>
@@ -291,7 +289,7 @@ export default async function BlogHubPage({ searchParams }: BlogHubPageProps) {
 
                       <Link
                         href={`/blog/${blog.slug}`}
-                        className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-orange-400 transition-colors group-hover:text-orange-300"
+                        className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-orange-600 transition-colors group-hover:text-orange-700"
                       >
                         Read More
                         <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-1" />
@@ -303,16 +301,16 @@ export default async function BlogHubPage({ searchParams }: BlogHubPageProps) {
             ))}
           </div>
         ) : (
-          <div className="rounded-3xl border border-white/10 bg-neutral-900/40 p-12 text-center backdrop-blur-sm">
-            <BookOpen className="mx-auto size-12 text-white/20" />
-            <h3 className="mt-4 text-xl font-bold uppercase text-white">No Articles Found</h3>
-            <p className="mt-2 text-sm text-white/50">
+          <div className="rounded-3xl border border-neutral-200/90 bg-white p-12 text-center shadow-sm">
+            <BookOpen className="mx-auto size-12 text-neutral-300" />
+            <h3 className="mt-4 text-xl font-bold uppercase text-neutral-950">No Articles Found</h3>
+            <p className="mt-2 text-sm text-neutral-500">
               Try adjusting your category filter or search keywords to find what you are looking for.
             </p>
             <div className="mt-6">
               <Link
                 href="/blog"
-                className="inline-flex items-center gap-2 rounded-xl bg-orange-500 px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-black hover:bg-orange-400 transition-colors"
+                className="inline-flex items-center gap-2 rounded-xl bg-orange-500 px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-white shadow-sm hover:bg-orange-600 transition-colors"
               >
                 Reset All Filters
               </Link>
@@ -321,33 +319,33 @@ export default async function BlogHubPage({ searchParams }: BlogHubPageProps) {
         )}
 
         {/* ── Luxury Rental Fleet Promo Callout ── */}
-        <section className="mt-20 overflow-hidden rounded-3xl border border-orange-500/30 bg-gradient-to-r from-orange-950/40 via-neutral-900 to-neutral-900 p-8 sm:p-12 relative">
+        <section className="mt-20 overflow-hidden rounded-3xl border border-orange-500/30 bg-gradient-to-r from-orange-500/[0.07] via-white to-amber-500/[0.05] p-8 sm:p-12 shadow-sm relative">
           <div
-            className="pointer-events-none absolute right-0 top-0 h-full w-1/2 bg-[radial-gradient(circle_at_right,rgba(249,115,22,0.15),transparent_70%)]"
+            className="pointer-events-none absolute right-0 top-0 h-full w-1/2 bg-[radial-gradient(circle_at_right,rgba(249,115,22,0.12),transparent_70%)]"
             aria-hidden
           />
           <div className="relative z-10 max-w-2xl">
-            <span className="inline-flex items-center gap-2 rounded-full bg-orange-500/20 px-3 py-1 text-xs font-bold text-orange-400 uppercase tracking-widest border border-orange-500/30">
+            <span className="inline-flex items-center gap-2 rounded-full bg-orange-500/10 px-3 py-1 text-xs font-bold text-orange-600 uppercase tracking-widest border border-orange-500/30">
               <ShieldCheck className="size-3.5" />
               Direct From Fleet Owner
             </span>
-            <h2 className="mt-4 text-3xl font-black uppercase tracking-tight text-white sm:text-4xl">
+            <h2 className="mt-4 text-3xl font-black uppercase tracking-tight text-neutral-950 sm:text-4xl">
               Turn These Road Trips Into Your Next Adventure
             </h2>
-            <p className="mt-4 text-base text-white/70 leading-relaxed">
+            <p className="mt-4 text-base text-neutral-600 leading-relaxed">
               Book clean, inspected self-drive cars and SUVs in Udaipur with doorstep airport handover, 24/7 on-road mechanical assistance, and zero hidden charges.
             </p>
             <div className="mt-8 flex flex-wrap gap-4">
               <Link
                 href="/cars"
-                className="inline-flex items-center gap-2 rounded-xl bg-orange-500 px-6 py-3.5 text-sm font-bold uppercase tracking-wider text-black transition-all hover:bg-orange-400 hover:shadow-lg hover:shadow-orange-500/20"
+                className="inline-flex items-center gap-2 rounded-xl bg-orange-500 px-6 py-3.5 text-sm font-bold uppercase tracking-wider text-white shadow-md shadow-orange-500/20 transition-all hover:bg-orange-600"
               >
                 Explore Self Drive Cars
                 <ArrowRight className="size-4" />
               </Link>
               <Link
                 href="/car-rental"
-                className="inline-flex items-center gap-2 rounded-xl border border-white/20 bg-white/5 px-6 py-3.5 text-sm font-bold uppercase tracking-wider text-white transition-all hover:bg-white/10"
+                className="inline-flex items-center gap-2 rounded-xl border border-neutral-200 bg-white px-6 py-3.5 text-sm font-bold uppercase tracking-wider text-neutral-800 shadow-sm transition-all hover:border-orange-500 hover:text-orange-600"
               >
                 Book Chauffeur Taxi
               </Link>

@@ -67,25 +67,27 @@ function FaqItem({
   onToggle: () => void;
 }) {
   return (
-    <div className="h-fit overflow-hidden rounded-2xl border border-white/10 bg-neutral-900/70 transition-all hover:border-white/20">
+    <div className="h-fit overflow-hidden rounded-2xl border border-neutral-200/90 bg-white shadow-sm transition-all hover:border-orange-500/40 hover:shadow-md">
       <button
         type="button"
         onClick={onToggle}
-        className="flex w-full items-center justify-between p-5 text-left transition-colors"
+        className="flex w-full items-center justify-between p-5 text-left transition-colors cursor-pointer"
         aria-expanded={isOpen}
       >
-        <span className="text-sm font-bold text-white pr-4">{faq.question}</span>
+        <span className="text-sm font-bold text-neutral-950 pr-4">{faq.question}</span>
         <ChevronDown
-          className={`size-4 shrink-0 text-orange-400 transition-transform duration-200 ${isOpen ? "rotate-180" : ""
-            }`}
+          className={`size-4 shrink-0 text-orange-500 transition-transform duration-200 ${
+            isOpen ? "rotate-180" : ""
+          }`}
         />
       </button>
       <div
-        className={`grid transition-all duration-200 ease-in-out ${isOpen ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
-          }`}
+        className={`grid transition-all duration-200 ease-in-out ${
+          isOpen ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
+        }`}
       >
         <div className="overflow-hidden">
-          <p className="border-t border-white/5 px-5 pb-5 pt-3 text-xs leading-relaxed text-white/60">
+          <p className="border-t border-neutral-150 px-5 pb-5 pt-3 text-xs leading-relaxed text-neutral-600">
             {faq.answer}
           </p>
         </div>
@@ -119,7 +121,7 @@ export function FaqSection({
   const col2 = items.filter((_, i) => i % 2 !== 0);
 
   return (
-    <section id="faq" className="relative overflow-hidden border-t border-white/5 bg-black">
+    <section id="faq" className="relative overflow-hidden border-t border-neutral-200/80 bg-[#FAFAFC]">
       {/* Background road image */}
       <div className="pointer-events-none absolute inset-0">
         <Image
@@ -127,17 +129,17 @@ export function FaqSection({
           alt=""
           fill
           sizes="100vw"
-          className="object-cover opacity-10"
+          className="object-cover opacity-5"
           aria-hidden
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-black via-black/80 to-black" />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#FAFAFC]/95 via-white/85 to-[#FAFAFC]/95" />
       </div>
 
-      <div className="relative mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
+      <div className="relative mx-auto max-w-[1520px] px-4 py-20 sm:px-6 lg:px-8">
         {/* Section Heading matching website standard */}
         <SectionHeading badge={badge} title={title} subtitle={subtitle} center />
 
-        {/* 2-Column Responsive FAQ Grid spanning full max-w-7xl width */}
+        {/* 2-Column Responsive FAQ Grid spanning full max-w-[1520px] width */}
         <div className="mt-12 grid grid-cols-1 gap-4 lg:grid-cols-2">
           <div className="flex flex-col gap-4">
             {col1.map((faq) => (
@@ -162,15 +164,15 @@ export function FaqSection({
           </div>
         </div>
 
-        {/* Full-width Support CTA matching max-w-7xl width */}
-        <div className="mt-10 flex flex-col items-center justify-between gap-4 rounded-2xl border border-white/10 bg-neutral-900/60 p-6 text-center backdrop-blur sm:flex-row sm:text-left">
+        {/* Full-width Support CTA matching max-w-[1520px] width */}
+        <div className="mt-10 flex flex-col items-center justify-between gap-4 rounded-2xl border border-neutral-200/90 bg-white p-6 text-center shadow-sm sm:flex-row sm:text-left">
           <div className="flex items-center gap-3">
-            <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-orange-500/15 text-orange-400">
+            <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-orange-500/10 text-orange-600 shadow-xs">
               <HelpCircle className="size-5" />
             </div>
             <div>
-              <div className="text-sm font-bold text-white">Have a specific question or custom travel plan?</div>
-              <p className="text-xs text-white/50">Our Udaipur dispatch team is on call 24/7 to help you.</p>
+              <div className="text-sm font-bold text-neutral-950">Have a specific question or custom travel plan?</div>
+              <p className="text-xs text-neutral-500">Our Udaipur dispatch team is on call 24/7 to help you.</p>
             </div>
           </div>
 
@@ -179,15 +181,15 @@ export function FaqSection({
               href={`https://wa.me/${whatsappNumber}?text=${encodeURIComponent("Hello SRM Car Rentals! I have a question about booking.")}`}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-4 py-2 text-xs font-bold text-white transition-all hover:bg-emerald-500"
+              className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-4 py-2 text-xs font-bold text-white transition-all hover:bg-emerald-500 shadow-xs"
             >
               <MessageSquare className="size-3.5" /> WhatsApp Desk
             </a>
             <a
               href={`tel:${phone.replace(/\s/g, "")}`}
-              className="inline-flex items-center gap-1.5 rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold text-white hover:bg-white/10"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-neutral-200 bg-neutral-50 px-4 py-2 text-xs font-semibold text-neutral-800 hover:bg-neutral-100 hover:text-neutral-950 transition shadow-xs"
             >
-              <Phone className="size-3.5 text-orange-400" /> {phone}
+              <Phone className="size-3.5 text-orange-500" /> {phone}
             </a>
           </div>
         </div>

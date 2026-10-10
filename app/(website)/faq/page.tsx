@@ -17,7 +17,7 @@ export default async function FaqPage() {
   const [faqContent, company] = await Promise.all([getFaqPageContent(), getCompanyContent()]);
 
   return (
-    <div className="min-h-screen bg-neutral-950 py-12">
+    <div className="min-h-screen bg-[#FAFAFC] text-neutral-900 py-12">
       <DynamicJsonLd path="/faq" />
       <FaqSection data={faqContent} phone={company.phone} />
     </div>

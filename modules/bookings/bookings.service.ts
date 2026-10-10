@@ -11,6 +11,7 @@ import { calculatePricing } from "@/modules/pricing/pricing.service";
 import { generateBookingReference } from "@/modules/bookings/booking-reference";
 import { isCarAvailable, lockCarForBooking } from "@/modules/bookings/availability.service";
 import type { CreateBookingInput } from "@/modules/bookings/bookings.schemas";
+import { createSmartPaymentLink, listSmartLinks } from "@/lib/razorpay/razorpay-service";
 
 const BOOKING_DETAIL_INCLUDE = {
   car: {
@@ -61,7 +62,7 @@ async function upsertGuestCustomer(
   });
 }
 
-export async function createBooking(input: CreateBookingInput) {
+export async function createBooking(input: CreateBookingInput, origin?: string) {
   // Authoritative pricing is computed once, read-only, before we open the
   // write transaction — it's the same engine POST /pricing/calculate uses,
   // so a booking can never be created at a price the customer didn't see.
@@ -207,7 +208,52 @@ export async function createBooking(input: CreateBookingInput) {
   // is scheduled for a booking that doesn't exist.
   await scheduleBookingHoldExpiry(bookingId, holdMinutes * 60_000);
 
-  return getBookingById(bookingId);
+  const bookingRecord = await getBookingById(bookingId);
+
+  let paymentUrl: string | undefined;
+  let paymentLinkId: string | undefined;
+
+  if (input.paymentMethod === "ONLINE") {
+    try {
+      const custName = input.customer
+        ? `${input.customer.firstName} ${input.customer.lastName}`.trim()
+        : `${bookingRecord.customer?.firstName || ""} ${bookingRecord.customer?.lastName || ""}`.trim() || "Customer";
+      const custPhone = input.customer?.phone || bookingRecord.customer?.phone;
+      const custEmail = input.customer?.email || bookingRecord.customer?.email;
+
+      const link = await createSmartPaymentLink({
+        amount: Number(pricing.total),
+        purpose: `SRM Self-Drive Booking #${bookingReference}`,
+        customerName: custName,
+        customerPhone: custPhone,
+        customerEmail: custEmail && !custEmail.includes("@guest.") ? custEmail : undefined,
+        bookingReference,
+        bookingId,
+        notifySms: true,
+        notifyEmail: Boolean(custEmail && !custEmail.includes("@guest.")),
+        callbackUrl: `${(origin || process.env.NEXT_PUBLIC_APP_URL || "https://srmcarrentals.com").replace(/\/$/, "")}/booking/${bookingReference}?payment_status=completed`,
+        origin,
+      });
+
+      paymentUrl = link.shortUrl;
+      paymentLinkId = link.id;
+
+      // Update status to PAYMENT_PENDING for clarity
+      await prisma.booking.update({
+        where: { id: bookingId },
+        data: { status: BookingStatus.PAYMENT_PENDING },
+      });
+      bookingRecord.status = BookingStatus.PAYMENT_PENDING;
+    } catch (err) {
+      console.error("Failed to generate payment link for online booking:", err);
+    }
+  }
+
+  return {
+    ...bookingRecord,
+    paymentUrl,
+    paymentLinkId,
+  };
 }
 
 /** Called by the BullMQ worker when a hold's delay elapses. Only releases
@@ -372,3 +418,98 @@ export async function completeTrip(id: string, actualKm?: number) {
 
   return updated;
 }
+
+export async function getOrCreateBookingPaymentLink(bookingReference: string, origin?: string) {
+  const booking = await getBookingByReference(bookingReference);
+  const links = await listSmartLinks();
+  const existingActive = links.find(
+    (l) =>
+      (l.bookingReference === bookingReference || l.bookingId === booking.id) &&
+      (l.status === "ISSUED" || l.status === "PAID"),
+  );
+
+  if (existingActive) {
+    return {
+      paymentUrl: existingActive.shortUrl,
+      paymentLinkId: existingActive.id,
+      razorpayLinkId: existingActive.razorpayLinkId,
+      status: existingActive.status,
+    };
+  }
+
+  const custName = `${booking.customer?.firstName || ""} ${booking.customer?.lastName || ""}`.trim() || "Customer";
+  const custPhone = booking.customer?.phone;
+  const custEmail = booking.customer?.email;
+  const amount = Number(booking.pricingSnapshot?.grandTotal || 0);
+
+  const link = await createSmartPaymentLink({
+    amount: amount > 0 ? amount : 1,
+    purpose: `SRM Self-Drive Booking #${bookingReference}`,
+    customerName: custName,
+    customerPhone: custPhone,
+    customerEmail: custEmail && !custEmail.includes("@guest.") ? custEmail : undefined,
+    bookingReference: booking.bookingReference,
+    bookingId: booking.id,
+    notifySms: true,
+    notifyEmail: Boolean(custEmail && !custEmail.includes("@guest.")),
+    callbackUrl: `${(origin || process.env.NEXT_PUBLIC_APP_URL || "https://srmcarrentals.com").replace(/\/$/, "")}/booking/${bookingReference}?payment_status=completed`,
+    origin,
+  });
+
+  return {
+    paymentUrl: link.shortUrl,
+    paymentLinkId: link.id,
+    razorpayLinkId: link.razorpayLinkId,
+    status: link.status,
+  };
+}
+
+export async function confirmBookingWithPayment(params: {
+  bookingReference: string;
+  paymentId?: string;
+  provider?: "RAZORPAY" | "STRIPE" | "CASHFREE";
+  amount?: number;
+}) {
+  const booking = await prisma.booking.findUnique({
+    where: { bookingReference: params.bookingReference },
+    include: BOOKING_DETAIL_INCLUDE,
+  });
+  if (!booking) throw new NotFoundError("Booking not found");
+
+  await cancelBookingHoldJob(booking.id);
+
+  const finalAmount = params.amount ?? Number(booking.pricingSnapshot?.grandTotal ?? 0);
+
+  if (booking.status === BookingStatus.CONFIRMED && booking.payments.some((p) => p.status === "PAID")) {
+    return booking;
+  }
+
+  if (params.paymentId || finalAmount > 0) {
+    const existingPayment = booking.payments.find(
+      (p) => p.providerPaymentId === params.paymentId || p.status === "PAID",
+    );
+
+    if (!existingPayment) {
+      await prisma.payment.create({
+        data: {
+          bookingId: booking.id,
+          provider: params.provider || "RAZORPAY",
+          paymentType: "FULL",
+          amount: finalAmount,
+          status: "PAID",
+          providerPaymentId: params.paymentId || `pay_rzp_${Date.now()}`,
+          paidAt: new Date(),
+        },
+      });
+    }
+  }
+
+  const updated = await prisma.booking.update({
+    where: { id: booking.id },
+    data: { status: BookingStatus.CONFIRMED },
+    include: BOOKING_DETAIL_INCLUDE,
+  });
+
+  return updated;
+}
+

@@ -15,6 +15,7 @@ export interface CarListParams {
   brandId?: string;
   categoryId?: string;
   carTypeId?: string;
+  locationId?: string;
 }
 
 function toQueryString(params: CarListParams): string {
@@ -26,6 +27,7 @@ function toQueryString(params: CarListParams): string {
   if (params.brandId) query.set("brandId", params.brandId);
   if (params.categoryId) query.set("categoryId", params.categoryId);
   if (params.carTypeId) query.set("carTypeId", params.carTypeId);
+  if (params.locationId) query.set("locationId", params.locationId);
   return query.toString();
 }
 

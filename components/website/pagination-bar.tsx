@@ -15,20 +15,20 @@ export function PaginationBar({ page, totalPages, buildHref }: PaginationBarProp
       <Link
         href={buildHref(Math.max(1, page - 1))}
         aria-disabled={page <= 1}
-        className={`flex items-center gap-1 rounded-full border border-white/15 px-4 py-2 text-sm text-white ${
-          page <= 1 ? "pointer-events-none opacity-30" : "hover:bg-white/10"
+        className={`flex items-center gap-1 rounded-full border border-neutral-200 bg-white px-4 py-2 text-sm font-medium text-neutral-800 shadow-sm transition-all hover:border-orange-500 hover:text-orange-600 ${
+          page <= 1 ? "pointer-events-none opacity-40" : "hover:bg-orange-500/5"
         }`}
       >
         <ChevronLeft className="size-4" /> Previous
       </Link>
-      <span className="text-sm text-white/50">
+      <span className="text-sm font-medium text-neutral-500">
         Page {page} of {totalPages}
       </span>
       <Link
         href={buildHref(Math.min(totalPages, page + 1))}
         aria-disabled={page >= totalPages}
-        className={`flex items-center gap-1 rounded-full border border-white/15 px-4 py-2 text-sm text-white ${
-          page >= totalPages ? "pointer-events-none opacity-30" : "hover:bg-white/10"
+        className={`flex items-center gap-1 rounded-full border border-neutral-200 bg-white px-4 py-2 text-sm font-medium text-neutral-800 shadow-sm transition-all hover:border-orange-500 hover:text-orange-600 ${
+          page >= totalPages ? "pointer-events-none opacity-40" : "hover:bg-orange-500/5"
         }`}
       >
         Next <ChevronRight className="size-4" />

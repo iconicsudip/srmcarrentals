@@ -12,15 +12,15 @@ export function SectionHeading({ badge, title, subtitle, center, className }: Se
   return (
     <div className={cn("flex flex-col gap-3", center && "items-center text-center", className)}>
       {badge && (
-        <span className="inline-flex w-fit items-center rounded-full border border-white/15 bg-white/5 px-3 py-1 text-[11px] font-semibold tracking-widest text-orange-500">
+        <span className="inline-flex w-fit items-center rounded-full border border-orange-500/25 bg-orange-500/10 px-3.5 py-1 text-[11px] font-bold tracking-widest text-orange-600 uppercase">
           {badge}
         </span>
       )}
-      <h2 className="text-3xl leading-tight font-black tracking-tight text-white uppercase sm:text-4xl">
+      <h2 className="text-3xl leading-tight font-black tracking-tight text-neutral-950 uppercase sm:text-4xl">
         {stripTrailingPunctuation(title)}
         <span className="text-orange-500">.</span>
       </h2>
-      {subtitle && <p className={cn("max-w-xl text-white/50", center && "mx-auto")}>{subtitle}</p>}
+      {subtitle && <p className={cn("max-w-xl text-neutral-600 text-sm sm:text-base", center && "mx-auto")}>{subtitle}</p>}
     </div>
   );
 }

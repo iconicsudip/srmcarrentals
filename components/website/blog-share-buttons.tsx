@@ -28,7 +28,7 @@ export function BlogShareButtons({ title, url }: { title: string; url: string })
 
   return (
     <div className="flex items-center gap-2">
-      <span className="text-xs font-semibold uppercase tracking-wider text-white/40 mr-1">Share:</span>
+      <span className="text-xs font-semibold uppercase tracking-wider text-neutral-500 mr-1">Share:</span>
       
       {/* WhatsApp */}
       <a
@@ -36,7 +36,7 @@ export function BlogShareButtons({ title, url }: { title: string; url: string })
         target="_blank"
         rel="noopener noreferrer"
         aria-label="Share on WhatsApp"
-        className="flex size-8 items-center justify-center rounded-lg border border-emerald-500/20 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 transition-colors"
+        className="flex size-8 items-center justify-center rounded-lg border border-emerald-500/30 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 transition-colors shadow-sm"
       >
         <MessageCircle className="size-4" />
       </a>
@@ -47,7 +47,7 @@ export function BlogShareButtons({ title, url }: { title: string; url: string })
         target="_blank"
         rel="noopener noreferrer"
         aria-label="Share on X"
-        className="flex size-8 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-white/70 hover:bg-white/10 hover:text-white transition-colors"
+        className="flex size-8 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-700 hover:border-orange-500 hover:text-orange-600 shadow-sm transition-colors"
       >
         <span className="font-bold text-xs">𝕏</span>
       </a>
@@ -57,9 +57,9 @@ export function BlogShareButtons({ title, url }: { title: string; url: string })
         type="button"
         onClick={handleCopy}
         aria-label="Copy link"
-        className="flex size-8 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-white/70 hover:bg-white/10 hover:text-white transition-colors"
+        className="flex size-8 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-700 hover:border-orange-500 hover:text-orange-600 shadow-sm transition-colors"
       >
-        {copied ? <Check className="size-4 text-emerald-400" /> : <Copy className="size-3.5" />}
+        {copied ? <Check className="size-4 text-emerald-600" /> : <Copy className="size-3.5" />}
       </button>
     </div>
   );

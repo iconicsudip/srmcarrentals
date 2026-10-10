@@ -33,8 +33,8 @@ export default async function CmsPage({ params }: CmsPageProps) {
   return (
     <div className="mx-auto max-w-3xl px-4 py-16 sm:px-6 lg:px-8">
       <DynamicJsonLd path={`/${page.slug}`} />
-      <h1 className="text-3xl font-black text-white uppercase sm:text-4xl">{page.title}</h1>
-      <div className="mt-8 flex flex-col gap-4 text-white/70">
+      <h1 className="text-3xl font-black text-neutral-950 uppercase sm:text-4xl tracking-tight">{page.title}</h1>
+      <div className="mt-8 flex flex-col gap-4 text-neutral-700 leading-relaxed text-sm sm:text-base">
         {paragraphs.map((paragraph, i) => (
           <p key={i} className="whitespace-pre-line">
             {paragraph}

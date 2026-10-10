@@ -48,6 +48,11 @@ export async function POST(req: Request) {
               : await prisma.booking.findUnique({ where: { bookingReference: target.bookingReference } });
 
             if (booking) {
+              await prisma.booking.update({
+                where: { id: booking.id },
+                data: { status: "CONFIRMED" },
+              });
+
               const payment = await prisma.payment.create({
                 data: {
                   bookingId: booking.id,
@@ -82,6 +87,11 @@ export async function POST(req: Request) {
         });
 
         if (booking) {
+          await prisma.booking.update({
+            where: { id: booking.id },
+            data: { status: "CONFIRMED" },
+          });
+
           const amountInr = (paymentEntity.amount || 0) / 100;
           await prisma.payment.create({
             data: {

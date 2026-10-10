@@ -36,5 +36,6 @@ Thumbs.db
 coverage/
 
 # misc
+/uploads/
+/public/uploads/
 *.tsbuildinfo
-uploads/

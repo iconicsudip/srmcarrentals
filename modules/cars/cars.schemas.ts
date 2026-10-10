@@ -33,6 +33,9 @@ export const createCarSchema = z.object({
   // features
   featureIds: z.array(z.string()).default([]),
   safetyFeatureIds: z.array(z.string()).default([]),
+
+  // locations
+  locationIds: z.array(z.string()).default([]),
 });
 export type CreateCarInput = z.infer<typeof createCarSchema>;
 

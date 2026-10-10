@@ -58,6 +58,7 @@ export default async function CategoryCarsPage({ params, searchParams }: Categor
     carTypeSlug: sParams.type,
     transmissionTypeId: sParams.transmission,
     fuelTypeId: sParams.fuel,
+    locationId: sParams.locationId || sParams.location,
     search: sParams.search,
     sort: (sParams.sort as PublicCarFilters["sort"]) ?? "featured",
     page: sParams.page ? Number(sParams.page) : 1,
@@ -87,7 +88,7 @@ export default async function CategoryCarsPage({ params, searchParams }: Categor
   }
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+    <div className="mx-auto max-w-[1520px] px-4 py-12 sm:px-6 lg:px-8">
       <DynamicJsonLd path={`/cars/${categorySlug}`} />
       <SectionHeading
         badge="CATEGORY FLEET"
@@ -113,8 +114,8 @@ export default async function CategoryCarsPage({ params, searchParams }: Categor
         {/* RIGHT: Car grid + pagination */}
         <div className="flex-1 min-w-0 flex flex-col gap-8">
           {cars.length === 0 ? (
-            <div className="rounded-2xl border border-white/8 bg-neutral-900/50 py-24 text-center">
-              <p className="text-white/40">No cars found in {category.name} — try adjusting other filters.</p>
+            <div className="rounded-3xl border border-neutral-200/90 bg-white py-24 text-center shadow-lg">
+              <p className="text-neutral-500 font-medium">No cars found in {category.name} — try adjusting other filters.</p>
             </div>
           ) : (
             <div className="flex flex-col gap-6">

@@ -47,6 +47,7 @@ export const GET = withErrorHandling(async (req) => {
     brandId: url.searchParams.get("brandId") ?? undefined,
     categoryId: url.searchParams.get("categoryId") ?? undefined,
     carTypeId: url.searchParams.get("carTypeId") ?? undefined,
+    locationId: url.searchParams.get("locationId") ?? undefined,
     isFeatured: url.searchParams.has("isFeatured") ? url.searchParams.get("isFeatured") === "true" : undefined,
   });
 

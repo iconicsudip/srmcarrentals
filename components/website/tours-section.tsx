@@ -42,8 +42,8 @@ export function ToursSection({ tours }: { tours: TourData[] }) {
   if (tours.length === 0) return null;
 
   return (
-    <section id="tours" className="relative overflow-hidden border-t border-white/5 bg-neutral-950">
-      <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
+    <section id="tours" className="relative overflow-hidden border-t border-neutral-200/80 bg-[#FAFAFC]">
+      <div className="mx-auto max-w-[1520px] px-4 py-20 sm:px-6 lg:px-8">
         <SectionHeading
           badge="CURATED EXPEDITIONS"
           title="GO BEYOND THE DRIVE."
@@ -56,10 +56,10 @@ export function ToursSection({ tours }: { tours: TourData[] }) {
             return (
               <div
                 key={tour.id}
-                className="group flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-neutral-900 transition hover:border-orange-500/30 sm:flex-row"
+                className="group flex flex-col overflow-hidden rounded-2xl border border-neutral-200/90 bg-white shadow-sm transition hover:border-orange-500/40 hover:shadow-xl hover:shadow-orange-500/10 sm:flex-row"
               >
                 {/* Image column */}
-                <div className="relative h-56 shrink-0 overflow-hidden bg-neutral-800 sm:h-auto sm:w-64">
+                <div className="relative h-56 shrink-0 overflow-hidden bg-neutral-100 sm:h-auto sm:w-64">
                   <Image
                     src={imgSrc}
                     alt={tour.name}
@@ -68,52 +68,52 @@ export function ToursSection({ tours }: { tours: TourData[] }) {
                     className="object-cover transition-transform duration-500 group-hover:scale-105"
                   />
                   {/* Category badge */}
-                  <span className="absolute top-3 left-3 flex items-center gap-1 rounded-full bg-black/70 px-2.5 py-1 text-[10px] font-semibold text-white backdrop-blur">
+                  <span className="absolute top-3 left-3 flex items-center gap-1 rounded-full bg-black/70 px-2.5 py-1 text-[10px] font-bold text-white backdrop-blur shadow-xs">
                     <MapPin className="size-3 text-orange-400" /> {tour.category.name}
                   </span>
                   {/* Rating badge */}
-                  <span className="absolute top-3 right-3 flex items-center gap-1 rounded-full bg-black/70 px-2.5 py-1 text-[10px] font-semibold text-white backdrop-blur">
+                  <span className="absolute top-3 right-3 flex items-center gap-1 rounded-full bg-black/70 px-2.5 py-1 text-[10px] font-bold text-white backdrop-blur shadow-xs">
                     <Star className="size-3 fill-amber-400 text-amber-400" /> {Number(tour.rating).toFixed(1)}
                   </span>
                 </div>
 
                 {/* Content */}
                 <div className="flex flex-1 flex-col gap-3 p-5">
-                  <span className="flex items-center gap-1.5 text-xs text-white/40">
-                    <Clock className="size-3.5" /> {tour.durationDays} Days · {tour.durationNights} Nights
+                  <span className="flex items-center gap-1.5 text-xs text-neutral-500 font-medium">
+                    <Clock className="size-3.5 text-orange-500" /> {tour.durationDays} Days · {tour.durationNights} Nights
                   </span>
-                  <h3 className="text-xl font-bold text-white">{tour.name}</h3>
+                  <h3 className="text-xl font-black text-neutral-950 uppercase tracking-tight">{tour.name}</h3>
                   {tour.description && (
-                    <p className="text-sm italic text-white/50">&ldquo;{tour.description}&rdquo;</p>
+                    <p className="text-sm italic text-neutral-600 leading-relaxed">&ldquo;{tour.description}&rdquo;</p>
                   )}
 
                   {tour.keyExperiences.length > 0 && (
                     <div className="grid grid-cols-2 gap-1.5">
                       {tour.keyExperiences.slice(0, 4).map((exp) => (
-                        <span key={exp} className="flex items-center gap-1.5 text-xs text-white/70">
-                          <ShieldCheck className="size-3 shrink-0 text-orange-500" /> {exp}
+                        <span key={exp} className="flex items-center gap-1.5 text-xs text-neutral-700">
+                          <ShieldCheck className="size-3 shrink-0 text-emerald-600" /> {exp}
                         </span>
                       ))}
                     </div>
                   )}
 
                   {tour.assignedCar && (
-                    <p className="text-xs text-white/40">
-                      Fleet Assigned: <span className="text-white/70">{tour.assignedCar.name}</span>
+                    <p className="text-xs text-neutral-500">
+                      Fleet Assigned: <span className="text-neutral-900 font-bold">{tour.assignedCar.name}</span>
                     </p>
                   )}
 
-                  <div className="mt-auto flex items-center justify-between border-t border-white/10 pt-4">
+                  <div className="mt-auto flex items-center justify-between border-t border-neutral-150 pt-4">
                     <div>
-                      <span className="text-[10px] font-bold tracking-widest text-white/40 uppercase">Starting At</span>
-                      <div className="text-xl font-black text-white">
+                      <span className="text-[10px] font-bold tracking-widest text-neutral-500 uppercase">Starting At</span>
+                      <div className="text-xl font-black text-neutral-950">
                         ₹{Number(tour.startingPrice).toLocaleString("en-IN")}
-                        <span className="text-xs font-normal text-white/40"> / package</span>
+                        <span className="text-xs font-normal text-neutral-500"> / package</span>
                       </div>
                     </div>
                     <Link
                       href={`/tours/${tour.slug}`}
-                      className="flex items-center gap-2 rounded-xl bg-orange-500 px-4 py-2.5 text-sm font-bold text-white shadow-md shadow-orange-500/20 transition hover:bg-orange-600"
+                      className="flex items-center gap-2 rounded-xl bg-orange-500 px-4 py-2.5 text-sm font-bold text-white shadow-md shadow-orange-500/20 transition hover:bg-orange-600 hover:shadow-orange-500/35"
                     >
                       Explore Tour <ArrowRight className="size-4" />
                     </Link>

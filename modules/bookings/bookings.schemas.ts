@@ -28,6 +28,7 @@ export const createBookingSchema = z
     extraServiceIds: z.array(z.string()).optional().default([]),
     insuranceId: z.string().optional(),
     couponCode: z.string().optional(),
+    paymentMethod: z.enum(["PICKUP", "ONLINE"]).optional().default("PICKUP"),
   })
   .refine((data) => data.customerId || data.customer, {
     message: "Either customerId or customer details are required",

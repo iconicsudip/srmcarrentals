@@ -1,8 +1,8 @@
 import { prisma } from "@/lib/prisma";
 import { BadRequestError, NotFoundError } from "@/lib/http/errors";
-import { localStorageProvider } from "@/lib/storage/local-storage.provider";
+import { saveImageWithFallback, deleteImageWithFallback } from "@/lib/storage";
 
-const MAX_IMAGE_BYTES = 8 * 1024 * 1024; // 8MB
+const MAX_IMAGE_BYTES = 15 * 1024 * 1024; // 15MB initial incoming limit, compressed to <1MB
 const ALLOWED_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/avif"]);
 
 export function listCarImages(carId: string) {
@@ -17,11 +17,15 @@ export async function uploadCarImage(carId: string, file: File, altText?: string
     throw new BadRequestError("Unsupported image type — use JPEG, PNG, WebP, or AVIF");
   }
   if (file.size > MAX_IMAGE_BYTES) {
-    throw new BadRequestError("Image exceeds the 8MB size limit");
+    throw new BadRequestError("Image exceeds the 15MB upload limit");
   }
 
   const buffer = Buffer.from(await file.arrayBuffer());
-  const { url } = await localStorageProvider.save({ buffer, originalName: file.name, folder: `cars/${carId}` });
+  const { url } = await saveImageWithFallback({
+    buffer,
+    originalName: file.name,
+    folder: `cars/${carId}`,
+  });
 
   const [existingCount, maxSort] = await Promise.all([
     prisma.carImage.count({ where: { carId } }),
@@ -60,10 +64,7 @@ export async function deleteCarImage(carId: string, imageId: string) {
 
   await prisma.carImage.delete({ where: { id: imageId } });
 
-  const filename = image.url.split("/").pop();
-  if (filename) {
-    await localStorageProvider.delete({ folder: `cars/${carId}`, filename });
-  }
+  await deleteImageWithFallback(image.url, `cars/${carId}`);
 
   // Promote another image to featured if the deleted one was featured.
   if (image.isFeatured) {

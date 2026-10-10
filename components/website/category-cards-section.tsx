@@ -68,9 +68,9 @@ export function CategoryCardsSection({
   if (visibleCards.length === 0) return null;
 
   return (
-    <section className="relative mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
-      {/* Subtle ambient lighting behind categories */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-orange-500/[0.06] rounded-full blur-[140px] pointer-events-none" />
+    <section className="relative mx-auto max-w-[1520px] px-4 py-20 sm:px-6 lg:px-8">
+      {/* Subtle ambient warm lighting behind categories */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[350px] bg-orange-500/[0.08] rounded-full blur-[150px] pointer-events-none" />
 
       <SectionHeading badge="SRM 3D CATEGORIES" title="CHOOSE YOUR DRIVE." center />
 
@@ -83,7 +83,7 @@ export function CategoryCardsSection({
           <Link
             key={card.title}
             href={card.href}
-            className="group relative flex h-[490px] w-[min(82vw,370px)] shrink-0 flex-col justify-end overflow-hidden rounded-3xl border border-white/10 bg-neutral-900 lg:flex-1 lg:w-0 luxury-card-hover hover:border-orange-500/50 hover:shadow-2xl hover:shadow-orange-500/20 transition-all duration-300"
+            className="group relative flex h-[490px] w-[min(82vw,370px)] shrink-0 flex-col justify-end overflow-hidden rounded-3xl border border-neutral-200 bg-neutral-950 lg:flex-1 lg:w-0 luxury-card-hover hover:border-orange-500 hover:shadow-2xl hover:shadow-orange-500/25 transition-all duration-300 shadow-md"
             style={{ scrollSnapAlign: "start" }}
           >
             {/* Full-bleed background image with slow cinematic zoom */}

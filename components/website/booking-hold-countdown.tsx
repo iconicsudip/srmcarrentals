@@ -27,13 +27,13 @@ export function BookingHoldCountdown({ expiresAt }: { expiresAt: string | Date }
   const isExpired = timeLeft <= 0;
 
   return (
-    <div className="flex items-center gap-3 rounded-xl border border-orange-500/30 bg-black/50 px-4 py-2.5">
-      <Clock className={`size-5 ${isExpired ? "text-red-400" : "animate-pulse text-orange-400"}`} />
+    <div className="flex items-center gap-3 rounded-2xl border border-orange-500/30 bg-white/95 px-4 py-2.5 shadow-md shadow-orange-500/10">
+      <Clock className={`size-5 ${isExpired ? "text-red-500" : "animate-pulse text-orange-600"}`} />
       <div>
-        <div className="text-[10px] tracking-wider text-white/50 uppercase">
+        <div className="text-[10px] tracking-wider text-neutral-500 font-bold uppercase">
           {isExpired ? "Hold Window Elapsed" : "Hold Expires In"}
         </div>
-        <div className={`font-mono text-xl font-black ${isExpired ? "text-red-400" : "text-orange-400"}`}>
+        <div className={`font-mono text-xl font-black ${isExpired ? "text-red-500" : "text-orange-600"}`}>
           {isExpired ? "Expired" : formatted}
         </div>
       </div>

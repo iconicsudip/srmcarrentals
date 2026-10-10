@@ -38,15 +38,15 @@ export function SiteHeader({
   const bookNowHref = services.cars ? "/cars" : services.taxi ? "/car-rental" : "/tours";
 
   return (
-    <header className="sticky top-0 z-50 border-b border-white/10 bg-black/90 backdrop-blur">
-      <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        <Link href="/" className="flex items-center gap-2">
-          <span className="flex size-9 items-center justify-center rounded-lg bg-orange-500/15 text-orange-500">
+    <header className="sticky top-0 z-50 border-b border-neutral-200/80 bg-white/95 backdrop-blur-xl shadow-xs">
+      <div className="mx-auto flex h-20 max-w-[1520px] items-center justify-between px-4 sm:px-6 lg:px-8">
+        <Link href="/" className="flex items-center gap-2.5">
+          <span className="flex size-9 items-center justify-center rounded-xl bg-orange-500/15 text-orange-600">
             <CarFront className="size-5" />
           </span>
-          <span className="text-lg font-black tracking-tight text-white">
+          <span className="text-lg font-black tracking-tight text-neutral-950">
             {companyName.split(" ")[0]?.toUpperCase()}
-            <span className="ml-1.5 text-xs font-medium tracking-widest text-white/50">
+            <span className="ml-1.5 text-xs font-semibold tracking-widest text-neutral-400">
               {companyName.split(" ").slice(1).join(" ").toUpperCase()}
             </span>
           </span>
@@ -57,7 +57,7 @@ export function SiteHeader({
             <Link
               key={link.label}
               href={link.href}
-              className="text-xs font-semibold tracking-widest text-white/70 transition-colors hover:text-white"
+              className="text-xs font-bold tracking-widest text-neutral-700 transition-colors hover:text-orange-600"
             >
               {link.label.toUpperCase()}
             </Link>
@@ -66,18 +66,18 @@ export function SiteHeader({
 
         <div className="hidden items-center gap-4 lg:flex">
           {phone && (
-            <a href={`tel:${phone.replace(/\s/g, "")}`} className="flex items-center gap-2 text-sm text-white/80 mr-1">
+            <a href={`tel:${phone.replace(/\s/g, "")}`} className="flex items-center gap-2 text-sm font-semibold text-neutral-800 hover:text-orange-600 transition mr-1">
               <Phone className="size-4 text-orange-500" />
               {phone}
             </a>
           )}
 
           {user && (
-            <div className="flex items-center gap-1.5 rounded-xl border border-white/10 bg-white/5 px-2.5 py-1.5 text-xs text-white">
-              <span className="flex size-5 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-400">
+            <div className="flex items-center gap-1.5 rounded-xl border border-neutral-200 bg-neutral-100 px-2.5 py-1.5 text-xs text-neutral-900">
+              <span className="flex size-5 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-600">
                 <UserCheck className="size-3" />
               </span>
-              <span className="font-semibold text-white/90">{user.firstName}</span>
+              <span className="font-semibold text-neutral-900">{user.firstName}</span>
             </div>
           )}
 
@@ -86,7 +86,7 @@ export function SiteHeader({
             type="button"
             onClick={openCartDrawer}
             aria-label="View shopping cart"
-            className="relative flex size-10 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-white/90 transition-all hover:border-orange-500/40 hover:bg-orange-500/10 hover:text-orange-400 active:scale-95"
+            className="relative flex size-10 items-center justify-center rounded-xl border border-neutral-200 bg-neutral-100/80 text-neutral-800 transition-all hover:border-orange-500/40 hover:bg-orange-50 hover:text-orange-600 active:scale-95"
           >
             <ShoppingBag className="size-5" />
             {count > 0 && (
@@ -96,7 +96,7 @@ export function SiteHeader({
             )}
           </button>
 
-          <Button asChild className="bg-orange-500 font-semibold text-white hover:bg-orange-600">
+          <Button asChild className="bg-orange-500 font-bold text-white shadow-md shadow-orange-500/20 hover:bg-orange-600 transition">
             <Link href={bookNowHref}>Book Now →</Link>
           </Button>
         </div>
@@ -107,7 +107,7 @@ export function SiteHeader({
             type="button"
             onClick={openCartDrawer}
             aria-label="View shopping cart"
-            className="relative flex size-9 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-white/90"
+            className="relative flex size-9 items-center justify-center rounded-lg border border-neutral-200 bg-neutral-100 text-neutral-800"
           >
             <ShoppingBag className="size-4" />
             {count > 0 && (
@@ -120,7 +120,7 @@ export function SiteHeader({
           <button
             type="button"
             onClick={() => setMobileOpen((v) => !v)}
-            className="text-white p-1"
+            className="text-neutral-900 p-1"
             aria-label="Toggle menu"
           >
             {mobileOpen ? <X className="size-6" /> : <Menu className="size-6" />}
@@ -128,19 +128,19 @@ export function SiteHeader({
         </div>
       </div>
 
-      <div className={cn("border-t border-white/10 lg:hidden", mobileOpen ? "block" : "hidden")}>
+      <div className={cn("border-t border-neutral-200 bg-white lg:hidden", mobileOpen ? "block" : "hidden")}>
         <nav className="flex flex-col gap-1 px-4 py-3">
           {filteredNavLinks.map((link) => (
             <Link
               key={link.label}
               href={link.href}
               onClick={() => setMobileOpen(false)}
-              className="rounded-md px-2 py-2.5 text-sm font-medium text-white/80 hover:bg-white/5"
+              className="rounded-lg px-3 py-2.5 text-sm font-semibold text-neutral-800 hover:bg-orange-50 hover:text-orange-600 transition"
             >
               {link.label}
             </Link>
           ))}
-          <Button asChild className="mt-2 bg-orange-500 font-semibold text-white hover:bg-orange-600">
+          <Button asChild className="mt-2 bg-orange-500 font-bold text-white hover:bg-orange-600">
             <Link href={bookNowHref}>Book Now</Link>
           </Button>
         </nav>

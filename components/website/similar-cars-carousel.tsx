@@ -110,13 +110,13 @@ export function SimilarCarsCarousel({ cars }: SimilarCarsCarouselProps) {
     <section className="w-full flex flex-col gap-6">
       {/* ── Section Heading ── */}
       <div>
-        <span className="inline-flex rounded-full border border-orange-500/30 bg-orange-500/10 px-3 py-1 text-[11px] font-bold tracking-widest text-orange-400 uppercase">
+        <span className="inline-flex rounded-full border border-orange-500/30 bg-orange-500/10 px-3 py-1 text-[11px] font-bold tracking-widest text-orange-600 uppercase">
           RECOMMENDED FLEET
         </span>
-        <h2 className="mt-3 text-2xl sm:text-4xl font-black text-white tracking-tight uppercase">
+        <h2 className="mt-3 text-2xl sm:text-4xl font-black text-neutral-950 tracking-tight uppercase">
           SIMILAR CARS<span className="text-orange-500">.</span>
         </h2>
-        <p className="mt-1 text-sm text-white/50">
+        <p className="mt-1 text-sm text-neutral-600">
           Explore alternative self-drive vehicles available in this category.
         </p>
       </div>
@@ -160,7 +160,7 @@ export function SimilarCarsCarousel({ cars }: SimilarCarsCarouselProps) {
                 className={`rounded-full transition-all duration-300 ${
                   i === activeIdx
                     ? "w-6 h-2 bg-orange-500"
-                    : "w-2 h-2 bg-white/20 hover:bg-white/40"
+                    : "w-2 h-2 bg-neutral-300 hover:bg-neutral-400"
                 }`}
               />
             ))}
@@ -172,7 +172,7 @@ export function SimilarCarsCarousel({ cars }: SimilarCarsCarouselProps) {
               type="button"
               onClick={() => scrollTo(activeIdx - 1)}
               disabled={dotCount <= 1 || activeIdx <= 0}
-              className="flex size-8 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/60 transition hover:bg-white/10 hover:text-white disabled:opacity-30"
+              className="flex size-8 items-center justify-center rounded-full border border-neutral-200 bg-white text-neutral-600 shadow-sm transition hover:border-orange-500 hover:text-orange-600 disabled:opacity-40"
               aria-label="Previous"
             >
               <ArrowLeft className="size-3.5" />
@@ -181,7 +181,7 @@ export function SimilarCarsCarousel({ cars }: SimilarCarsCarouselProps) {
             <button
               type="button"
               onClick={() => setPlaying((v) => !v)}
-              className="flex size-8 items-center justify-center rounded-full border border-orange-500/40 bg-orange-500/15 text-orange-400 transition hover:bg-orange-500/25"
+              className="flex size-8 items-center justify-center rounded-full border border-orange-500/40 bg-orange-500/10 text-orange-600 transition hover:bg-orange-500/20"
               aria-label={playing ? "Pause" : "Play"}
             >
               {playing ? <Pause className="size-3.5" /> : <Play className="size-3.5" />}
@@ -191,7 +191,7 @@ export function SimilarCarsCarousel({ cars }: SimilarCarsCarouselProps) {
               type="button"
               onClick={() => scrollTo(activeIdx + 1)}
               disabled={dotCount <= 1 || activeIdx >= dotCount - 1}
-              className="flex size-8 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/60 transition hover:bg-white/10 hover:text-white disabled:opacity-30"
+              className="flex size-8 items-center justify-center rounded-full border border-neutral-200 bg-white text-neutral-600 shadow-sm transition hover:border-orange-500 hover:text-orange-600 disabled:opacity-40"
               aria-label="Next"
             >
               <ArrowRight className="size-3.5" />
@@ -203,7 +203,7 @@ export function SimilarCarsCarousel({ cars }: SimilarCarsCarouselProps) {
       {/* ── View All CTA (Same as Home Page Carousel) ── */}
       <Link
         href="/cars"
-        className="mx-auto flex w-fit items-center gap-2 rounded-full border border-white/15 bg-white/5 px-6 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
+        className="mx-auto flex w-fit items-center gap-2 rounded-full border border-neutral-200 bg-white px-6 py-3 text-sm font-semibold text-neutral-800 shadow-sm transition hover:border-orange-500 hover:text-orange-600 hover:bg-orange-500/5"
       >
         View All Cars in Fleet
         <ArrowRight className="size-4" />

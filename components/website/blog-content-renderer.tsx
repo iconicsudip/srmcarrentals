@@ -41,10 +41,10 @@ export function BlogContentRenderer({ content }: BlogContentRendererProps) {
     if (inTable && tableRows.length > 0) {
       const [header, , ...body] = tableRows;
       elements.push(
-        <div key={`table-${index++}`} className="my-8 overflow-x-auto rounded-xl border border-white/10 bg-white/[0.02]">
-          <table className="w-full text-left text-sm text-white/80">
+        <div key={`table-${index++}`} className="my-8 overflow-x-auto rounded-xl border border-neutral-200 bg-neutral-50/70">
+          <table className="w-full text-left text-sm text-neutral-700">
             {header && (
-              <thead className="border-b border-white/10 bg-white/5 font-semibold text-white uppercase tracking-wider text-xs">
+              <thead className="border-b border-neutral-200 bg-neutral-100 font-semibold text-neutral-900 uppercase tracking-wider text-xs">
                 <tr>
                   {header.map((col, cIdx) => (
                     <th key={cIdx} className="px-4 py-3 sm:px-6">
@@ -54,11 +54,11 @@ export function BlogContentRenderer({ content }: BlogContentRendererProps) {
                 </tr>
               </thead>
             )}
-            <tbody className="divide-y divide-white/5">
+            <tbody className="divide-y divide-neutral-200">
               {body.map((row, rIdx) => (
-                <tr key={rIdx} className="hover:bg-white/[0.03] transition-colors">
+                <tr key={rIdx} className="hover:bg-neutral-100/50 transition-colors">
                   {row.map((cell, cIdx) => (
-                    <td key={cIdx} className="px-4 py-3 sm:px-6 text-white/70">
+                    <td key={cIdx} className="px-4 py-3 sm:px-6 text-neutral-700">
                       {formatInline(cell.trim())}
                     </td>
                   ))}
@@ -103,7 +103,7 @@ export function BlogContentRenderer({ content }: BlogContentRendererProps) {
       flushList();
       const text = trimmed.slice(4);
       elements.push(
-        <h3 key={index++} className="mt-8 mb-3 text-xl font-bold tracking-tight text-white sm:text-2xl">
+        <h3 key={index++} className="mt-8 mb-3 text-xl font-bold tracking-tight text-neutral-950 sm:text-2xl">
           {formatInline(text)}
         </h3>
       );
@@ -113,8 +113,8 @@ export function BlogContentRenderer({ content }: BlogContentRendererProps) {
       flushList();
       const text = trimmed.slice(3);
       elements.push(
-        <div key={index++} className="mt-12 mb-4 pt-6 border-t border-white/10">
-          <h2 className="text-2xl font-black tracking-tight text-white sm:text-3xl flex items-center gap-3">
+        <div key={index++} className="mt-12 mb-4 pt-6 border-t border-neutral-200/80">
+          <h2 className="text-2xl font-black tracking-tight text-neutral-950 sm:text-3xl flex items-center gap-3">
             <span className="size-2 rounded-full bg-orange-500 inline-block" />
             {formatInline(text)}
           </h2>
@@ -126,7 +126,7 @@ export function BlogContentRenderer({ content }: BlogContentRendererProps) {
       flushList();
       const text = trimmed.slice(2);
       elements.push(
-        <h1 key={index++} className="mt-10 mb-6 text-3xl font-black tracking-tight text-white sm:text-4xl">
+        <h1 key={index++} className="mt-10 mb-6 text-3xl font-black tracking-tight text-neutral-950 sm:text-4xl">
           {formatInline(text)}
         </h1>
       );
@@ -136,7 +136,7 @@ export function BlogContentRenderer({ content }: BlogContentRendererProps) {
     // Horizontal Rule
     if (trimmed === "---" || trimmed === "***" || trimmed === "___") {
       flushList();
-      elements.push(<hr key={index++} className="my-10 border-white/10" />);
+      elements.push(<hr key={index++} className="my-10 border-neutral-200/80" />);
       continue;
     }
 
@@ -150,19 +150,19 @@ export function BlogContentRenderer({ content }: BlogContentRendererProps) {
       elements.push(
         <blockquote
           key={index++}
-          className={`my-6 rounded-2xl border-l-4 p-5 sm:p-6 backdrop-blur-sm ${
+          className={`my-6 rounded-2xl border-l-4 p-5 sm:p-6 shadow-sm ${
             isTip
-              ? "border-amber-500 bg-amber-500/10 text-amber-200/90"
+              ? "border-amber-500 bg-amber-50 text-amber-950"
               : isImportant
-              ? "border-orange-500 bg-orange-500/10 text-orange-200/90"
-              : "border-orange-500/60 bg-white/[0.03] text-white/80"
+              ? "border-orange-500 bg-orange-50 text-orange-950"
+              : "border-orange-500 bg-neutral-50 text-neutral-800"
           }`}
         >
           <div className="flex items-start gap-3">
             {isTip ? (
-              <Lightbulb className="size-5 shrink-0 text-amber-400 mt-0.5" />
+              <Lightbulb className="size-5 shrink-0 text-amber-600 mt-0.5" />
             ) : isImportant ? (
-              <Info className="size-5 shrink-0 text-orange-400 mt-0.5" />
+              <Info className="size-5 shrink-0 text-orange-600 mt-0.5" />
             ) : null}
             <div className="text-base leading-relaxed italic">{formatInline(quoteText)}</div>
           </div>
@@ -179,8 +179,8 @@ export function BlogContentRenderer({ content }: BlogContentRendererProps) {
       }
       const itemText = trimmed.slice(2);
       listItems.push(
-        <li key={`li-${index++}`} className="flex items-start gap-3 text-base text-white/80 leading-relaxed">
-          <span className="mt-2 size-1.5 shrink-0 rounded-full bg-orange-400" />
+        <li key={`li-${index++}`} className="flex items-start gap-3 text-base text-neutral-700 leading-relaxed">
+          <span className="mt-2 size-1.5 shrink-0 rounded-full bg-orange-500" />
           <span>{formatInline(itemText)}</span>
         </li>
       );
@@ -197,8 +197,8 @@ export function BlogContentRenderer({ content }: BlogContentRendererProps) {
       const num = numMatch[1] ?? "1";
       const itemText = numMatch[2] ?? "";
       listItems.push(
-        <li key={`oli-${index++}`} className="flex items-start gap-3.5 text-base text-white/80 leading-relaxed">
-          <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-orange-500/15 text-xs font-bold text-orange-400 border border-orange-500/30">
+        <li key={`oli-${index++}`} className="flex items-start gap-3.5 text-base text-neutral-700 leading-relaxed">
+          <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-orange-500/10 text-xs font-bold text-orange-600 border border-orange-500/30">
             {num}
           </span>
           <span className="pt-0.5">{formatInline(itemText)}</span>
@@ -210,7 +210,7 @@ export function BlogContentRenderer({ content }: BlogContentRendererProps) {
     // Normal paragraph
     flushList();
     elements.push(
-      <p key={index++} className="my-4 text-base sm:text-lg text-white/80 leading-relaxed font-normal">
+      <p key={index++} className="my-4 text-base sm:text-lg text-neutral-700 leading-relaxed font-normal">
         {formatInline(trimmed)}
       </p>
     );
@@ -275,14 +275,14 @@ function formatInline(text: string): React.ReactNode {
           href={href || "#"}
           target={isExternal ? "_blank" : undefined}
           rel={isExternal ? "noopener noreferrer" : undefined}
-          className="font-semibold text-orange-400 underline decoration-orange-500/40 underline-offset-4 hover:text-orange-300 hover:decoration-orange-400 transition-colors"
+          className="font-semibold text-orange-600 underline decoration-orange-500/40 underline-offset-4 hover:text-orange-700 transition-colors"
         >
           {label}
         </Link>
       );
     } else if (earliest.type === "bold") {
       parts.push(
-        <strong key={`inline-${key++}`} className="font-bold text-white">
+        <strong key={`inline-${key++}`} className="font-bold text-neutral-950">
           {earliest.match[1] ?? ""}
         </strong>
       );
@@ -290,7 +290,7 @@ function formatInline(text: string): React.ReactNode {
       parts.push(
         <code
           key={`inline-${key++}`}
-          className="rounded bg-white/10 px-1.5 py-0.5 text-sm font-mono text-orange-300 border border-white/5"
+          className="rounded bg-neutral-100 px-1.5 py-0.5 text-sm font-mono text-orange-600 border border-neutral-200"
         >
           {earliest.match[1] ?? ""}
         </code>

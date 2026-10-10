@@ -211,11 +211,11 @@
   animation: spinSlow 25s linear infinite;
 }
 
-/* Subtle luxury cyber-mesh background texture */
+/* Subtle luxury architectural grid background texture */
 .bg-subtle-grid {
   background-image: 
-    linear-gradient(to right, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+    linear-gradient(to right, rgba(249, 115, 22, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(249, 115, 22, 0.05) 1px, transparent 1px);
   background-size: 40px 40px;
   mask-image: radial-gradient(ellipse 70% 60% at 50% 20%, #000 60%, transparent 100%);
   -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 20%, #000 60%, transparent 100%);
@@ -228,8 +228,8 @@
 
 .luxury-card-hover:hover {
   transform: translateY(-5px);
-  border-color: rgba(249, 115, 22, 0.45);
-  box-shadow: 0 16px 36px -8px rgba(0, 0, 0, 0.7), 0 0 24px -4px rgba(249, 115, 22, 0.18);
+  border-color: rgba(249, 115, 22, 0.5);
+  box-shadow: 0 20px 40px -12px rgba(15, 23, 42, 0.08), 0 0 24px -2px rgba(249, 115, 22, 0.15);
 }
 
 /* Moving glossy shimmer effect across badges and cards */
@@ -248,7 +248,7 @@
   background: linear-gradient(
     90deg,
     transparent 0%,
-    rgba(255, 255, 255, 0.15) 50%,
+    rgba(255, 255, 255, 0.35) 50%,
     transparent 100%
   );
   transform: translateX(-150%) skewX(-20deg);
@@ -259,21 +259,22 @@
   animation: shimmerSweep 1.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Luxury Glassmorphism Container */
+/* Luxury Glassmorphism Container (Light Mode) */
 .luxury-glass {
-  background: rgba(18, 18, 18, 0.75);
+  background: rgba(255, 255, 255, 0.88);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(228, 228, 231, 0.9);
+  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.04);
 }
 
 .luxury-glass:hover {
-  border-color: rgba(255, 255, 255, 0.18);
+  border-color: rgba(249, 115, 22, 0.35);
 }
 
-/* Metallic Champagne Text Gradient */
+/* Metallic Sunset Orange Text Gradient */
 .text-gradient-gold {
-  background: linear-gradient(135deg, #ffffff 0%, #fef3c7 40%, #f97316 100%);
+  background: linear-gradient(135deg, #09090b 0%, #ea580c 45%, #f97316 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }

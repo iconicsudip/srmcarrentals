@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import {
   Globe,
   Save,
@@ -430,10 +431,10 @@ export default function DynamicSeoCommandCenter() {
             size="sm"
             asChild
           >
-            <a href="/admin/seo/sitemap" className="gap-1.5">
+            <Link href="/admin/seo/sitemap" className="gap-1.5">
               <Compass className="size-3.5 text-emerald-500" />
               Sitemap Stats
-            </a>
+            </Link>
           </Button>
         </div>
       </div>

@@ -126,6 +126,25 @@ export async function saveSmartLinks(links: SmartPaymentLink[]) {
   await setSetting(SMART_LINKS_SETTING_KEY, links);
 }
 
+export function formatCustomerPhoneForRazorpay(phone?: string): string | undefined {
+  if (!phone) return undefined;
+  const digits = phone.replace(/[^0-9]/g, "");
+  if (!digits) return undefined;
+  if (digits.length === 10) {
+    return `+91${digits}`;
+  }
+  if (digits.length === 11 && digits.startsWith("0")) {
+    return `+91${digits.slice(1)}`;
+  }
+  if (digits.length === 12 && digits.startsWith("91")) {
+    return `+${digits}`;
+  }
+  if (phone.trim().startsWith("+")) {
+    return phone.trim().replace(/\s+/g, "");
+  }
+  return `+${digits}`;
+}
+
 export async function createSmartPaymentLink(params: {
   amount: number;
   purpose: string;
@@ -138,6 +157,8 @@ export async function createSmartPaymentLink(params: {
   allowPartial?: boolean;
   notifySms?: boolean;
   notifyEmail?: boolean;
+  callbackUrl?: string;
+  callbackMethod?: "get" | "post";
   origin?: string;
 }): Promise<SmartPaymentLink> {
   const config = await getRazorpayConfig();
@@ -150,47 +171,81 @@ export async function createSmartPaymentLink(params: {
   let shortUrl = "";
   let razorpayLinkId = undefined;
 
+  const formattedPhone = formatCustomerPhoneForRazorpay(params.customerPhone);
+  const hasPhone = Boolean(formattedPhone && formattedPhone.length >= 10);
+
   // If Razorpay API credentials are configured, create live Payment Link on Razorpay
   if (config.keyId && config.keySecret) {
     try {
       const expireByEpoch = expiresAt ? Math.floor(new Date(expiresAt).getTime() / 1000) : undefined;
+      const callbackUrl =
+        params.callbackUrl ||
+        (params.bookingReference
+          ? `${(params.origin || process.env.NEXT_PUBLIC_APP_URL || "https://srmcarrentals.com").replace(/\/$/, "")}/booking/${params.bookingReference}?payment_status=completed`
+          : undefined);
+
+      const rzpRequestBody: Record<string, any> = {
+        amount: Math.round(params.amount * 100), // In paise
+        currency: "INR",
+        accept_partial: Boolean(params.allowPartial),
+        description: params.purpose,
+        customer: {
+          name: params.customerName,
+          email: params.customerEmail || undefined,
+          contact: hasPhone ? formattedPhone : undefined,
+        },
+        notify: {
+          sms: params.notifySms !== undefined ? Boolean(params.notifySms) : hasPhone,
+          email: params.notifyEmail !== undefined ? Boolean(params.notifyEmail) : Boolean(params.customerEmail),
+        },
+        reminder_enable: true,
+        expire_by: expireByEpoch,
+        notes: {
+          bookingReference: params.bookingReference || "",
+          bookingId: params.bookingId || "",
+          purpose: params.purpose,
+          platform: "SRM Car Rentals",
+          customerPhone: params.customerPhone || "",
+        },
+      };
+
+      if (callbackUrl) {
+        rzpRequestBody.callback_url = callbackUrl;
+        rzpRequestBody.callback_method = params.callbackMethod || "get";
+      }
+
+      if (hasPhone || params.customerEmail || params.customerName) {
+        rzpRequestBody.options = {
+          checkout: {
+            name: "SRM Car Rentals",
+            prefill: {
+              contact: hasPhone ? formattedPhone : undefined,
+              email: params.customerEmail || undefined,
+              name: params.customerName || undefined,
+            },
+          },
+        };
+      }
+
       const rzpRes = await fetch("https://api.razorpay.com/v1/payment_links", {
         method: "POST",
         headers: {
           Authorization: getBasicAuthHeader(config.keyId, config.keySecret),
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          amount: Math.round(params.amount * 100), // In paise
-          currency: "INR",
-          accept_partial: Boolean(params.allowPartial),
-          description: params.purpose,
-          customer: {
-            name: params.customerName,
-            email: params.customerEmail || undefined,
-            contact: params.customerPhone || undefined,
-          },
-          notify: {
-            sms: Boolean(params.notifySms),
-            email: Boolean(params.notifyEmail),
-          },
-          reminder_enable: true,
-          expire_by: expireByEpoch,
-          notes: {
-            bookingReference: params.bookingReference || "",
-            purpose: params.purpose,
-            platform: "SRM Car Rentals",
-          },
-        }),
+        body: JSON.stringify(rzpRequestBody),
       });
 
       if (rzpRes.ok) {
         const rzpData = await rzpRes.json();
         razorpayLinkId = rzpData.id;
         shortUrl = rzpData.short_url;
+      } else {
+        const errData = await rzpRes.json().catch(() => ({}));
+        console.error("Razorpay Payment Link creation error:", rzpRes.status, errData);
       }
-    } catch {
-      // Fallback to internal payment link if API call fails
+    } catch (err) {
+      console.error("Failed to connect to Razorpay API for payment link:", err);
     }
   }
 
@@ -208,14 +263,14 @@ export async function createSmartPaymentLink(params: {
     currency: "INR",
     purpose: params.purpose,
     customerName: params.customerName,
-    customerPhone: params.customerPhone,
+    customerPhone: formattedPhone || params.customerPhone,
     customerEmail: params.customerEmail,
     bookingReference: params.bookingReference,
     bookingId: params.bookingId,
     status: "ISSUED",
     allowPartial: Boolean(params.allowPartial),
-    notifySms: Boolean(params.notifySms),
-    notifyEmail: Boolean(params.notifyEmail),
+    notifySms: params.notifySms !== undefined ? Boolean(params.notifySms) : hasPhone,
+    notifyEmail: params.notifyEmail !== undefined ? Boolean(params.notifyEmail) : Boolean(params.customerEmail),
     expiresAt,
     createdAt: now.toISOString(),
     updatedAt: now.toISOString(),

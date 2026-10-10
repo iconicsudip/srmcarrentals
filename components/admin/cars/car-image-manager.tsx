@@ -42,6 +42,7 @@ export function CarImageManager({ carId }: CarImageManagerProps) {
     for (const file of Array.from(files)) {
       try {
         await upload.mutateAsync(file);
+        toast.success(`Uploaded ${file.name} (compressed to <1MB)`);
       } catch (error) {
         toast.error(error instanceof ApiRequestError ? error.message : `Failed to upload ${file.name}`);
       }
@@ -82,7 +83,7 @@ export function CarImageManager({ carId }: CarImageManagerProps) {
       >
         {upload.isPending ? <Loader2 className="text-muted-foreground size-8 animate-spin" /> : <Upload className="text-muted-foreground size-8" />}
         <p className="text-sm font-medium">Drag & drop images here, or click to browse</p>
-        <p className="text-muted-foreground text-xs">JPEG, PNG, WebP, or AVIF — up to 8MB each</p>
+        <p className="text-muted-foreground text-xs">JPEG, PNG, WebP, or AVIF — auto-compressed to &lt;1MB (S3 + DB table fallback)</p>
         <input
           ref={fileInputRef}
           type="file"

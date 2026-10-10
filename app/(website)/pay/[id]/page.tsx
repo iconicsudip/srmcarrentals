@@ -80,6 +80,7 @@ interface SmartLinkData {
 }
 
 export default function CustomerSmartPaymentPage() {
+  const router = useRouter();
   const params = useParams<{ id: string }>();
   const linkId = params.id;
 
@@ -121,22 +122,28 @@ export default function CustomerSmartPaymentPage() {
     setIsProcessing(true);
 
     try {
-      // Simulate / process payment confirmation
-      await new Promise((r) => setTimeout(r, 1200));
+      // Call backend to complete payment and confirm booking
+      const res = await apiFetch<SmartLinkData>(`/finance/razorpay/smart-links/${linkId}`, {
+        method: "POST",
+        body: { action: "complete" },
+        skipAuthRedirect: true,
+      });
 
-      setLink((prev) =>
-        prev
-          ? {
-              ...prev,
-              status: "PAID",
-              paidAt: new Date().toISOString(),
-            }
-          : null,
-      );
+      setLink(res || {
+        ...link,
+        status: "PAID",
+        paidAt: new Date().toISOString(),
+      });
 
-      toast.success("Payment successful! Official receipt generated.");
+      toast.success("Payment verified! Official reservation voucher updated.");
+
+      if (link.bookingReference) {
+        setTimeout(() => {
+          router.push(`/booking/${link.bookingReference}?payment_status=completed`);
+        }, 1200);
+      }
     } catch {
-      toast.error("Payment failed. Please try again.");
+      toast.error("Payment processing failed. Please try again or contact support.");
     } finally {
       setIsProcessing(false);
     }
@@ -144,28 +151,28 @@ export default function CustomerSmartPaymentPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-4">
+      <div className="min-h-screen bg-[#FAFAFC] text-neutral-900 flex flex-col items-center justify-center p-4">
         <Loader2 className="size-8 animate-spin text-orange-500 mb-3" />
-        <p className="text-sm text-white/60">Loading secure payment portal...</p>
+        <p className="text-sm text-neutral-600 font-medium">Loading secure payment portal...</p>
       </div>
     );
   }
 
   if (error || !link) {
     return (
-      <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-4 text-center">
-        <div className="flex size-16 items-center justify-center rounded-2xl bg-red-500/10 text-red-400 mb-4 border border-red-500/20">
+      <div className="min-h-screen bg-[#FAFAFC] text-neutral-900 flex flex-col items-center justify-center p-4 text-center">
+        <div className="flex size-16 items-center justify-center rounded-2xl bg-red-50 text-red-600 mb-4 border border-red-200">
           <AlertCircle className="size-8" />
         </div>
-        <h1 className="text-2xl font-black uppercase tracking-tight">Payment Link Unavailable</h1>
-        <p className="mt-2 text-sm text-white/50 max-w-md">
+        <h1 className="text-2xl font-black uppercase tracking-tight text-neutral-950">Payment Link Unavailable</h1>
+        <p className="mt-2 text-sm text-neutral-600 max-w-md">
           {error || "This payment link has expired or has been cancelled by SRM Car Rentals."}
         </p>
         <div className="mt-6 flex gap-3">
-          <Button asChild variant="outline" className="text-xs">
+          <Button asChild variant="outline" className="text-xs rounded-xl border-neutral-200 bg-white text-neutral-800 hover:bg-neutral-50">
             <Link href="/">Return to Homepage</Link>
           </Button>
-          <Button asChild className="bg-orange-500 hover:bg-orange-600 text-xs text-white">
+          <Button asChild className="bg-orange-500 hover:bg-orange-600 text-xs text-white font-bold rounded-xl shadow-md shadow-orange-500/20">
             <a href="tel:+919414164680">Contact SRM Support</a>
           </Button>
         </div>
@@ -174,20 +181,20 @@ export default function CustomerSmartPaymentPage() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-[#FAFAFC] text-neutral-900">
       {/* Top Header */}
-      <header className="border-b border-white/10 bg-neutral-950/80 py-4 backdrop-blur">
+      <header className="border-b border-neutral-200/90 bg-white/80 py-4 backdrop-blur-md">
         <div className="mx-auto flex max-w-4xl items-center justify-between px-4 sm:px-6">
           <Link href="/" className="flex items-center gap-2">
-            <span className="flex size-8 items-center justify-center rounded-lg bg-orange-500/15 text-orange-500">
+            <span className="flex size-8 items-center justify-center rounded-lg bg-orange-500/15 text-orange-600">
               <CarFront className="size-4" />
             </span>
-            <span className="font-black text-white text-base tracking-tight">
-              SRM <span className="text-xs text-white/50 font-normal">CAR RENTALS</span>
+            <span className="font-black text-neutral-950 text-base tracking-tight">
+              SRM <span className="text-xs text-neutral-500 font-medium">CAR RENTALS</span>
             </span>
           </Link>
 
-          <div className="flex items-center gap-2 text-xs text-emerald-400 font-medium">
+          <div className="flex items-center gap-2 text-xs text-emerald-600 font-semibold">
             <Lock className="size-3.5" /> 256-Bit SSL Encrypted
           </div>
         </div>
@@ -196,50 +203,50 @@ export default function CustomerSmartPaymentPage() {
       <main className="mx-auto max-w-xl px-4 py-10 sm:px-6">
         {/* State A: PAYMENT COMPLETED RECEIPT */}
         {link.status === "PAID" ? (
-          <div className="rounded-3xl border border-emerald-500/30 bg-neutral-900/90 p-8 backdrop-blur shadow-2xl text-center">
-            <div className="mx-auto flex size-16 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 mb-4 animate-in zoom-in">
+          <div className="rounded-3xl border border-emerald-500/30 bg-white p-8 shadow-2xl text-center">
+            <div className="mx-auto flex size-16 items-center justify-center rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200 mb-4 animate-in zoom-in">
               <CheckCircle2 className="size-9" />
             </div>
 
-            <Badge variant="outline" className="border-emerald-500/40 bg-emerald-500/15 text-emerald-400 text-xs font-bold uppercase tracking-wider">
+            <Badge variant="outline" className="border-emerald-500/40 bg-emerald-50 text-emerald-700 text-xs font-bold uppercase tracking-wider">
               Payment Confirmed
             </Badge>
 
-            <h1 className="mt-2 text-2xl font-black text-white tracking-tight">
+            <h1 className="mt-2 text-2xl font-black text-neutral-950 tracking-tight">
               {formatInr(link.amount)} Paid Successfully
             </h1>
-            <p className="mt-1 text-xs text-white/60">
+            <p className="mt-1 text-xs text-neutral-600">
               {link.purpose} • Received by SRM Car Rentals
             </p>
 
-            <div className="my-6 rounded-2xl border border-white/10 bg-black/40 p-4 text-left text-xs space-y-2 text-white/70">
+            <div className="my-6 rounded-2xl border border-neutral-200 bg-neutral-50/90 p-4 text-left text-xs space-y-2 text-neutral-600">
               <div className="flex justify-between">
                 <span>Receipt Number</span>
-                <span className="font-mono text-white">{link.id}</span>
+                <span className="font-mono text-neutral-950 font-bold">{link.id}</span>
               </div>
               <div className="flex justify-between">
                 <span>Renter Name</span>
-                <span className="font-semibold text-white">{link.customerName}</span>
+                <span className="font-semibold text-neutral-950">{link.customerName}</span>
               </div>
               {link.bookingReference && (
                 <div className="flex justify-between">
                   <span>Booking Reference</span>
-                  <span className="font-bold text-orange-400">{link.bookingReference}</span>
+                  <span className="font-bold text-orange-600">{link.bookingReference}</span>
                 </div>
               )}
               <div className="flex justify-between">
                 <span>Payment Mode</span>
-                <span className="text-white">Razorpay Online / UPI</span>
+                <span className="text-neutral-950 font-medium">Razorpay Online / UPI</span>
               </div>
               <div className="flex justify-between">
                 <span>Date & Time</span>
-                <span className="text-white">{formatDate(link.paidAt || link.createdAt)}</span>
+                <span className="text-neutral-950">{formatDate(link.paidAt || link.createdAt)}</span>
               </div>
             </div>
 
-            <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-3 text-xs text-emerald-300 text-left flex items-start gap-2">
-              <ShieldCheck className="size-4 shrink-0 text-emerald-400 mt-0.5" />
-              <span>
+            <div className="rounded-xl border border-emerald-200 bg-emerald-50/80 p-3 text-xs text-emerald-800 text-left flex items-start gap-2">
+              <ShieldCheck className="size-4 shrink-0 text-emerald-600 mt-0.5" />
+              <span className="leading-relaxed">
                 Official tax invoice and confirmation receipt has been generated. For security deposits, 100% refund is processed within 24 hours of vehicle return.
               </span>
             </div>
@@ -248,96 +255,107 @@ export default function CustomerSmartPaymentPage() {
               <Button
                 variant="outline"
                 onClick={() => window.print()}
-                className="flex-1 rounded-xl border-white/15 bg-white/5 text-xs text-white hover:bg-white/10"
+                className="flex-1 rounded-xl border-neutral-200 bg-white text-xs font-semibold text-neutral-800 hover:bg-neutral-50"
               >
                 <Printer className="size-3.5 mr-1.5" /> Print / Save Voucher
               </Button>
-              <Button
-                asChild
-                className="flex-1 rounded-xl bg-orange-500 hover:bg-orange-600 text-xs font-bold text-white"
-              >
-                <Link href="/">Back to Fleet →</Link>
-              </Button>
+              {link.bookingReference ? (
+                <Button
+                  asChild
+                  className="flex-1 rounded-xl bg-orange-500 hover:bg-orange-600 text-xs font-bold text-white shadow-md shadow-orange-500/20"
+                >
+                  <Link href={`/booking/${link.bookingReference}?payment_status=completed`}>
+                    View Booking Voucher →
+                  </Link>
+                </Button>
+              ) : (
+                <Button
+                  asChild
+                  className="flex-1 rounded-xl bg-orange-500 hover:bg-orange-600 text-xs font-bold text-white shadow-md shadow-orange-500/20"
+                >
+                  <Link href="/">Back to Fleet →</Link>
+                </Button>
+              )}
             </div>
           </div>
         ) : (
           /* State B: ACTIVE PAYMENT FORM */
-          <div className="rounded-3xl border border-white/10 bg-neutral-900/90 p-6 sm:p-8 backdrop-blur shadow-2xl space-y-6">
+          <div className="rounded-3xl border border-neutral-200/90 bg-white p-6 sm:p-8 shadow-2xl space-y-6">
             <div>
               <div className="flex items-center justify-between">
-                <span className="rounded-md bg-orange-500/15 px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wider text-orange-400">
+                <span className="rounded-md bg-orange-500/10 px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wider text-orange-600 border border-orange-500/20">
                   Official Payment Request
                 </span>
-                <span className="text-xs text-white/50 flex items-center gap-1">
-                  <Clock className="size-3" /> Instant Hold
+                <span className="text-xs text-neutral-500 flex items-center gap-1 font-medium">
+                  <Clock className="size-3 text-orange-500" /> Instant Hold
                 </span>
               </div>
 
-              <h1 className="mt-2 text-2xl font-black text-white uppercase tracking-tight">
+              <h1 className="mt-2 text-2xl font-black text-neutral-950 uppercase tracking-tight">
                 {link.purpose}
               </h1>
-              <p className="mt-1 text-xs text-white/50">
-                Issued for <strong className="text-white">{link.customerName}</strong>
+              <p className="mt-1 text-xs text-neutral-600">
+                Issued for <strong className="text-neutral-950">{link.customerName}</strong>
                 {link.bookingReference ? ` • Booking Ref: ${link.bookingReference}` : ""}
               </p>
             </div>
 
             {/* Total Payable Box */}
-            <div className="rounded-2xl border border-white/10 bg-black/60 p-5 flex items-center justify-between">
+            <div className="rounded-2xl border border-neutral-200 bg-neutral-50/90 p-5 flex items-center justify-between">
               <div>
-                <span className="text-xs text-white/50 uppercase font-semibold tracking-wider">Total Payable</span>
-                <div className="mt-1 text-3xl font-black text-orange-400">{formatInr(link.amount)}</div>
+                <span className="text-xs text-neutral-500 uppercase font-bold tracking-wider">Total Payable</span>
+                <div className="mt-1 text-3xl font-black text-orange-600">{formatInr(link.amount)}</div>
               </div>
-              <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-3 py-1.5 text-right">
-                <span className="text-[10px] font-bold text-emerald-400 flex items-center gap-1">
-                  <ShieldCheck className="size-3" /> 100% Refundable
+              <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-right">
+                <span className="text-[10px] font-bold text-emerald-700 flex items-center gap-1">
+                  <ShieldCheck className="size-3 text-emerald-600" /> 100% Refundable
                 </span>
-                <span className="text-[9px] text-white/40">upon inspection</span>
+                <span className="text-[9px] text-neutral-500">upon inspection</span>
               </div>
             </div>
 
             {/* Payment Method Badges */}
             <div className="space-y-2">
-              <span className="text-xs font-semibold text-white/70">Supported Payment Methods:</span>
+              <span className="text-xs font-bold text-neutral-700">Supported Payment Methods:</span>
               <div className="grid grid-cols-2 gap-2 text-xs">
-                <div className="rounded-xl border border-white/10 bg-white/5 p-3 flex items-center gap-2">
-                  <div className="flex size-7 items-center justify-center rounded-lg bg-orange-500/20 text-orange-400 font-bold text-[10px]">
+                <div className="rounded-xl border border-neutral-200 bg-white p-3 flex items-center gap-2.5 shadow-sm">
+                  <div className="flex size-7 items-center justify-center rounded-lg bg-orange-50 text-orange-600 font-black text-[10px] border border-orange-200">
                     UPI
                   </div>
                   <div>
-                    <div className="font-semibold text-white">UPI & QR</div>
-                    <div className="text-[10px] text-white/40">GPay, PhonePe, Paytm</div>
+                    <div className="font-bold text-neutral-950">UPI & QR</div>
+                    <div className="text-[10px] text-neutral-500">GPay, PhonePe, Paytm</div>
                   </div>
                 </div>
 
-                <div className="rounded-xl border border-white/10 bg-white/5 p-3 flex items-center gap-2">
-                  <div className="flex size-7 items-center justify-center rounded-lg bg-blue-500/20 text-blue-400 font-bold text-[10px]">
+                <div className="rounded-xl border border-neutral-200 bg-white p-3 flex items-center gap-2.5 shadow-sm">
+                  <div className="flex size-7 items-center justify-center rounded-lg bg-blue-50 text-blue-600 font-black text-[10px] border border-blue-200">
                     CARD
                   </div>
                   <div>
-                    <div className="font-semibold text-white">Cards & NetBanking</div>
-                    <div className="text-[10px] text-white/40">Visa, Master, RuPay</div>
+                    <div className="font-bold text-neutral-950">Cards & NetBanking</div>
+                    <div className="text-[10px] text-neutral-500">Visa, Master, RuPay</div>
                   </div>
                 </div>
               </div>
             </div>
 
             {/* Renter Details Summary */}
-            <div className="rounded-2xl border border-white/5 bg-black/30 p-4 text-xs space-y-1.5 text-white/60">
+            <div className="rounded-2xl border border-neutral-200 bg-neutral-50/80 p-4 text-xs space-y-1.5 text-neutral-600">
               <div className="flex justify-between">
                 <span>Renter Name:</span>
-                <span className="font-semibold text-white">{link.customerName}</span>
+                <span className="font-bold text-neutral-950">{link.customerName}</span>
               </div>
               {link.customerPhone && (
                 <div className="flex justify-between">
                   <span>WhatsApp Phone:</span>
-                  <span className="text-white">{link.customerPhone}</span>
+                  <span className="font-semibold text-neutral-950">{link.customerPhone}</span>
                 </div>
               )}
               {link.customerEmail && (
                 <div className="flex justify-between">
                   <span>GST Email:</span>
-                  <span className="text-white">{link.customerEmail}</span>
+                  <span className="font-semibold text-neutral-950">{link.customerEmail}</span>
                 </div>
               )}
             </div>
@@ -348,7 +366,7 @@ export default function CustomerSmartPaymentPage() {
                 type="button"
                 onClick={handleCompletePayment}
                 disabled={isProcessing}
-                className="w-full rounded-2xl bg-orange-500 hover:bg-orange-600 py-4 text-base font-black text-white shadow-xl shadow-orange-500/25 active:scale-[0.98] transition-all"
+                className="w-full rounded-2xl bg-orange-500 hover:bg-orange-600 py-4 text-base font-black text-white shadow-xl shadow-orange-500/25 active:scale-[0.98] transition-all cursor-pointer"
               >
                 {isProcessing ? (
                   <span className="flex items-center justify-center gap-2">
@@ -361,8 +379,8 @@ export default function CustomerSmartPaymentPage() {
                 )}
               </Button>
 
-              <p className="text-center text-[10px] text-white/40 flex items-center justify-center gap-1">
-                <Lock className="size-3 text-emerald-400" /> Settle digitally with instantaneous confirmation.
+              <p className="text-center text-[10px] text-neutral-500 flex items-center justify-center gap-1 font-medium">
+                <Lock className="size-3 text-emerald-600" /> Settle digitally with instantaneous confirmation.
               </p>
             </div>
           </div>

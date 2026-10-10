@@ -25,6 +25,7 @@ const CAR_DETAIL_INCLUDE = {
   safetyFeatures: { include: { safetyFeature: true } },
   images: { orderBy: { sortOrder: "asc" } },
   pricing: true,
+  locations: { include: { location: true } },
 } satisfies Prisma.CarInclude;
 
 const CAR_LIST_INCLUDE = {
@@ -34,6 +35,7 @@ const CAR_LIST_INCLUDE = {
   carType: true,
   images: { where: { isFeatured: true }, take: 1 },
   pricing: true,
+  locations: { include: { location: true } },
 } satisfies Prisma.CarInclude;
 
 export interface CarListFilters {
@@ -42,6 +44,7 @@ export interface CarListFilters {
   brandId?: string;
   categoryId?: string;
   carTypeId?: string;
+  locationId?: string;
   isFeatured?: boolean;
 }
 
@@ -59,6 +62,14 @@ export async function listCars(pagination: PaginationParams, filters: CarListFil
     ...(filters.brandId ? { brandId: filters.brandId } : {}),
     ...(filters.categoryId ? { categoryId: filters.categoryId } : {}),
     ...(filters.carTypeId ? { carTypeId: filters.carTypeId } : {}),
+    ...(filters.locationId
+      ? {
+          OR: [
+            { locations: { some: { locationId: filters.locationId } } },
+            { locations: { none: {} } },
+          ],
+        }
+      : {}),
     ...(filters.isFeatured !== undefined ? { isFeatured: filters.isFeatured } : {}),
   };
 
@@ -103,12 +114,12 @@ async function uniqueSlug(name: string, providedSlug?: string, excludeId?: strin
 }
 
 function createScalarFields(input: CreateCarInput) {
-  const { featureIds: _featureIds, safetyFeatureIds: _safetyFeatureIds, slug: _slug, ...rest } = input;
+  const { featureIds: _featureIds, safetyFeatureIds: _safetyFeatureIds, locationIds: _locationIds, slug: _slug, ...rest } = input;
   return rest;
 }
 
 function updateScalarFields(input: UpdateCarInput) {
-  const { featureIds: _featureIds, safetyFeatureIds: _safetyFeatureIds, slug: _slug, ...rest } = input;
+  const { featureIds: _featureIds, safetyFeatureIds: _safetyFeatureIds, locationIds: _locationIds, slug: _slug, ...rest } = input;
   return rest;
 }
 
@@ -129,6 +140,13 @@ export async function createCar(input: CreateCarInput) {
     if (input.safetyFeatureIds.length > 0) {
       await tx.carSafetyFeatureOnCar.createMany({
         data: input.safetyFeatureIds.map((safetyFeatureId) => ({ carId: car.id, safetyFeatureId })),
+        skipDuplicates: true,
+      });
+    }
+
+    if (input.locationIds && input.locationIds.length > 0) {
+      await tx.carLocation.createMany({
+        data: input.locationIds.map((locationId) => ({ carId: car.id, locationId })),
         skipDuplicates: true,
       });
     }
@@ -164,6 +182,16 @@ export async function updateCar(id: string, input: UpdateCarInput) {
       if (input.safetyFeatureIds.length > 0) {
         await tx.carSafetyFeatureOnCar.createMany({
           data: input.safetyFeatureIds.map((safetyFeatureId) => ({ carId: id, safetyFeatureId })),
+          skipDuplicates: true,
+        });
+      }
+    }
+
+    if (input.locationIds !== undefined) {
+      await tx.carLocation.deleteMany({ where: { carId: id } });
+      if (input.locationIds.length > 0) {
+        await tx.carLocation.createMany({
+          data: input.locationIds.map((locationId) => ({ carId: id, locationId })),
           skipDuplicates: true,
         });
       }

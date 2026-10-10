@@ -11,7 +11,7 @@ interface FleetSectionProps {
 
 export function FleetSection({ cars, categories, totalCount }: FleetSectionProps) {
   return (
-    <section id="fleet" className="relative overflow-hidden border-t border-white/5">
+    <section id="fleet" className="relative overflow-hidden border-t border-neutral-200/60">
       {/* ── Background image: open road / desert highway ── */}
       <div className="pointer-events-none absolute inset-0" aria-hidden>
         <Image
@@ -19,19 +19,19 @@ export function FleetSection({ cars, categories, totalCount }: FleetSectionProps
           alt=""
           fill
           sizes="100vw"
-          className="object-cover opacity-8"
+          className="object-cover opacity-[0.04]"
           priority={false}
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-neutral-950/98 via-neutral-950/85 to-neutral-950/98" />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#FAFAFC]/98 via-white/85 to-[#FAFAFC]/98" />
       </div>
 
       {/* Subtle orange glow — bottom center */}
       <div
-        className="pointer-events-none absolute bottom-0 left-1/2 size-[700px] -translate-x-1/2 rounded-full bg-orange-500/8 blur-[150px]"
+        className="pointer-events-none absolute bottom-0 left-1/2 size-[700px] -translate-x-1/2 rounded-full bg-orange-500/10 blur-[150px]"
         aria-hidden
       />
 
-      <div className="relative mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
+      <div className="relative mx-auto max-w-[1520px] px-4 py-20 sm:px-6 lg:px-8">
         <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
           <SectionHeading
             badge="SELF DRIVE FLEET"
