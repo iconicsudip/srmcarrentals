@@ -595,7 +595,7 @@ export function TripSchedulePicker({
         <button
           type="button"
           onClick={() => setOpen((o) => !o)}
-          className={`flex h-11 sm:h-12 w-full items-center justify-between gap-2.5 rounded-xl border px-3 sm:px-4 text-left text-xs sm:text-sm transition-all cursor-pointer ${
+          className={`flex min-h-11 sm:h-12 w-full items-center justify-between gap-2.5 rounded-xl border px-3 py-2 sm:py-0 sm:px-4 text-left text-xs sm:text-sm transition-all cursor-pointer ${
             open
               ? "border-orange-500 bg-orange-50 shadow-md ring-1 ring-orange-500/40"
               : "border-neutral-200 bg-white hover:border-orange-500/50 hover:bg-neutral-50/50 text-neutral-900 shadow-xs"
@@ -603,12 +603,14 @@ export function TripSchedulePicker({
         >
           <div className="flex items-center gap-2.5 min-w-0">
             <Calendar className="size-4 shrink-0 text-orange-500" />
-            <div className="min-w-0 flex items-center gap-1.5 sm:gap-2">
-              <span className="truncate text-xs sm:text-sm font-semibold text-neutral-900">
+            <div className="min-w-0 flex flex-col gap-0.5 sm:flex-row sm:items-center sm:gap-2">
+              <span className="text-xs sm:text-sm font-semibold text-neutral-900 sm:truncate">
+                <span className="mr-1.5 inline-block w-9 text-[9px] font-bold tracking-wider text-neutral-400 uppercase sm:hidden">Pickup</span>
                 {pickupDispDate} <span className="text-neutral-500 font-normal">({pickupDispTime})</span>
               </span>
-              <span className="text-orange-500 text-xs shrink-0 font-bold">→</span>
-              <span className="truncate text-xs sm:text-sm font-semibold text-neutral-900">
+              <span className="hidden text-orange-500 text-xs shrink-0 font-bold sm:inline">→</span>
+              <span className="text-xs sm:text-sm font-semibold text-neutral-900 sm:truncate">
+                <span className="mr-1.5 inline-block w-9 text-[9px] font-bold tracking-wider text-neutral-400 uppercase sm:hidden">Drop</span>
                 {dropDispDate} <span className="text-neutral-500 font-normal">({dropDispTime})</span>
               </span>
             </div>

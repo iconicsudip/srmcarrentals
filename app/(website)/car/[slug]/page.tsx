@@ -22,6 +22,7 @@ function DynamicFeatureIcon({ name, className }: { name?: string | null; classNa
 import { Badge } from "@/components/ui/badge";
 import { CarGallery } from "@/components/website/car-gallery";
 import { BookingEngine } from "@/components/website/booking-engine";
+import { MobileBookBar } from "@/components/website/mobile-book-bar";
 import { SimilarCarsCarousel } from "@/components/website/similar-cars-carousel";
 import {
   getCompanyContent,
@@ -164,7 +165,7 @@ export default async function CarDetailPage({ params }: CarDetailPageProps) {
   };
 
   return (
-    <div className="min-h-screen bg-[#FAFAFC] text-neutral-900">
+    <div className="min-h-screen bg-[#FAFAFC] pb-24 text-neutral-900 lg:pb-0">
       <DynamicJsonLd path={`/car/${car.slug}`} />
       {/* eslint-disable-next-line react/no-danger */}
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
@@ -451,7 +452,7 @@ export default async function CarDetailPage({ params }: CarDetailPageProps) {
           </div>
 
           {/* RIGHT COLUMN: Interactive Booking Engine (Sticky) */}
-          <div className="lg:sticky lg:top-20 lg:h-fit">
+          <div id="book" className="scroll-mt-24 lg:sticky lg:top-20 lg:h-fit">
             <BookingEngine
               carId={car.id}
               carSlug={car.slug}
@@ -477,6 +478,7 @@ export default async function CarDetailPage({ params }: CarDetailPageProps) {
           </div>
         )}
       </div>
+      <MobileBookBar label={car.name} price={`From ₹${Number(car.pricing?.dailyPrice ?? 1500).toLocaleString("en-IN")} / day`} />
     </div>
   );
 }

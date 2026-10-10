@@ -152,8 +152,13 @@
   * {
     @apply border-border outline-ring/50;
   }
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
   body {
     @apply bg-background text-foreground;
+    /* Safety net: never allow sideways scroll on phones (clip keeps sticky headers working) */
+    overflow-x: clip;
   }
 }
 

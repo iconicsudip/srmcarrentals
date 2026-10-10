@@ -3,7 +3,7 @@
 import { ADVANCE_PERCENT, splitAdvance } from "@/lib/checkout/advance";
 import * as React from "react";
 import { useSearchParams } from "next/navigation";
-import { AlertCircle, CheckCircle2, Loader2, MapPin, Plane, Phone, ShieldCheck, ShoppingBag, Tag } from "lucide-react";
+import { AlertCircle, CheckCircle2, Loader2, MapPin, MessageCircle, Plane, Phone, ShieldCheck, ShoppingBag, Tag } from "lucide-react";
 import { toast } from "sonner";
 import type { PricingCalculateResponse } from "@srm/types";
 
@@ -287,6 +287,60 @@ export function BookingEngine({
   };
 
   // Add configuration directly to Cart
+  const getLocationLabel = () => {
+    const selectedBranch = locations.find((l) => l.id === selectedLocationId);
+    const dropBranch = locations.find((l) => l.id === effectiveDropLocationId);
+    const selectedAirport = airports.find((a) => a.id === selectedAirportId);
+    if (deliveryType === "BRANCH") {
+      if (differentDropLocation && dropBranch && dropBranch.id !== selectedBranch?.id) {
+        return `${selectedBranch?.name ?? "Branch"} → ${dropBranch.name}`;
+      }
+      return selectedBranch ? `${selectedBranch.name} (${selectedBranch.city})` : "City Branch";
+    }
+    return selectedAirport ? `${selectedAirport.name} (${selectedAirport.code})` : "Airport Terminal";
+  };
+
+  const handleWhatsAppBook = () => {
+    if (isAvailable === false) {
+      toast.error("This car is unavailable for the selected dates. Please adjust your dates.");
+      return;
+    }
+    const number = phone.replace(/[^0-9]/g, "");
+    if (!number) {
+      toast.error("WhatsApp number is not configured.");
+      return;
+    }
+
+    const unitPrice = rentalMode === "HOURLY" ? Number(hourlyPrice || 500) : dailyPrice;
+    const total = Number.isFinite(pricingResult?.total) ? (pricingResult!.total as number) : unitPrice;
+    const insurance = insurances.find((i) => i.id === selectedInsuranceId);
+    const extras = extraServices.filter((e) => selectedExtraIds.includes(e.id));
+    const when = (iso: string) =>
+      new Date(iso).toLocaleString("en-IN", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
+
+    const lines = [
+      "Hello SRM Car Rentals! 👋",
+      "",
+      "I'd like to book this car:",
+      "",
+      `• *Car*: ${carName}`,
+      `• *Pickup*: ${when(pickup)}`,
+      `• *Drop*: ${when(drop)}`,
+      `• *Duration*: ${duration.text}`,
+      `• *Handover*: ${getLocationLabel()}`,
+      insurance ? `• *Protection*: ${insurance.name}` : null,
+      extras.length > 0 ? `• *Add-ons*: ${extras.map((e) => e.name).join(", ")}` : null,
+      appliedCoupon ? `• *Coupon*: ${appliedCoupon}` : null,
+      `• *Estimated Total*: ${formatInr(total)}`,
+      "",
+      `Link: ${typeof window !== "undefined" ? window.location.href : ""}`,
+      "",
+      "Please confirm availability!",
+    ].filter((l): l is string => l !== null);
+
+    window.open(`https://wa.me/${number}?text=${encodeURIComponent(lines.join("\n"))}`, "_blank", "noopener,noreferrer");
+  };
+
   const handleAddToCart = () => {
     if (isAdding) return;
     if (!pickup || !drop || new Date(drop) <= new Date(pickup)) {
@@ -308,16 +362,7 @@ export function BookingEngine({
     const rawTotal = pricingResult?.total;
     const finalTotal = Number.isFinite(rawTotal) ? (rawTotal as number) : unitPrice;
 
-    const locDisplayName =
-      deliveryType === "BRANCH"
-        ? differentDropLocation && dropBranch && dropBranch.id !== selectedBranch?.id
-          ? `${selectedBranch?.name ?? "Branch"} → ${dropBranch.name}`
-          : selectedBranch
-            ? `${selectedBranch.name} (${selectedBranch.city})`
-            : "City Branch"
-        : selectedAirport
-          ? `${selectedAirport.name} (${selectedAirport.code})`
-          : "Airport Terminal";
+    const locDisplayName = getLocationLabel();
 
     addToCart({
       carId,
@@ -817,6 +862,18 @@ export function BookingEngine({
               {formatInr(pricingResult?.total ?? (rentalMode === "HOURLY" ? Number(hourlyPrice || 500) : dailyPrice))}
             </span>
           )}
+        </Button>
+
+        {/* Secondary CTA: Book on WhatsApp */}
+        <Button
+          type="button"
+          onClick={handleWhatsAppBook}
+          disabled={availLoading || isAvailable === false}
+          className="w-full rounded-2xl bg-[#25D366] py-3.5 text-sm font-black text-white shadow-lg shadow-emerald-500/25 transition-all hover:bg-[#1ebe5a] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          <span className="flex items-center justify-center gap-2">
+            <MessageCircle className="size-4" /> Book on WhatsApp
+          </span>
         </Button>
       </div>
 

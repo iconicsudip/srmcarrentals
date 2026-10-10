@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 
 import { CarCard } from "@/components/website/car-card";
 import { CarsFilterBar } from "@/components/website/cars-filter-bar";
+import { MobileCollapsible } from "@/components/website/mobile-collapsible";
 import { PaginationBar } from "@/components/website/pagination-bar";
 import { SectionHeading } from "@/components/website/section-heading";
 import { listActiveBrandsWithCarCounts, listActiveCarTypes, listActiveCategories, listActiveFuelTypes, listActiveLocations, listActiveTransmissionTypes, listPublicCars, type PublicCarFilters } from "@/modules/website/public-content.service";
@@ -72,15 +73,17 @@ export default async function CarsPage({ searchParams }: CarsPageProps) {
       <div className="mt-10 flex flex-col gap-8 lg:flex-row lg:items-start">
         {/* LEFT: Filter sidebar (Sticky) */}
         <div className="w-full lg:w-[280px] xl:w-[320px] lg:shrink-0 lg:sticky lg:top-24 lg:self-start">
-          <CarsFilterBar
-            categories={categories}
-            brands={brands.map((b) => ({ slug: b.slug, name: `${b.name} (${b.carCount})` }))}
-            carTypes={carTypes}
-            transmissionTypes={transmissionTypes}
-            fuelTypes={fuelTypes}
-            locations={locations}
-            total={total}
-          />
+          <MobileCollapsible label={`Filters & Trip Dates · ${total} cars`}>
+            <CarsFilterBar
+              categories={categories}
+              brands={brands.map((b) => ({ slug: b.slug, name: `${b.name} (${b.carCount})` }))}
+              carTypes={carTypes}
+              transmissionTypes={transmissionTypes}
+              fuelTypes={fuelTypes}
+              locations={locations}
+              total={total}
+            />
+          </MobileCollapsible>
         </div>
 
         {/* RIGHT: Car grid + pagination */}

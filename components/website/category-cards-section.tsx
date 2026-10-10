@@ -70,7 +70,9 @@ export function CategoryCardsSection({
   return (
     <section className="relative mx-auto max-w-[1520px] px-4 py-20 sm:px-6 lg:px-8">
       {/* Subtle ambient warm lighting behind categories */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[350px] bg-orange-500/[0.08] rounded-full blur-[150px] pointer-events-none" />
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div className="absolute top-1/2 left-1/2 h-[350px] w-[700px] max-w-full -translate-x-1/2 -translate-y-1/2 rounded-full bg-orange-500/[0.08] blur-[150px]" />
+      </div>
 
       <SectionHeading badge="SRM 3D CATEGORIES" title="CHOOSE YOUR DRIVE." center />
 
