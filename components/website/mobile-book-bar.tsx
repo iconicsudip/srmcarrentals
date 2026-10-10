@@ -15,6 +15,8 @@ export function MobileQuickBook({
   price,
   phone,
   whatsappNumber,
+  advancePercent = 30,
+  showAdvance = true,
   targetId = "book",
 }: {
   carName: string;
@@ -22,6 +24,8 @@ export function MobileQuickBook({
   phone: string;
   /** City-routed WhatsApp number (digits, with country code). Falls back to `phone`. */
   whatsappNumber?: string;
+  advancePercent?: number;
+  showAdvance?: boolean;
   targetId?: string;
 }) {
   const t = useCopy();
@@ -39,9 +43,11 @@ export function MobileQuickBook({
             <span className="text-[10px] font-bold tracking-[0.2em] text-amber-300 uppercase">{t("quickbook.book-this-car")}</span>
             <div className="mt-1 text-2xl leading-none font-black text-white">{price}</div>
           </div>
-          <span className="rounded-full border border-emerald-400/30 bg-emerald-400/10 px-3 py-1 text-[10px] font-bold text-emerald-300">
-            {t("quickbook.pay-30-to-reserve")}
-          </span>
+          {showAdvance && (
+            <span className="rounded-full border border-emerald-400/30 bg-emerald-400/10 px-3 py-1 text-[10px] font-bold text-emerald-300">
+              {t("quickbook.pay-30-to-reserve", { percent: advancePercent })}
+            </span>
+          )}
         </div>
 
         <ol className="mt-4 flex items-center gap-2 text-[11px] font-semibold text-white/70">

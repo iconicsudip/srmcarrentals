@@ -12,6 +12,7 @@ import { generateBookingReference } from "@/modules/bookings/booking-reference";
 import { isCarAvailable, lockCarForBooking } from "@/modules/bookings/availability.service";
 import type { CreateBookingInput } from "@/modules/bookings/bookings.schemas";
 import { splitAdvance } from "@/lib/checkout/advance";
+import { getPaymentOptions } from "@/lib/payments/options";
 import { bookingDetailsKey, maskAadhaar, type BookingCheckoutDetails } from "@/lib/booking-details/types";
 import { setSetting } from "@/modules/settings/settings.service";
 import { cancelSmartPaymentLink, createSmartPaymentLink, listSmartLinks } from "@/lib/razorpay/razorpay-service";
@@ -66,6 +67,15 @@ async function upsertGuestCustomer(
 }
 
 export async function createBooking(input: CreateBookingInput, origin?: string) {
+  // Only accept payment methods the admin has enabled (Settings → Payments).
+  const payOpts = await getPaymentOptions();
+  if (input.paymentMethod === "ONLINE" && !payOpts.enableOnline) {
+    throw new BadRequestError("Online payment is currently unavailable. Please choose pay at pickup.");
+  }
+  if (input.paymentMethod === "PICKUP" && !payOpts.enablePayOnPickup) {
+    throw new BadRequestError("Pay at pickup is currently unavailable. Please pay online.");
+  }
+
   // Authoritative pricing is computed once, read-only, before we open the
   // write transaction — it's the same engine POST /pricing/calculate uses,
   // so a booking can never be created at a price the customer didn't see.
@@ -233,10 +243,10 @@ export async function createBooking(input: CreateBookingInput, origin?: string) 
       payment: {
         method: input.paymentMethod,
         grandTotal: d?.payment?.grandTotal ?? Number(pricing.total),
-        payableNow: input.paymentMethod === "ONLINE" ? splitAdvance(Number(pricing.total)).now : 0,
+        payableNow: input.paymentMethod === "ONLINE" ? splitAdvance(Number(pricing.total), payOpts.advancePercent).now : 0,
         payableLater:
           input.paymentMethod === "ONLINE"
-            ? Number(pricing.total) - splitAdvance(Number(pricing.total)).now
+            ? Number(pricing.total) - splitAdvance(Number(pricing.total), payOpts.advancePercent).now
             : Number(pricing.total),
       },
       capturedAt: new Date().toISOString(),
@@ -258,8 +268,8 @@ export async function createBooking(input: CreateBookingInput, origin?: string) 
       const custEmail = input.customer?.email || bookingRecord.customer?.email;
 
       const link = await createSmartPaymentLink({
-        amount: splitAdvance(Number(pricing.total)).now,
-        purpose: `SRM Self-Drive Booking #${bookingReference} — 30% advance`,
+        amount: splitAdvance(Number(pricing.total), payOpts.advancePercent).now,
+        purpose: `SRM Self-Drive Booking #${bookingReference} — ${payOpts.advancePercent}% advance`,
         customerName: custName,
         customerPhone: custPhone,
         customerEmail: custEmail && !custEmail.includes("@guest.") ? custEmail : undefined,
@@ -458,7 +468,8 @@ export async function completeTrip(id: string, actualKm?: number) {
 export async function getOrCreateBookingPaymentLink(bookingReference: string, origin?: string) {
   const booking = await getBookingByReference(bookingReference);
   const links = await listSmartLinks();
-  const amount = splitAdvance(Number(booking.pricingSnapshot?.grandTotal || 0)).now;
+  const payOpts = await getPaymentOptions();
+  const amount = splitAdvance(Number(booking.pricingSnapshot?.grandTotal || 0), payOpts.advancePercent).now;
   const bookingLinks = links.filter(
     (l) => l.bookingReference === bookingReference || l.bookingId === booking.id,
   );

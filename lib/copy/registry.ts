@@ -12,6 +12,15 @@ export interface CopyEntry {
 
 export const COPY: Record<string, CopyEntry> = {
   // @@generated-entries@@
+  "checkout.online-short": { group: "checkout", default: "Pay {now} now, {later} at handover." },
+  "checkout.online-info-label": { group: "checkout", default: "How online payment works" },
+  "checkout.pickup": { group: "checkout", default: "Pickup" },
+  "checkout.return": { group: "checkout", default: "Return" },
+  "checkout.duration": { group: "checkout", default: "Duration" },
+  "checkout.km-included": { group: "checkout", default: "KM included" },
+  "checkout.handover": { group: "checkout", default: "Handover" },
+  "checkout.extras": { group: "checkout", default: "Protection & add-ons" },
+  "checkout.pickup-desc": { group: "checkout", default: "₹0 upfront charge now. Pay via {methods} after inspecting the vehicle." },
   "booking.daily-toggle": { group: "booking", default: "Daily Rental (24h)" },
   "booking.hourly-toggle": { group: "booking", default: "Hourly Rental (₹{price}/hr)" },
   "booking.pickup-branch": { group: "booking", default: "Pickup Branch Office" },
@@ -41,7 +50,7 @@ export const COPY: Record<string, CopyEntry> = {
   "gallery.previous-image": { group: "gallery", default: "Previous image" },
   "gallery.next-image": { group: "gallery", default: "Next image" },
   "quickbook.book-this-car": { group: "quickbook", default: "Book this car" },
-  "quickbook.pay-30-to-reserve": { group: "quickbook", default: "Pay 30% to reserve" },
+  "quickbook.pay-30-to-reserve": { group: "quickbook", default: "Pay {percent}% to reserve" },
   "quickbook.select-dates-book": { group: "quickbook", default: "Select dates & book" },
   "quickbook.whatsapp": { group: "quickbook", default: "WhatsApp" },
   "quickbook.call-now": { group: "quickbook", default: "Call now" },

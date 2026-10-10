@@ -1,6 +1,7 @@
 "use client";
 
-import { ADVANCE_PERCENT, splitAdvance } from "@/lib/checkout/advance";
+import { splitAdvance } from "@/lib/checkout/advance";
+import { DEFAULT_PAYMENT_OPTIONS, type PaymentOptions } from "@/lib/payments/types";
 import * as React from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -8,6 +9,8 @@ import { useRouter } from "next/navigation";
 import { Calendar, CarFront, CheckCircle2, ChevronRight, Clock, Info, Loader2, LogIn, LogOut, Receipt, ShieldCheck, ShoppingBag, User, UserCheck } from "lucide-react";
 import { toast } from "sonner";
 
+import { InfoTip } from "@/components/website/info-tip";
+import { CarThumb } from "@/components/website/car-thumb";
 import { useCopy } from "@/components/copy-provider";
 import { useCart } from "@/lib/cart/cart-store";
 import { ApiRequestError, apiFetch } from "@/lib/api-client";
@@ -106,7 +109,23 @@ export default function CheckoutPage() {
   const freeKmsPerDay = Math.round(freeKmsTotal / durationDays);
   const freeKmsLabel = `${freeKmsTotal}km (${freeKmsPerDay}km x ${durationDays} days)`;
 
-  const refundableDeposit = primaryItem?.securityDeposit ?? 5000;
+  // Payment methods, advance % and deposit come from Admin → Settings → Payments.
+  const [payOpts, setPayOpts] = React.useState<PaymentOptions>(DEFAULT_PAYMENT_OPTIONS);
+  React.useEffect(() => {
+    let cancelled = false;
+    apiFetch<PaymentOptions>("/payment-options", { skipAuthRedirect: true })
+      .then((o) => {
+        if (cancelled || !o) return;
+        setPayOpts(o);
+        setPaymentMethod((cur) => (cur === "ONLINE" && !o.enableOnline ? "PICKUP" : cur === "PICKUP" && !o.enablePayOnPickup ? "ONLINE" : cur));
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const refundableDeposit = payOpts.securityDeposit;
   const fuelType = primaryItem?.fuelType || "Petrol";
   const extraKmRate = primaryItem?.extraKmPrice ?? 10;
 
@@ -134,7 +153,7 @@ export default function CheckoutPage() {
 
   // The 30% advance applies to the rental amount; the refundable deposit is collected at handover.
   const rentalPayable = Math.max(0, grandTotal - refundableDeposit);
-  const advance = splitAdvance(rentalPayable);
+  const advance = splitAdvance(rentalPayable, payOpts.advancePercent);
   const payableNow = paymentMethod === "ONLINE" ? advance.now : 0;
   const payableLater = grandTotal - payableNow;
 
@@ -410,7 +429,7 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FAFAFC] text-neutral-900">
+    <div className="min-h-screen bg-[#FAFAFC] pb-28 text-neutral-900 lg:pb-0">
       {/* Top Breadcrumb */}
       <div className="border-b border-neutral-200/80 bg-white/80 py-3 backdrop-blur-md">
         <div className="mx-auto flex max-w-[1520px] items-center gap-1.5 px-4 text-xs text-neutral-500 sm:px-6 lg:px-8">
@@ -703,8 +722,9 @@ export default function CheckoutPage() {
 
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 pt-1">
                   {/* Option A: Pay at Pickup */}
+                  {payOpts.enablePayOnPickup && (
                   <label
-                    className={`relative flex cursor-pointer flex-col justify-between rounded-2xl border p-4 transition-all ${
+                    className={`relative flex cursor-pointer flex-col justify-start gap-1 rounded-2xl border p-4 transition-all ${
                       paymentMethod === "PICKUP"
                         ? "border-orange-500 bg-orange-50/80 shadow-md shadow-orange-500/10"
                         : "border-neutral-200 bg-neutral-50/80 hover:border-neutral-300"
@@ -726,11 +746,15 @@ export default function CheckoutPage() {
                       </span>
                     </div>
                     <p className="mt-2 text-[11px] text-neutral-600">
-                      {t("checkout.0-upfront-charge-now")}
+                      {t("checkout.pickup-desc", {
+                        methods: [payOpts.allowUpiOnPickup && "UPI", payOpts.allowCashOnPickup && "Cash", "Card"].filter(Boolean).join(", "),
+                      })}
                     </p>
                   </label>
+                  )}
 
                   {/* Option B: Online Advance via Razorpay */}
+                  {payOpts.enableOnline && (
                   <label
                     className={`relative flex cursor-pointer flex-col justify-between rounded-2xl border p-4 transition-all ${
                       paymentMethod === "ONLINE"
@@ -747,16 +771,20 @@ export default function CheckoutPage() {
                           onChange={() => setPaymentMethod("ONLINE")}
                           className="accent-orange-500 mt-0.5"
                         />
-                        <span className="font-bold text-xs text-neutral-950">{t("checkout.online-title", { percent: ADVANCE_PERCENT })}</span>
+                        <span className="font-bold text-xs text-neutral-950">{t("checkout.online-title", { percent: payOpts.advancePercent })}</span>
                       </div>
                       <span className="rounded bg-orange-100 px-2 py-0.5 text-[10px] font-bold text-orange-700 border border-orange-200">
                         {t("checkout.phone-otp-verified")}
                       </span>
                     </div>
-                    <p className="mt-2 text-[11px] text-neutral-600">
-                      {t("checkout.online-desc", { now: formatInr(advance.now), percent: ADVANCE_PERCENT, later: formatInr(grandTotal - advance.now) })}
-                    </p>
+                    <div className="mt-2 flex items-start justify-between gap-2 text-[11px] text-neutral-600">
+                      <span>{t("checkout.online-short", { now: formatInr(advance.now), later: formatInr(grandTotal - advance.now) })}</span>
+                      <InfoTip label={t("checkout.online-info-label")}>
+                        {t("checkout.online-desc", { now: formatInr(advance.now), percent: payOpts.advancePercent, later: formatInr(grandTotal - advance.now) })}
+                      </InfoTip>
+                    </div>
                   </label>
+                  )}
                 </div>
               </div>
 
@@ -826,7 +854,7 @@ export default function CheckoutPage() {
                   <p className="mt-2 flex items-center justify-center gap-1.5 text-center text-[11px] text-neutral-500">
                     <ShieldCheck className="size-3.5 shrink-0 text-emerald-600" />
                     {paymentMethod === "ONLINE"
-                      ? t("checkout.note-online", { percent: ADVANCE_PERCENT })
+                      ? t("checkout.note-online", { percent: payOpts.advancePercent })
                       : t("checkout.note-pickup")}
                   </p>
                 </div>
@@ -862,39 +890,61 @@ export default function CheckoutPage() {
                   {items.map((item) => (
                     <div key={item.id} className="py-3 space-y-2">
                       <div className="flex items-start gap-3">
-                        {item.carImage ? (
-                          <div className="relative size-14 shrink-0 overflow-hidden rounded-xl border border-neutral-200 bg-neutral-50">
-                            <Image
-                              src={item.carImage}
-                              alt={item.carName}
-                              fill
-                              className="object-cover"
-                            />
-                          </div>
-                        ) : (
-                          <div className="flex size-14 shrink-0 items-center justify-center rounded-xl border border-neutral-200 bg-neutral-50 text-orange-500">
-                            <CarFront className="size-5" />
-                          </div>
-                        )}
+                        <CarThumb src={item.carImage} name={item.carName} className="size-16" />
 
                         <div className="flex-1 min-w-0">
-                          <h4 className="text-sm font-bold text-neutral-950 truncate">{item.carName}</h4>
-                          <span className="inline-block rounded bg-orange-50 px-1.5 py-0.5 text-[9px] font-bold text-orange-600 uppercase border border-orange-200">
-                            {item.rentalMode === "HOURLY" ? t("checkout.hourly-rental") : t("checkout.daily-24h")}
-                          </span>
-
-                          <div className="mt-1 text-[11px] text-neutral-600 space-y-0.5">
-                            <div className="flex items-center gap-1">
-                              <Calendar className="size-3 text-orange-500 shrink-0" />
-                              <span className="truncate">{formatDate(item.pickup)}</span>
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <Clock className="size-3 text-neutral-400 shrink-0" />
-                              <span>{item.durationText}</span>
-                            </div>
+                          <h4 className="text-sm font-bold text-neutral-950">{item.carName}</h4>
+                          <div className="mt-0.5 flex flex-wrap items-center gap-1.5">
+                            <span className="inline-block rounded bg-orange-50 px-1.5 py-0.5 text-[9px] font-bold text-orange-600 uppercase border border-orange-200">
+                              {item.rentalMode === "HOURLY" ? t("checkout.hourly-rental") : t("checkout.daily-24h")}
+                            </span>
+                            {item.fuelType && (
+                              <span className="rounded bg-neutral-100 px-1.5 py-0.5 text-[9px] font-bold text-neutral-600 uppercase">{item.fuelType}</span>
+                            )}
                           </div>
                         </div>
                       </div>
+
+                      <dl className="grid grid-cols-2 gap-x-3 gap-y-2 rounded-xl border border-neutral-100 bg-neutral-50/70 p-3 text-[11px]">
+                        <div>
+                          <dt className="font-semibold tracking-wider text-neutral-400 uppercase">{t("checkout.pickup")}</dt>
+                          <dd className="mt-0.5 flex items-start gap-1 font-medium text-neutral-800">
+                            <Calendar className="mt-0.5 size-3 shrink-0 text-orange-500" /> {formatDate(item.pickup)}
+                          </dd>
+                        </div>
+                        <div>
+                          <dt className="font-semibold tracking-wider text-neutral-400 uppercase">{t("checkout.return")}</dt>
+                          <dd className="mt-0.5 flex items-start gap-1 font-medium text-neutral-800">
+                            <Calendar className="mt-0.5 size-3 shrink-0 text-orange-500" /> {formatDate(item.drop)}
+                          </dd>
+                        </div>
+                        <div>
+                          <dt className="font-semibold tracking-wider text-neutral-400 uppercase">{t("checkout.duration")}</dt>
+                          <dd className="mt-0.5 flex items-center gap-1 font-medium text-neutral-800">
+                            <Clock className="size-3 shrink-0 text-neutral-400" /> {item.durationText}
+                          </dd>
+                        </div>
+                        {item.includedKm != null && (
+                          <div>
+                            <dt className="font-semibold tracking-wider text-neutral-400 uppercase">{t("checkout.km-included")}</dt>
+                            <dd className="mt-0.5 font-medium text-neutral-800">{item.includedKm} km</dd>
+                          </div>
+                        )}
+                        {item.locationName && (
+                          <div className="col-span-2">
+                            <dt className="font-semibold tracking-wider text-neutral-400 uppercase">{t("checkout.handover")}</dt>
+                            <dd className="mt-0.5 font-medium text-neutral-800">{item.locationName}</dd>
+                          </div>
+                        )}
+                        {(item.insurance || item.extraServices.length > 0) && (
+                          <div className="col-span-2">
+                            <dt className="font-semibold tracking-wider text-neutral-400 uppercase">{t("checkout.extras")}</dt>
+                            <dd className="mt-0.5 font-medium text-neutral-800">
+                              {[item.insurance?.name, ...item.extraServices.map((x) => x.name)].filter(Boolean).join(" · ")}
+                            </dd>
+                          </div>
+                        )}
+                      </dl>
                     </div>
                   ))}
                 </div>
@@ -1002,14 +1052,14 @@ export default function CheckoutPage() {
                   {/* Payment breakdown */}
                   <div className="rounded-xl border border-orange-500/40 border-l-4 border-l-orange-500 bg-orange-50 p-3.5 flex items-center justify-between">
                     <span className="text-sm sm:text-base font-bold text-orange-800">
-                      {t("checkout.payable-now")}{paymentMethod === "ONLINE" ? ` (${ADVANCE_PERCENT}%)` : ""}:
+                      {t("checkout.payable-now")}{paymentMethod === "ONLINE" ? ` (${payOpts.advancePercent}%)` : ""}:
                     </span>
                     <span className="text-lg sm:text-xl font-black text-orange-600">{formatInr(payableNow)}</span>
                   </div>
 
                   <div className="rounded-xl border border-emerald-500/40 border-l-4 border-l-emerald-600 bg-emerald-50 p-3.5 flex items-center justify-between">
                     <span className="text-sm sm:text-base font-bold text-emerald-800">
-                      {t("checkout.payable-later")}{paymentMethod === "ONLINE" ? ` (${100 - ADVANCE_PERCENT}%)` : ""}:
+                      {t("checkout.payable-later")}{paymentMethod === "ONLINE" ? ` (${100 - payOpts.advancePercent}%)` : ""}:
                     </span>
                     <span className="text-lg sm:text-xl font-black text-emerald-700">{formatInr(payableLater)}</span>
                   </div>
@@ -1032,10 +1082,36 @@ export default function CheckoutPage() {
           </div>
         </div>
       </div>
+      {/* Phones: always-visible total + pay button */}
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-neutral-200 bg-white/95 px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] shadow-[0_-8px_30px_rgba(0,0,0,0.08)] backdrop-blur-xl lg:hidden">
+        <div className="mx-auto flex max-w-xl items-center gap-3">
+          <div className="min-w-0 flex-1">
+            <div className="text-[10px] font-bold tracking-wider text-neutral-500 uppercase">
+              {paymentMethod === "ONLINE" ? t("checkout.payable-now") : t("checkout.grand-total")}
+            </div>
+            <div className="truncate text-lg leading-tight font-black text-neutral-950">
+              {formatInr(paymentMethod === "ONLINE" ? advance.now : grandTotal)}
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={handleSubmitCheckout}
+            disabled={isSubmitting}
+            className="flex h-12 shrink-0 items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-500 px-6 text-sm font-black text-white shadow-lg shadow-orange-500/30 active:scale-95 disabled:opacity-60"
+          >
+            {isSubmitting ? (
+              <Loader2 className="size-5 animate-spin" />
+            ) : paymentMethod === "ONLINE" ? (
+              t("checkout.cta-online", { amount: formatInr(advance.now) })
+            ) : (
+              t("checkout.confirm-reservation")
+            )}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
-
 
 function fieldClass(hasError: boolean) {
   return `h-12 w-full rounded-xl border bg-white px-3.5 text-sm text-neutral-900 placeholder:text-neutral-400 outline-none transition ${

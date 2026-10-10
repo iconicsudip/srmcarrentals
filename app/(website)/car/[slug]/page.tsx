@@ -24,6 +24,7 @@ import { getCarFallbackImage } from "@/lib/car-fallback-image";
 import { CarGallery } from "@/components/website/car-gallery";
 import { BookingEngine } from "@/components/website/booking-engine";
 import { getWhatsAppNumbers } from "@/lib/whatsapp/numbers";
+import { getPaymentOptions } from "@/lib/payments/options";
 import { pickWhatsAppNumber } from "@/lib/whatsapp/pick";
 import { MobileBookBar, MobileQuickBook } from "@/components/website/mobile-book-bar";
 import { SimilarCarsCarousel } from "@/components/website/similar-cars-carousel";
@@ -87,7 +88,7 @@ export default async function CarDetailPage({ params }: CarDetailPageProps) {
   const t = await getT();
   const { slug } = await params;
 
-  const whatsappNumbers = await getWhatsAppNumbers();
+  const [whatsappNumbers, payOpts] = await Promise.all([getWhatsAppNumbers(), getPaymentOptions()]);
   const [car, company, locations, airports, insurances, extraServices] = await Promise.all([
     getPublicCarBySlug(slug),
     getCompanyContent(),
@@ -216,6 +217,8 @@ export default async function CarDetailPage({ params }: CarDetailPageProps) {
               price={`From ₹${Number(car.pricing?.dailyPrice ?? 1500).toLocaleString("en-IN")} / day`}
               phone={company.phone}
               whatsappNumber={pickWhatsAppNumber(whatsappNumbers, car.locations?.[0]?.location?.city)}
+              advancePercent={payOpts.advancePercent}
+              showAdvance={payOpts.enableOnline}
             />
 
             {/* Vehicle Title & Badges */}
@@ -475,6 +478,8 @@ export default async function CarDetailPage({ params }: CarDetailPageProps) {
               includedKmPerDay={car.pricing?.includedKmPerDay ?? 300}
               phone={company.phone}
               whatsappNumbers={whatsappNumbers}
+              advancePercent={payOpts.enableOnline ? payOpts.advancePercent : 0}
+              securityDeposit={payOpts.securityDeposit}
               locations={locations}
               airports={airports}
               insurances={insurances}

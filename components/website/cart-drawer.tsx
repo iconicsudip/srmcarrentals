@@ -10,7 +10,6 @@ import { useCart } from "@/lib/cart/cart-store";
 import { Button } from "@/components/ui/button";
 
 function formatInr(amount: number | undefined | null) {
-  const t = useCopy();
   const safe = Number.isFinite(amount) ? (amount as number) : 0;
   return new Intl.NumberFormat("en-IN", {
     style: "currency",

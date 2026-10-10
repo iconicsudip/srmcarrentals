@@ -33,6 +33,7 @@ export default function PaymentSettingsPage() {
     depositRefundWindowHours: 24,
     allowUpiOnPickup: true,
     allowCashOnPickup: true,
+    advancePercent: 30,
   });
 
   React.useEffect(() => {
@@ -131,6 +132,19 @@ export default function PaymentSettingsPage() {
                       value={form.defaultSecurityDeposit}
                       onChange={(e) => setForm({ ...form, defaultSecurityDeposit: Number(e.target.value) || 0 })}
                     />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="advancePercent">Online advance (% of rental)</Label>
+                    <Input
+                      id="advancePercent"
+                      type="number"
+                      min={1}
+                      max={100}
+                      value={form.advancePercent}
+                      onChange={(e) => setForm({ ...form, advancePercent: Math.min(100, Math.max(1, Number(e.target.value) || 1)) })}
+                    />
+                    <p className="text-xs text-muted-foreground">Charged when a customer pays online; the rest is collected at handover. Shown at checkout.</p>
                   </div>
 
                   <div className="space-y-2">

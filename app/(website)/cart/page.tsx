@@ -1,5 +1,6 @@
 "use client";
 
+import { CarThumb } from "@/components/website/car-thumb";
 import { useCopy } from "@/components/copy-provider";
 import * as React from "react";
 import Image from "next/image";
@@ -13,7 +14,6 @@ import { apiFetch } from "@/lib/api-client";
 import type { CompanyContent } from "@/modules/settings/site-content.schemas";
 
 function formatInr(amount: number | null | undefined) {
-  const t = useCopy();
   if (amount == null) return "₹0.00";
   return new Intl.NumberFormat("en-IN", {
     style: "currency",
@@ -247,20 +247,7 @@ export default function CartPage() {
                             </button>
 
                             {/* Car Thumbnail */}
-                            {item.carImage ? (
-                              <div className="relative size-20 sm:size-24 shrink-0 overflow-hidden rounded-2xl border border-neutral-200 bg-neutral-100 shadow-sm">
-                                <Image
-                                  src={item.carImage}
-                                  alt={item.carName}
-                                  fill
-                                  className="object-cover"
-                                />
-                              </div>
-                            ) : (
-                              <div className="flex size-20 sm:size-24 shrink-0 items-center justify-center rounded-2xl border border-neutral-200 bg-neutral-100 text-orange-600">
-                                <CarFront className="size-8" />
-                              </div>
-                            )}
+                            <CarThumb src={item.carImage} name={item.carName} className="size-20 sm:size-24 rounded-2xl" sizes="96px" />
 
                             {/* Name & Structured Metadata */}
                             <div className="min-w-0 flex-1 space-y-2">

@@ -99,11 +99,13 @@ export function SiteHeader({
 
         <div className="hidden items-center gap-4 lg:flex">
           {phone && (
-            <a href={`tel:${phone.replace(/\s/g, "")}`} className="group mr-1 flex items-center gap-2 rounded-full border border-white/15 bg-white/5 py-1.5 pr-4 pl-1.5 text-sm font-semibold text-white transition hover:border-amber-400/60 hover:bg-white/10">
-              <span className="flex size-7 items-center justify-center rounded-full bg-amber-400/20 text-amber-300 transition group-hover:bg-amber-400 group-hover:text-neutral-950">
-                <Phone className="size-3.5" />
-              </span>
-              {phone}
+            <a
+              href={`tel:${phone.replace(/\s/g, "")}`}
+              aria-label={`Call ${phone}`}
+              title={`Call ${phone}`}
+              className="group flex size-10 items-center justify-center rounded-full border border-white/15 bg-white/5 text-amber-300 transition hover:border-amber-400 hover:bg-amber-400 hover:text-neutral-950"
+            >
+              <Phone className="size-4" />
             </a>
           )}
 

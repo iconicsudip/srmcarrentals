@@ -29,6 +29,9 @@ export interface BookingEngineProps {
   phone: string;
   /** City-wise WhatsApp routing (from admin settings). */
   whatsappNumbers?: WhatsAppNumbers | null;
+  /** From Admin → Settings → Payments. */
+  advancePercent?: number;
+  securityDeposit?: number;
   locations: { id: string; name: string; city: string; state: string; dropCharge?: any }[];
   airports: { id: string; name: string; code: string; city: string }[];
   insurances: { id: string; name: string; dailyPrice?: any; fixedPrice?: any; description?: string | null }[];
@@ -36,7 +39,6 @@ export interface BookingEngineProps {
 }
 
 function formatInr(amount: number | string | null | undefined) {
-  const t = useCopy();
   if (amount == null) return "₹0";
   return new Intl.NumberFormat("en-IN", {
     style: "currency",
@@ -96,6 +98,8 @@ export function BookingEngine({
   includedKmPerDay,
   phone,
   whatsappNumbers,
+  advancePercent = ADVANCE_PERCENT,
+  securityDeposit = 3000,
   locations,
   airports,
   insurances,
@@ -415,7 +419,7 @@ export function BookingEngine({
       fuelType: fuelType || "Diesel",
       includedKm: pricingResult?.rental?.includedKm ?? (duration.days || 1) * 240,
       extraKmPrice: pricingResult?.rental?.extraKmPrice ?? 10,
-      securityDeposit: 5000,
+      securityDeposit,
       city: selectedBranch?.city ?? "Udaipur",
     });
 
@@ -831,16 +835,18 @@ export function BookingEngine({
                 <span className="text-gradient-gold text-xl">{formatInr(pricingResult.total)}</span>
               </div>
 
+              {advancePercent > 0 && (
               <div className="flex items-center justify-between rounded-xl bg-neutral-900 px-3 py-2 text-[11px] text-white/80">
                 <span>
-                  {t("booking.reserve-now-with")} <strong className="text-amber-300">{ADVANCE_PERCENT}%</strong>
+                  {t("booking.reserve-now-with")} <strong className="text-amber-300">{advancePercent}%</strong>
                 </span>
-                <span className="font-black text-amber-300">{formatInr(splitAdvance(pricingResult.total).now)}</span>
+                <span className="font-black text-amber-300">{formatInr(splitAdvance(pricingResult.total, advancePercent).now)}</span>
               </div>
+              )}
 
               <div className="mt-1 flex items-center justify-between text-[11px] text-emerald-600">
                 <span>{t("booking.refundable-security-deposit")}</span>
-                <span>₹3,000–₹5,000 (at pickup)</span>
+                <span>{formatInr(securityDeposit)} (at pickup)</span>
               </div>
             </div>
           </div>
