@@ -29,6 +29,11 @@ export const activeStorageProvider = getStorageProvider();
  * 3. If S3 fails or is not available (e.g. invalid credentials/network),
  *    automatically falls back to storing in the database `stored_images` table.
  */
+/** After an S3 credential/permission failure, skip S3 for a while so uploads stay fast. */
+let s3DisabledUntil = 0;
+const S3_RETRY_AFTER_MS = 10 * 60_000;
+const S3_AUTH_ERRORS = /InvalidAccessKeyId|SignatureDoesNotMatch|AccessDenied|InvalidToken|ExpiredToken|credentials/i;
+
 export async function saveImageWithFallback(input: {
   buffer: Buffer;
   originalName: string;
@@ -43,7 +48,7 @@ export async function saveImageWithFallback(input: {
     Boolean(process.env.AWS_SECRET_ACCESS_KEY?.trim()) &&
     Boolean(process.env.AWS_S3_BUCKET?.trim());
 
-  if (hasS3Config || process.env.STORAGE_PROVIDER === "s3") {
+  if ((hasS3Config || process.env.STORAGE_PROVIDER === "s3") && Date.now() >= s3DisabledUntil) {
     try {
       const s3Result = await s3StorageProvider.save({
         buffer: compressed.buffer,
@@ -53,6 +58,7 @@ export async function saveImageWithFallback(input: {
       return { ...s3Result, storageType: "s3" };
     } catch (s3Error: unknown) {
       const msg = s3Error instanceof Error ? s3Error.message : String(s3Error);
+      if (S3_AUTH_ERRORS.test(msg)) s3DisabledUntil = Date.now() + S3_RETRY_AFTER_MS;
       console.warn(`[Storage] S3 upload failed (${msg}). Falling back to database table storage (under 1MB compressed).`);
     }
   }

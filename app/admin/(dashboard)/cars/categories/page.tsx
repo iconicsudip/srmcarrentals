@@ -1,5 +1,6 @@
 "use client";
 
+import { imageUrlField } from "@/lib/image-url";
 import { z } from "zod";
 
 import { LookupManager, type LookupRow } from "@/components/admin/lookup-manager";
@@ -13,7 +14,7 @@ interface Category extends LookupRow {
 const formSchema = z.object({
   name: z.string().min(1, "Name is required").max(120),
   description: z.string().max(1000).optional().or(z.literal("")),
-  imageUrl: z.string().url("Must be a valid URL").optional().or(z.literal("")),
+  imageUrl: imageUrlField.optional().or(z.literal("")),
 });
 
 export default function CarCategoriesPage() {

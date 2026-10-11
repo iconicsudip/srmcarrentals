@@ -1,3 +1,4 @@
+import { imageUrlField } from "@/lib/image-url";
 import { z } from "zod";
 
 import { createLookupCrud } from "@/lib/http/lookup-crud";
@@ -5,7 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { namedLookupSchema } from "@/modules/car-attributes/lookup.schemas";
 
 const { createSchema, updateSchema } = namedLookupSchema({
-  logoUrl: z.string().url().optional(),
+  logoUrl: imageUrlField.optional(),
 });
 
 export const brandsCrud = createLookupCrud({
