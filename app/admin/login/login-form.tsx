@@ -1,10 +1,11 @@
 "use client";
 
 import * as React from "react";
+import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { CarFront, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -21,6 +22,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 
 const loginFormSchema = z.object({
   email: z.string().email("Enter a valid email address"),
@@ -53,8 +55,8 @@ export function LoginForm() {
     <div className="bg-muted flex min-h-svh items-center justify-center p-6">
       <div className="w-full max-w-sm">
         <div className="mb-6 flex flex-col items-center gap-2">
-          <div className="bg-primary text-primary-foreground flex size-10 items-center justify-center rounded-lg">
-            <CarFront className="size-5" />
+          <div className="rounded-2xl bg-white px-4 py-2 shadow-md ring-1 ring-black/5">
+            <Image src="/images/srm-logo.webp" alt="SRM Car Rentals" width={477} height={199} priority className="h-16 w-auto" />
           </div>
           <h1 className="text-xl font-semibold">SRM Car Rentals</h1>
           <p className="text-muted-foreground text-sm">Sign in to the admin console</p>
@@ -88,7 +90,7 @@ export function LoginForm() {
                     <FormItem>
                       <FormLabel>Password</FormLabel>
                       <FormControl>
-                        <Input type="password" placeholder="••••••••" autoComplete="current-password" {...field} />
+                        <PasswordInput placeholder="••••••••" autoComplete="current-password" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>

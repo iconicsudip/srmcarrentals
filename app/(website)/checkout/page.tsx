@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation";
 import { Calendar, CarFront, CheckCircle2, ChevronRight, Clock, Info, Loader2, LogIn, LogOut, Receipt, ShieldCheck, ShoppingBag, User, UserCheck } from "lucide-react";
 import { toast } from "sonner";
 
+import { PasswordInput } from "@/components/ui/password-input";
 import { InfoTip } from "@/components/website/info-tip";
 import { CarThumb } from "@/components/website/car-thumb";
 import { useCopy } from "@/components/copy-provider";
@@ -557,6 +558,7 @@ export default function CheckoutPage() {
               {showLogin && !currentUser && (
                 <div className="rounded-2xl border border-orange-200 bg-orange-50/60 p-5 animate-in fade-in">
                   <div className="flex items-center gap-2 text-xs font-bold text-orange-600">
+                    <Image src="/images/srm-logo.webp" alt="SRM Car Rentals" width={477} height={199} className="mr-1 h-9 w-auto rounded-md bg-white px-1.5 py-0.5 shadow-sm" />
                     <LogIn className="size-4" /> {t("checkout.sign-in-to-your")}
                   </div>
                   <form onSubmit={handleInlineLogin} className="mt-4 space-y-3">
@@ -572,13 +574,13 @@ export default function CheckoutPage() {
                         onChange={(e) => setLoginEmail(e.target.value)}
                         className="h-11 rounded-xl border border-neutral-300 bg-white px-3.5 text-xs text-neutral-900 outline-none focus:border-orange-500 shadow-xs"
                       />
-                      <input
-                        type="password"
+                      <PasswordInput
                         required
                         placeholder={t("checkout.password")}
                         value={loginPassword}
                         onChange={(e) => setLoginPassword(e.target.value)}
-                        className="h-11 rounded-xl border border-neutral-300 bg-white px-3.5 text-xs text-neutral-900 outline-none focus:border-orange-500 shadow-xs"
+                        autoComplete="current-password"
+                        className="h-11 rounded-xl border-neutral-300 bg-white px-3.5 text-xs text-neutral-900 shadow-xs focus:border-orange-500"
                       />
                     </div>
                     <Button
