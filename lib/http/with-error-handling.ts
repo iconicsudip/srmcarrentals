@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 import { ZodError } from "zod";
 
+import { revalidatePath, revalidateTag } from "next/cache";
+
+import { getSession } from "@/lib/auth/session";
 import { ApiHttpException } from "@/lib/http/errors";
 
 type RouteHandler<Ctx = unknown> = (req: Request, ctx: Ctx) => Promise<Response>;
@@ -13,11 +16,33 @@ type RouteHandler<Ctx = unknown> = (req: Request, ctx: Ctx) => Promise<Response>
 export function withErrorHandling<Ctx = unknown>(handler: RouteHandler<Ctx>): RouteHandler<Ctx> {
   return async (req, ctx) => {
     try {
-      return await handler(req, ctx);
+      const res = await handler(req, ctx);
+      if (res.status < 400) await refreshPublicSiteAfterAdminEdit(req);
+      return res;
     } catch (error) {
       return toErrorResponse(error, req);
     }
   };
+}
+
+/** Endpoints whose writes never change what the public website shows. */
+const NO_PUBLIC_EFFECT = /\/api\/v1\/(auth|bookings|payments|finance|uploads|notifications|pricing\/calculate|car-enquiries|taxi-enquiries|analytics|integrations)(\/|$)/;
+
+/**
+ * When a staff member saves something (content, cars, prices…), drop the website's cached pages/data so
+ * the change shows immediately instead of after the cache window.
+ */
+async function refreshPublicSiteAfterAdminEdit(req: Request): Promise<void> {
+  if (req.method === "GET" || req.method === "HEAD" || req.method === "OPTIONS") return;
+  try {
+    if (NO_PUBLIC_EFFECT.test(new URL(req.url).pathname)) return;
+    const session = await getSession();
+    if (!session || session.role === "CUSTOMER") return;
+    revalidateTag("public-content", { expire: 0 });
+    revalidatePath("/", "layout");
+  } catch {
+    /* never let cache refresh break a save */
+  }
 }
 
 function toErrorResponse(error: unknown, req: Request): NextResponse {
