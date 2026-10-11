@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowUp, ArrowUpRight, Mail, MapPin, MessageCircle, Phone } from "lucide-react";
+import { ArrowUp, ArrowUpRight, Heart, Mail, MapPin, MessageCircle, Phone } from "lucide-react";
 
 import { FacebookIcon, InstagramIcon, LinkedInIcon, TelegramIcon, XIcon, YouTubeIcon } from "@/components/website/social-icons";
 
@@ -217,6 +217,17 @@ export function SiteFooter({ company, branches = [], text }: { company: CompanyC
         <div className="mx-auto flex max-w-[1520px] flex-col items-center justify-between gap-4 px-4 py-5 text-xs text-white/50 sm:flex-row sm:px-6 lg:px-8">
           <p>
             © {new Date().getFullYear()} {company.name}. {text.copyright}
+          </p>
+          <p className="flex items-center gap-1.5">
+            Made with <Heart className="size-3.5 fill-orange-500 text-orange-500" aria-label="love" /> by{" "}
+            <a
+              href="https://madmarketer.net"
+              target="_blank"
+              rel="noopener"
+              className="font-bold text-white/80 underline-offset-4 transition-colors hover:text-amber-300 hover:underline"
+            >
+              MadMarketer
+            </a>
           </p>
           <div className="flex items-center gap-6">
             <Link href="/privacy-policy" className="transition-colors hover:text-amber-300">
