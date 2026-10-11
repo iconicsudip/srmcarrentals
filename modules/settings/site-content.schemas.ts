@@ -226,10 +226,20 @@ export const siteTextSchema = z.object({
     .object({
       pickupCardTitle: s("Pickup points"),
       pickupCardNote: s("Delivery to Airport, Railway Station or Hotel"),
-      carsStatLabel: s("Cars in fleet"),
-      citiesStatLabel: s("Pickup cities"),
-      supportStatValue: s("24/7"),
-      supportStatLabel: s("Road support"),
+      /** Stats under the hero headline. `source` picks an automatic number, or "custom" uses `value` as typed. */
+      stats: z
+        .array(
+          z.object({
+            source: z.enum(["cars", "cities", "locations", "custom"]).default("custom"),
+            value: z.string().default(""),
+            label: z.string().min(1),
+          }),
+        )
+        .default([
+          { source: "cars", value: "", label: "Cars in fleet" },
+          { source: "cities", value: "", label: "Pickup cities" },
+          { source: "custom", value: "24/7", label: "Road support" },
+        ]),
     })
     .prefault({}),
   philosophy: z

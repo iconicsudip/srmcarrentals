@@ -33,6 +33,22 @@ const humanize = (k: string) =>
 
 type Json = string | number | boolean | Json[] | { [k: string]: Json };
 
+/** Lists the admin can add to / remove from, keyed by path, with the blank row to add. */
+const ARRAY_TEMPLATES: Record<string, Json> = {
+  "hero.stats": { source: "custom", value: "", label: "" },
+};
+
+const SELECT_OPTIONS: Record<string, { value: string; label: string }[]> = {
+  "hero.stats.source": [
+    { value: "cars", label: "Number of cars (automatic)" },
+    { value: "cities", label: "Number of pickup cities (automatic)" },
+    { value: "locations", label: "Number of pickup locations (automatic)" },
+    { value: "custom", label: "Custom text (type below)" },
+  ],
+};
+
+const pathKey = (path: (string | number)[]) => path.filter((p) => typeof p === "string").join(".");
+
 function setIn(obj: Json, path: (string | number)[], value: Json): Json {
   if (path.length === 0) return value;
   const [head, ...rest] = path;
@@ -45,6 +61,24 @@ function setIn(obj: Json, path: (string | number)[], value: Json): Json {
 }
 
 function FieldTree({ value, path, onChange }: { value: Json; path: (string | number)[]; onChange: (path: (string | number)[], v: Json) => void }) {
+  if (typeof value === "string" && SELECT_OPTIONS[pathKey(path)]) {
+    return (
+      <div className="space-y-1.5">
+        <Label>{humanize(String(path[path.length - 1]))}</Label>
+        <select
+          value={value}
+          onChange={(e) => onChange(path, e.target.value)}
+          className="border-input bg-background h-9 w-full rounded-md border px-3 text-sm shadow-xs"
+        >
+          {SELECT_OPTIONS[pathKey(path)]!.map((o) => (
+            <option key={o.value} value={o.value}>
+              {o.label}
+            </option>
+          ))}
+        </select>
+      </div>
+    );
+  }
   if (typeof value === "string") {
     const label = humanize(String(path[path.length - 1]));
     const long = value.length > 70 || /subtitle|message|note|detail|copyright/i.test(String(path[path.length - 1]));
@@ -72,18 +106,38 @@ function FieldTree({ value, path, onChange }: { value: Json; path: (string | num
         </div>
       );
     }
+    const template = ARRAY_TEMPLATES[pathKey(path)];
     return (
       <div className="space-y-3 sm:col-span-2">
         {value.map((item, i) => (
           <div key={i} className="rounded-lg border p-4">
-            <div className="mb-3 text-xs font-semibold tracking-wide uppercase text-muted-foreground">
-              #{i + 1} {typeof item === "object" && item && "title" in item ? `— ${String((item as Record<string, Json>).title)}` : ""}
+            <div className="mb-3 flex items-center justify-between text-xs font-semibold tracking-wide uppercase text-muted-foreground">
+              <span>
+                #{i + 1}{" "}
+                {typeof item === "object" && item && ("title" in item || "label" in item)
+                  ? `— ${String((item as Record<string, Json>).title ?? (item as Record<string, Json>).label)}`
+                  : ""}
+              </span>
+              {template && (
+                <button
+                  type="button"
+                  onClick={() => onChange(path, value.filter((_, j) => j !== i))}
+                  className="text-red-600 normal-case hover:underline"
+                >
+                  Remove
+                </button>
+              )}
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
               <FieldTree value={item} path={[...path, i]} onChange={onChange} />
             </div>
           </div>
         ))}
+        {template && (
+          <Button type="button" variant="outline" size="sm" onClick={() => onChange(path, [...value, template])}>
+            + Add item
+          </Button>
+        )}
       </div>
     );
   }

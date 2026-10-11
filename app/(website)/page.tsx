@@ -96,7 +96,7 @@ export default async function HomePage() {
       <DynamicJsonLd path="/" />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
-      <HeroSection content={content.hero} locations={locations} services={services} carCount={counts.carCount} text={siteText.hero} widgetText={siteText.bookingWidget} />
+      <HeroSection content={content.hero} locations={locations} services={services} carCount={counts.carCount} cityCount={new Set((locations as { city?: string }[]).map((l) => l.city?.trim().toLowerCase()).filter(Boolean)).size} text={siteText.hero} widgetText={siteText.bookingWidget} />
       <TrustBadgeRow badges={content.trustBadges} />
       {services.cars && (
         <>

@@ -17,6 +17,7 @@ export function HeroSection({
   locations,
   services,
   carCount,
+  cityCount,
   text,
   widgetText,
 }: {
@@ -24,6 +25,8 @@ export function HeroSection({
   locations: { id: string; name: string }[];
   services?: AvailableServicesConfig;
   carCount?: number;
+  /** Number of distinct pickup cities. */
+  cityCount?: number;
   text: SiteText["hero"];
   widgetText: SiteText["bookingWidget"];
 }) {
@@ -36,11 +39,25 @@ export function HeroSection({
   const carouselImages = slides.length > 1 ? slides : [...slides, ...DEFAULT_EXTRA_SLIDES];
   const pickupPoints = locations.slice(0, 5);
 
-  const stats = [
-    carCount && carCount > 0 ? { value: `${carCount}+`, label: text.carsStatLabel } : null,
-    locations.length > 0 ? { value: String(locations.length), label: text.citiesStatLabel } : null,
-    { value: text.supportStatValue, label: text.supportStatLabel },
-  ].filter((x): x is { value: string; label: string } => x !== null);
+  const stats = (text.stats ?? [])
+    .map((st) => {
+      const value =
+        st.source === "cars"
+          ? carCount && carCount > 0
+            ? `${carCount}+`
+            : ""
+          : st.source === "cities"
+            ? cityCount && cityCount > 0
+              ? String(cityCount)
+              : ""
+            : st.source === "locations"
+              ? locations.length > 0
+                ? String(locations.length)
+                : ""
+              : st.value.trim();
+      return value ? { value, label: st.label } : null;
+    })
+    .filter((x): x is { value: string; label: string } => x !== null);
 
   return (
     <section className="relative overflow-hidden bg-neutral-950 pb-6 [clip-path:none] lg:pb-14 lg:[clip-path:polygon(0_0,100%_0,100%_calc(100%-56px),0_100%)]">
