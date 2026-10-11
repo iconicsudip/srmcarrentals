@@ -1,126 +1,13 @@
 "use client";
 
-import Image from "next/image";
-import { Quote, Star, User } from "lucide-react";
+import { Star } from "lucide-react";
 
-import { SectionHeading } from "@/components/website/section-heading";
+import { GoogleLogo } from "@/components/website/testimonial-card";
 
-export interface TestimonialData {
-  id: string;
-  customerName: string;
-  location: string | null;
-  avatarUrl: string | null;
-  rating: number;
-  quote: string;
-  bookedItem: string | null;
-  source?: string | null;
-}
+import { ReviewsCarousel } from "@/components/website/reviews-carousel";
+import type { TestimonialData } from "@/components/website/testimonial-card";
 
-function StarRow({ rating }: { rating: number }) {
-  return (
-    <div className="flex items-center gap-0.5">
-      {Array.from({ length: 5 }).map((_, i) => (
-        <Star
-          key={i}
-          className={`size-3.5 ${i < rating ? "fill-amber-400 text-amber-400" : "fill-white/10 text-white/10"}`}
-        />
-      ))}
-    </div>
-  );
-}
-
-function GoogleLogo({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-      <path
-        d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-        fill="#4285F4"
-      />
-      <path
-        d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-        fill="#34A853"
-      />
-      <path
-        d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-        fill="#FBBC05"
-      />
-      <path
-        d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-        fill="#EA4335"
-      />
-    </svg>
-  );
-}
-
-function TestimonialCard({ t }: { t: TestimonialData }) {
-  const isGoogle = t.source === "google";
-
-  return (
-    <div className="group relative flex flex-col gap-4 overflow-hidden rounded-2xl border border-neutral-200/90 bg-white p-6 shadow-sm transition-all duration-300 hover:border-orange-500/40 hover:shadow-xl hover:shadow-orange-500/10">
-      {/* Top row: avatar + name + google badge */}
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <div className="relative size-11 shrink-0 overflow-hidden rounded-full border-2 border-orange-500/30 bg-neutral-100">
-            {t.avatarUrl ? (
-              <Image
-                src={t.avatarUrl}
-                alt={t.customerName}
-                fill
-                sizes="44px"
-                className="object-cover"
-                referrerPolicy="no-referrer"
-              />
-            ) : (
-              <div className="flex size-full items-center justify-center text-neutral-400">
-                <User className="size-5" />
-              </div>
-            )}
-          </div>
-          <div>
-            <div className="text-sm font-bold text-neutral-950">{t.customerName}</div>
-            {t.location && (
-              <div className="mt-0.5 text-[11px] font-semibold text-orange-700">{t.location}</div>
-            )}
-            <div className="mt-1">
-              <StarRow rating={t.rating} />
-            </div>
-          </div>
-        </div>
-
-        {isGoogle ? (
-          <GoogleLogo className="size-5 shrink-0 opacity-80" />
-        ) : (
-          <Quote className="size-5 shrink-0 text-orange-500/40" />
-        )}
-      </div>
-
-      {/* Quote */}
-      <p className="flex-1 text-sm leading-relaxed text-neutral-700 italic line-clamp-4">
-        &ldquo;{t.quote}&rdquo;
-      </p>
-
-      {/* Footer */}
-      {(t.bookedItem || isGoogle) && (
-        <div className="border-t border-neutral-150 pt-3">
-          {t.bookedItem && (
-            <span className="inline-block rounded-full bg-neutral-100 px-3 py-1 text-[11px] text-neutral-600">
-              Booked: <span className="text-neutral-900 font-semibold">{t.bookedItem}</span>
-            </span>
-          )}
-          {isGoogle && !t.bookedItem && (
-            <span className="inline-flex items-center gap-1.5 text-[11px] text-neutral-500 font-medium">
-              <GoogleLogo className="size-3" />
-              Verified Google Review
-            </span>
-          )}
-        </div>
-      )}
-
-      {/* Subtle warm orange aura on hover */}
-      <div className="pointer-events-none absolute inset-0 rounded-2xl bg-gradient-to-br from-orange-500/[0.04] to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-    </div>
-  );
-}
+export type { TestimonialData };
 
 export function TestimonialsSection({
   testimonials,
@@ -135,92 +22,75 @@ export function TestimonialsSection({
 }) {
   if (testimonials.length === 0) return null;
 
-  // Show up to 6 reviews in a 3-column grid
-  const visible = testimonials.slice(0, 6);
+  const total = testimonials.length;
+  const average = testimonials.reduce((sum, t) => sum + (t.rating || 0), 0) / total;
+  const fiveStar = testimonials.filter((t) => t.rating >= 5).length;
+  const fivePct = Math.round((fiveStar / total) * 100);
+  const googleCount = testimonials.filter((t) => t.source === "google").length;
 
   return (
-    <section className="relative overflow-hidden border-t border-neutral-200/80 bg-[#FAFAFC]">
-      {/* ── Background journey/city image ── */}
-      <div className="pointer-events-none absolute inset-0" aria-hidden>
-        <Image
-          src="https://images.unsplash.com/photo-1519074069444-1ba4fff66d16?w=1600&q=70&auto=format&fit=crop"
-          alt=""
-          fill
-          sizes="100vw"
-          className="object-cover opacity-5"
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-[#FAFAFC]/90 via-white/80 to-[#FAFAFC]/90" />
-      </div>
-
-      {/* ── Background decorative elements ── */}
-      {/* Large blurred orange orb — top left */}
-      <div
-        className="pointer-events-none absolute -left-40 -top-40 size-[600px] rounded-full bg-orange-500/10 blur-[130px]"
+    <section className="relative overflow-hidden bg-neutral-950 text-white">
+      {/* ambient glows + oversized outlined word */}
+      <div className="pointer-events-none absolute -top-32 left-1/2 h-96 w-[64rem] max-w-full -translate-x-1/2 bg-[radial-gradient(ellipse_at_center,rgba(249,115,22,0.22),transparent_65%)]" aria-hidden />
+      <div className="pointer-events-none absolute -right-24 bottom-0 size-[28rem] bg-[radial-gradient(circle,rgba(251,191,36,0.12),transparent_65%)]" aria-hidden />
+      <span
         aria-hidden
-      />
-      {/* Amber orb — bottom right */}
-      <div
-        className="pointer-events-none absolute -bottom-40 -right-40 size-[500px] rounded-full bg-amber-400/8 blur-[110px]"
-        aria-hidden
-      />
-      {/* Subtle dot-grid overlay */}
-      <div
-        className="pointer-events-none absolute inset-0 opacity-[0.03]"
-        style={{
-          backgroundImage:
-            "radial-gradient(circle, rgba(0,0,0,0.8) 1px, transparent 1px)",
-          backgroundSize: "28px 28px",
-        }}
-        aria-hidden
-      />
-      {/* Giant decorative quote mark */}
-      <div
-        className="pointer-events-none absolute right-8 top-0 select-none text-[280px] font-black leading-none text-neutral-950/[0.03]"
-        aria-hidden
+        className="pointer-events-none absolute top-10 left-1/2 -translate-x-1/2 text-[20vw] leading-none font-black tracking-tighter whitespace-nowrap text-transparent select-none [-webkit-text-stroke:1px_rgba(255,255,255,0.05)] lg:text-[15rem]"
       >
-        &ldquo;
-      </div>
+        REVIEWS
+      </span>
 
-      {/* ── Content ── */}
-      <div className="relative mx-auto max-w-[1520px] px-4 py-20 sm:px-6 lg:px-8">
-        <SectionHeading
-          badge={heading.badge}
-          title={heading.title}
-          subtitle={heading.subtitle}
-          center
-        />
-
-        {/* Rating summary pill */}
-        <div className="mx-auto mt-8 flex w-fit items-center gap-3 rounded-full border border-orange-500/30 bg-orange-50/80 px-5 py-2.5 shadow-xs">
-          <div className="flex items-center gap-0.5">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <Star key={i} className="size-4 fill-amber-400 text-amber-400" />
-            ))}
-          </div>
-          <div className="text-sm font-bold text-neutral-950">
-            4.9{" "}
-            <span className="font-normal text-neutral-600">
-              · {testimonials.length} review{testimonials.length === 1 ? "" : "s"}
+      <div className="relative mx-auto max-w-[1520px] px-4 py-24 sm:px-6 lg:px-8 lg:py-28">
+        {/* Heading + rating panel */}
+        <div className="grid items-end gap-10 lg:grid-cols-[1.2fr_1fr]">
+          <div>
+            <span className="inline-flex items-center gap-2 rounded-full border border-amber-400/40 bg-white/10 px-3.5 py-1 text-[11px] font-bold tracking-[0.25em] text-amber-300 uppercase backdrop-blur-md">
+              <span className="size-1.5 rounded-full bg-amber-400 shadow-[0_0_8px_#fbbf24]" /> {heading.badge}
             </span>
+            <h2 className="mt-4 text-4xl leading-[1.02] font-black tracking-tight uppercase sm:text-6xl">
+              {heading.title.replace(/\.$/, "")}
+              <span className="text-orange-500">.</span>
+            </h2>
+            <span className="lux-rule mt-4 block" />
+            {heading.subtitle && <p className="mt-4 max-w-xl text-base text-white/65">{heading.subtitle}</p>}
           </div>
-          <div className="flex items-center gap-1.5 border-l border-neutral-300 pl-3">
-            <GoogleLogo className="size-4" />
-            <span className="text-xs text-neutral-600 font-medium">Google</span>
+
+          <div className="relative overflow-hidden rounded-[28px] border border-white/10 bg-gradient-to-br from-white/[0.09] to-white/[0.02] p-6 shadow-2xl shadow-black/40 backdrop-blur-md sm:p-8">
+            <span className="pointer-events-none absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-amber-400/80 to-transparent" />
+            <div className="flex items-center gap-6">
+              <div>
+                <div className="bg-gradient-to-br from-amber-200 via-amber-300 to-orange-400 bg-clip-text text-6xl leading-none font-black tracking-tighter text-transparent sm:text-7xl">
+                  {average.toFixed(1)}
+                </div>
+                <div className="mt-2 flex items-center gap-0.5">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <Star key={i} className={`size-5 ${i < Math.round(average) ? "fill-amber-400 text-amber-400" : "fill-white/15 text-white/15"}`} />
+                  ))}
+                </div>
+              </div>
+              <div className="min-w-0 flex-1 border-l border-white/10 pl-6">
+                <div className="text-3xl font-black">{total.toLocaleString("en-IN")}</div>
+                <div className="text-xs font-semibold tracking-widest text-white/55 uppercase">
+                  {googleCount > 0 ? "Google reviews" : "Happy customers"}
+                </div>
+                <div className="mt-3 flex items-center gap-2 text-xs text-white/70">
+                  <span className="inline-flex size-6 items-center justify-center rounded-full bg-white">
+                    <GoogleLogo className="size-3.5" />
+                  </span>
+                  {fivePct}% rated 5 stars
+                </div>
+              </div>
+            </div>
+            <div className="mt-5 h-1.5 overflow-hidden rounded-full bg-white/10">
+              <div className="h-full rounded-full bg-gradient-to-r from-amber-300 to-orange-500" style={{ width: `${fivePct}%` }} />
+            </div>
           </div>
         </div>
 
-        {/* Cards grid */}
-        <div className="mt-10 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {visible.map((t) => (
-            <TestimonialCard key={t.id} t={t} />
-          ))}
+        {/* All reviews: swipeable, auto-advancing row (loads more as you scroll) */}
+        <div className="mt-14">
+          <ReviewsCarousel initial={testimonials.slice(0, 48)} total={total} />
         </div>
-
-        {testimonials.length > 6 && (
-          <p className="mt-6 text-center text-xs text-neutral-400 font-medium">
-            Showing 6 of {testimonials.length} reviews
-          </p>
-        )}
       </div>
     </section>
   );

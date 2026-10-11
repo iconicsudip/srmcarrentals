@@ -70,6 +70,9 @@ export const companyContentSchema = z.object({
       facebook: z.string().optional().or(z.literal("")),
       youtube: z.string().optional().or(z.literal("")),
       whatsapp: z.string().optional().or(z.literal("")),
+      linkedin: z.string().optional().or(z.literal("")),
+      twitter: z.string().optional().or(z.literal("")),
+      telegram: z.string().optional().or(z.literal("")),
     })
     .default({}),
   footerLinks: z

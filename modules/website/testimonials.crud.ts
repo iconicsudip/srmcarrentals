@@ -11,6 +11,7 @@ const createSchema = z.object({
   quote: z.string().min(1).max(1000),
   bookedItem: z.string().max(160).optional().or(z.literal("")),
   sortOrder: z.coerce.number().int().optional().default(0),
+  source: z.enum(["manual", "google"]).optional(),
   status: z.enum(["ACTIVE", "INACTIVE"]).optional(),
 });
 const updateSchema = createSchema.partial();

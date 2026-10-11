@@ -159,7 +159,7 @@ export async function createBooking(input: CreateBookingInput, origin?: string) 
         insuranceId: input.insuranceId,
         couponId,
         couponCode: couponId ? pricing.coupon.code : undefined,
-        estimatedKm: input.kmPlan > 1 ? pricing.rental.includedKm * input.kmPlan : input.estimatedKm,
+        estimatedKm: input.estimatedKm,
       },
     });
 
@@ -177,7 +177,7 @@ export async function createBooking(input: CreateBookingInput, origin?: string) 
         extraHours: pricing.duration.extraHours,
         rentalPrice: pricing.rental.basePrice,
         extraHourCharge: pricing.rental.extraHourCharge,
-        estimatedKm: input.kmPlan > 1 ? pricing.rental.includedKm * input.kmPlan : input.estimatedKm,
+        estimatedKm: input.estimatedKm,
         extraKmCharge: pricing.rental.extraKmCharge,
         airportPickupCharge: pricing.airport.pickupCharge,
         airportDropCharge: pricing.airport.dropCharge,

@@ -10,6 +10,8 @@ import { CouponDiscountType, ExtraHourRoundingMode, PackageAssignmentScope, Seas
 import { roundCurrency } from "@srm/utils";
 
 import { prisma } from "@/lib/prisma";
+import { getKmPlansConfig } from "@/lib/pricing/km-plans.server";
+import { clampPlan, resolveCarKmPlans } from "@/lib/pricing/km-plans";
 import { getMapProvider } from "@/lib/map";
 import { BadRequestError, NotFoundError } from "@/lib/http/errors";
 import type { PricingCalculateDto } from "@/modules/pricing/dto/pricing-calculate.dto";
@@ -163,6 +165,26 @@ export async function calculatePricing(input: PricingCalculateDto): Promise<Pric
   let extraKmPrice = Number(car.pricing.extraKmPrice);
   let blockHours = 24;
 
+  let hourlyPriceEff: number | null = car.pricing.hourlyPrice ? Number(car.pricing.hourlyPrice) : null;
+
+  // KM plan (120 / 240 / 350 km by default): sets the 24h price, the included KM and the hourly rate.
+  if (!input.rentalPackageId) {
+    const plans = resolveCarKmPlans(
+      {
+        id: car.id,
+        dailyPrice: unitPrice,
+        hourlyPrice: hourlyPriceEff,
+        includedKmPerDay: includedKmPerUnit,
+        extraKmPrice,
+      },
+      await getKmPlansConfig(),
+    );
+    const plan = plans[clampPlan(input.kmPlan ?? 1) - 1]!;
+    unitPrice = plan.dailyPrice;
+    includedKmPerUnit = plan.km;
+    hourlyPriceEff = plan.hourlyPrice;
+  }
+
   if (input.rentalPackageId) {
     const pkg = await resolveRentalPackage(input.rentalPackageId, car);
     unitPrice = Number(pkg.basePrice);
@@ -178,7 +200,7 @@ export async function calculatePricing(input: PricingCalculateDto): Promise<Pric
   // ---- 2. Rental price: pure-hourly mode for short rentals, else the 24h/package-block formula ----
   const rawHours = (input.dropDateTime.getTime() - input.pickupDateTime.getTime()) / 3_600_000;
   const useHourly =
-    !input.rentalPackageId && shouldUseHourlyPricing(rawHours, car.pricing.hourlyPrice ? Number(car.pricing.hourlyPrice) : null);
+    !input.rentalPackageId && shouldUseHourlyPricing(rawHours, hourlyPriceEff);
 
   let totalHours: number;
   let fullDays: number;
@@ -190,7 +212,7 @@ export async function calculatePricing(input: PricingCalculateDto): Promise<Pric
   if (useHourly) {
     const hourly = calculateHourlyPrice({
       totalHours: rawHours,
-      hourlyPrice: Number(car.pricing.hourlyPrice),
+      hourlyPrice: Number(hourlyPriceEff),
       minHourlyBookingHours: car.pricing.minHourlyBookingHours ?? undefined,
     });
     totalHours = hourly.billableHours;
@@ -218,13 +240,11 @@ export async function calculatePricing(input: PricingCalculateDto): Promise<Pric
   }
 
   // ---- 3. KM pricing ----
-  // A KM plan (2×/3×) means the customer pre-buys that many KM: estimated KM = plan × included KM.
-  const kmPlan = input.kmPlan && input.kmPlan > 1 ? input.kmPlan : 1;
   const km = calculateKmPricing({
     fullDays,
     includedKmPerDay: includedKmPerUnit,
     extraKmPrice,
-    estimatedKm: kmPlan > 1 ? fullDays * includedKmPerUnit * kmPlan : input.estimatedKm,
+    estimatedKm: input.estimatedKm,
   });
 
   // ---- 4. Seasonal pricing (adjusts the rental base price) ----
@@ -304,7 +324,7 @@ export async function calculatePricing(input: PricingCalculateDto): Promise<Pric
     duration: { totalHours, fullDays, extraHours, gracePeriodMinutes, gracePeriodApplied },
     rental: {
       dailyPrice: unitPrice,
-      hourlyPrice: car.pricing.hourlyPrice ? Number(car.pricing.hourlyPrice) : 0,
+      hourlyPrice: hourlyPriceEff ?? 0,
       basePrice,
       extraHourCharge,
       includedKmPerUnit,

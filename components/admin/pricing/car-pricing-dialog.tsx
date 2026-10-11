@@ -34,7 +34,7 @@ const DEFAULTS: FormInput = {
   extraKmPrice: 0,
   extraHourPrice: 0,
   gracePeriodMinutes: 0,
-  extraHourRoundingMode: "ROUND_UP",
+  extraHourRoundingMode: "EXACT_HOUR",
 };
 
 export function CarPricingDialog({ carId, carName, open, onOpenChange }: { carId: string; carName: string; open: boolean; onOpenChange: (open: boolean) => void }) {

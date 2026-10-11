@@ -12,6 +12,8 @@ export interface CopyEntry {
 
 export const COPY: Record<string, CopyEntry> = {
   // @@generated-entries@@
+  "carpage.km-plans-title": { group: "carpage", default: "KM plans" },
+  "carpage.km-plans-subtitle": { group: "carpage", default: "Pick the kilometres you need per 24 hours. Extra KM beyond your plan is {rate} per km." },
   "booking.km-plan": { group: "booking", default: "KM plan (per 24 hours)" },
   "booking.km-extra-rate": { group: "booking", default: "Extra KM {rate}/km" },
   "booking.km-popular": { group: "booking", default: "Popular" },

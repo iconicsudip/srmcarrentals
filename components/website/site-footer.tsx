@@ -1,6 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowUp, ArrowUpRight, Camera, Mail, MapPin, MessageCircle, Phone, Share2, Video } from "lucide-react";
+import { ArrowUp, ArrowUpRight, Mail, MapPin, MessageCircle, Phone } from "lucide-react";
+
+import { FacebookIcon, InstagramIcon, LinkedInIcon, TelegramIcon, XIcon, YouTubeIcon } from "@/components/website/social-icons";
 
 import type { CompanyContent, SiteText } from "@/modules/settings/site-content.schemas";
 
@@ -12,10 +14,14 @@ export interface FooterBranch {
 }
 
 export function SiteFooter({ company, branches = [], text }: { company: CompanyContent; branches?: FooterBranch[]; text: SiteText["footer"] }) {
+  const sl = company.socialLinks;
   const socials = [
-    { icon: Camera, href: company.socialLinks.instagram, label: "Instagram" },
-    { icon: Share2, href: company.socialLinks.facebook, label: "Facebook" },
-    { icon: Video, href: company.socialLinks.youtube, label: "YouTube" },
+    { icon: InstagramIcon, href: sl.instagram, label: "Instagram" },
+    { icon: FacebookIcon, href: sl.facebook, label: "Facebook" },
+    { icon: YouTubeIcon, href: sl.youtube, label: "YouTube" },
+    { icon: LinkedInIcon, href: sl.linkedin, label: "LinkedIn" },
+    { icon: XIcon, href: sl.twitter, label: "X" },
+    { icon: TelegramIcon, href: sl.telegram, label: "Telegram" },
   ].filter((s) => s.href);
 
   const columns = [

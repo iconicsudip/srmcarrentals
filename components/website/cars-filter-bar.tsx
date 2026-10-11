@@ -1,5 +1,6 @@
 "use client";
 
+import { toSlug } from "@/lib/slug";
 import * as React from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Calendar, Check, Loader2, ChevronDown, MapPin, RotateCcw, Search, SlidersHorizontal, Sparkles, X } from "lucide-react";
@@ -154,7 +155,9 @@ export function CarsFilterBar({
   const currentFuel      = searchParams.get("fuel") ?? "";
   const currentSearch    = searchParams.get("search") ?? "";
   const currentSort      = searchParams.get("sort") ?? "featured";
-  const currentLocationId = searchParams.get("locationId") ?? searchParams.get("location") ?? "";
+  const currentLocationRef = searchParams.get("location") ?? searchParams.get("locationId") ?? "";
+  // Resolve whichever form is in the URL (slug or legacy id) to the location's slug for display/selection
+  const currentLocationId = (locations.find((l) => l.id === currentLocationRef || (l as { slug?: string }).slug === currentLocationRef) as { id: string; slug?: string } | undefined)?.slug ?? currentLocationRef;
   const currentPickupDate = searchParams.get("pickupDate") ?? "";
   const currentDropDate   = searchParams.get("dropDate") ?? "";
 
@@ -178,7 +181,7 @@ export function CarsFilterBar({
   const activeChips: { label: string; key: string }[] = [];
 
   if (currentLocationId) {
-    const loc = locations.find((l) => l.id === currentLocationId);
+    const loc = locations.find((l) => l.id === currentLocationRef || (l as { slug?: string }).slug === currentLocationRef);
     activeChips.push({ label: `📍 ${loc?.name ?? "Selected Location"}`, key: "location" });
   }
 
@@ -193,16 +196,17 @@ export function CarsFilterBar({
   if (currentCategory)  activeChips.push({ label: categories.find(c => (c.slug ?? c.id) === currentCategory)?.name ?? currentCategory, key: "category" });
   if (currentBrand)     activeChips.push({ label: brands.find(b => (b.slug ?? b.id) === currentBrand)?.name ?? currentBrand, key: "brand" });
   if (currentType)      activeChips.push({ label: carTypes.find(t => (t.slug ?? t.id) === currentType)?.name ?? currentType, key: "type" });
-  if (currentTx)        activeChips.push({ label: transmissionTypes.find(t => t.id === currentTx)?.name ?? currentTx, key: "transmission" });
-  if (currentFuel)      activeChips.push({ label: fuelTypes.find(f => f.id === currentFuel)?.name ?? currentFuel, key: "fuel" });
+  if (currentTx)        activeChips.push({ label: transmissionTypes.find(t => t.id === currentTx || toSlug(t.name) === currentTx)?.name ?? currentTx, key: "transmission" });
+  if (currentFuel)      activeChips.push({ label: fuelTypes.find(f => f.id === currentFuel || toSlug(f.name) === currentFuel)?.name ?? currentFuel, key: "fuel" });
 
   function updateParam(key: string, value: string) {
     const params = new URLSearchParams(searchParams.toString());
     if (value === ALL || !value) {
       params.delete(key);
-      if (key === "locationId") params.delete("location");
+      if (key === "location") params.delete("locationId");
     } else {
       params.set(key, value);
+      if (key === "location") params.delete("locationId");
     }
     params.delete("page");
     startTransition(() => router.push(`${pathname}?${params.toString()}`));
@@ -349,7 +353,7 @@ export function CarsFilterBar({
               type="button"
               onClick={() => {
                 if (currentPickupDate || currentDropDate) handleClearDates();
-                if (currentLocationId) updateParam("locationId", ALL);
+                if (currentLocationId) updateParam("location", ALL);
               }}
               className="text-[10px] font-semibold text-neutral-500 hover:text-orange-600 transition cursor-pointer"
             >
@@ -368,7 +372,7 @@ export function CarsFilterBar({
             <div className="relative">
               <select
                 value={currentLocationId || ALL}
-                onChange={(e) => updateParam("locationId", e.target.value)}
+                onChange={(e) => updateParam("location", e.target.value)}
                 className="w-full appearance-none rounded-xl border border-neutral-200 bg-white py-2.5 pl-3 pr-8 text-xs text-neutral-900 outline-none focus:border-orange-500 transition cursor-pointer shadow-xs"
               >
                 <option value={ALL} className="bg-white text-neutral-900">
@@ -378,7 +382,7 @@ export function CarsFilterBar({
                   const charge = Number((loc as any).dropCharge ?? 0);
                   const priceLabel = charge > 0 ? ` — ₹${charge.toLocaleString("en-IN")} Drop` : "";
                   return (
-                    <option key={loc.id} value={loc.id} className="bg-white text-neutral-900">
+                    <option key={loc.id} value={(loc as { slug?: string }).slug ?? loc.id} className="bg-white text-neutral-900">
                       {loc.name} {loc.city ? `(${loc.city})` : ""}{priceLabel}
                     </option>
                   );
@@ -508,8 +512,8 @@ export function CarsFilterBar({
           {transmissionTypes.map((t) => (
             <FilterPill
               key={t.id}
-              active={currentTx === t.id}
-              onClick={() => updateParam("transmission", t.id as string)}
+              active={currentTx === t.id || currentTx === toSlug(t.name)}
+              onClick={() => updateParam("transmission", toSlug(t.name))}
             >
               {t.name}
             </FilterPill>
@@ -526,8 +530,8 @@ export function CarsFilterBar({
           {fuelTypes.map((f) => (
             <FilterPill
               key={f.id}
-              active={currentFuel === f.id}
-              onClick={() => updateParam("fuel", f.id as string)}
+              active={currentFuel === f.id || currentFuel === toSlug(f.name)}
+              onClick={() => updateParam("fuel", toSlug(f.name))}
             >
               {f.name}
             </FilterPill>

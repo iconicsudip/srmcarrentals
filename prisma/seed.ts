@@ -48,7 +48,7 @@ function permissionGroup(key: string): string {
 async function main() {
   console.log("Seeding permissions...");
   const permissionRecords = await Promise.all(
-    PERMISSIONS.map((key) =>
+    PERMISSIONS.map((key: any) =>
       prisma.permission.upsert({
         where: { key },
         update: {},
@@ -347,7 +347,7 @@ async function main() {
       extraKmPrice: 15,
       extraHourPrice: 250,
       gracePeriodMinutes: 30,
-      extraHourRoundingMode: "ROUND_UP",
+      extraHourRoundingMode: "EXACT_HOUR",
     },
   });
 

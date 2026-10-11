@@ -9,6 +9,7 @@ import type { AvailableServicesConfig, CompanyContent, SiteText } from "@/module
 
 interface LocationOption {
   id: string;
+  slug?: string;
   name: string;
   city?: string;
   dropCharge?: number | string;
@@ -129,7 +130,7 @@ export function BookingWidget({
 
     const selectedLoc = locations.find((l) => l.id === locationId);
     if (selectedLoc) {
-      params.set("locationId", selectedLoc.id);
+      params.set("location", selectedLoc.slug ?? selectedLoc.id);
       if (selectedLoc.city) params.set("city", selectedLoc.city);
     }
 

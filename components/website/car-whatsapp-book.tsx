@@ -46,7 +46,7 @@ export function CarWhatsAppBook({
   pickupDate?: string;
   dropDate?: string;
   /** Locations this car is available at — the chosen one decides which city's WhatsApp number is used. */
-  locations?: { id: string; name: string }[];
+  locations?: { id: string; name: string; slug?: string }[];
   defaultLocationId?: string | null;
   className?: string;
   label?: string;
@@ -60,7 +60,8 @@ export function CarWhatsAppBook({
     email: "",
     pickupAt: asLocalInput(pickupDate) || defaultSlot(24),
     dropAt: asLocalInput(dropDate) || defaultSlot(48),
-    locationId: (defaultLocationId && locations.some((l) => l.id === defaultLocationId) ? defaultLocationId : locations[0]?.id) ?? "",
+    locationId:
+      (locations.find((l) => l.id === defaultLocationId || (defaultLocationId && l.slug === defaultLocationId)) ?? locations[0])?.id ?? "",
     pickupLocation: "",
     notes: "",
     website: "", // honeypot

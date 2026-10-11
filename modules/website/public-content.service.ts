@@ -1,6 +1,9 @@
 import { unstable_cache } from "next/cache";
 
 import { makeT } from "@/lib/copy/translate";
+import { toSlug } from "@/lib/slug";
+import { getKmPlansConfig } from "@/lib/pricing/km-plans.server";
+import { resolveCarKmPlans } from "@/lib/pricing/km-plans";
 
 import { prisma } from "@/lib/prisma";
 import { getSetting } from "@/modules/settings/settings.service";
@@ -350,6 +353,26 @@ function cached<A extends unknown[], R>(name: string, fn: (...args: A) => Promis
   });
 }
 
+/** Adds each car's 3 KM plans (admin prices, else calculated) so cards and pages show identical numbers. */
+async function attachKmPlans<T extends { id: string; pricing?: any }>(cars: T[]) {
+  const cfg = await getKmPlansConfig();
+  return cars.map((c) => ({
+    ...c,
+    kmPlans: c.pricing
+      ? resolveCarKmPlans(
+          {
+            id: c.id,
+            dailyPrice: Number(c.pricing.dailyPrice),
+            hourlyPrice: c.pricing.hourlyPrice != null ? Number(c.pricing.hourlyPrice) : null,
+            includedKmPerDay: Number(c.pricing.includedKmPerDay ?? 120),
+            extraKmPrice: Number(c.pricing.extraKmPrice ?? 10),
+          },
+          cfg,
+        )
+      : undefined,
+  }));
+}
+
 function toPlain<T>(data: T): T {
   return JSON.parse(JSON.stringify(data)) as T;
 }
@@ -420,7 +443,7 @@ async function listActiveCars_uncached(take = 12): Promise<PublicCarCard[]> {
       orderBy: [{ isFeatured: "desc" }, { createdAt: "desc" }],
       take,
     });
-    return toPlain(cars) as unknown as PublicCarCard[];
+    return toPlain(await attachKmPlans(cars)) as unknown as PublicCarCard[];
   } catch { return []; }
 }
 
@@ -501,7 +524,10 @@ const DEFAULT_TESTIMONIALS = [
 
 export async function listActiveTestimonials() {
   try {
-    const list = await prisma.testimonial.findMany({ where: { status: "ACTIVE" }, orderBy: { sortOrder: "asc" } });
+    const list = await prisma.testimonial.findMany({
+      where: { status: "ACTIVE" },
+      orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }, { id: "asc" }],
+    });
     return list.length > 0 ? list : DEFAULT_TESTIMONIALS;
   } catch {
     return DEFAULT_TESTIMONIALS;
@@ -574,7 +600,7 @@ async function listSimilarCars_uncached(currentCarId: string, categoryId: string
       similar.push(...fallback);
     }
 
-    return toPlain(similar) as unknown as PublicCarCard[];
+    return toPlain(await attachKmPlans(similar)) as unknown as PublicCarCard[];
   } catch { return []; }
 }
 
@@ -611,22 +637,40 @@ export interface PublicCarFilters {
 
 const PAGE_SIZE_DEFAULT = 9;
 
+/** URLs use readable slugs; accept an id too so old links keep working. */
+async function resolveNamedRef(model: "transmissionType" | "fuelType", ref?: string): Promise<string | undefined> {
+  if (!ref) return undefined;
+  const rows: { id: string; name: string }[] = await (prisma[model] as any).findMany({ select: { id: true, name: true } });
+  const wanted = ref.toLowerCase();
+  return rows.find((r) => r.id === ref || toSlug(r.name) === wanted)?.id ?? ref;
+}
+async function resolveLocationRef(ref?: string): Promise<string | undefined> {
+  if (!ref || ref === "all") return ref;
+  const loc = await prisma.location.findFirst({ where: { OR: [{ id: ref }, { slug: ref }] }, select: { id: true } });
+  return loc?.id ?? ref;
+}
+
 async function listPublicCars_uncached(filters: PublicCarFilters): Promise<{ cars: PublicCarCard[]; total: number; page: number; pageSize: number }> {
   const page = Math.max(1, filters.page ?? 1);
   const pageSize = filters.pageSize ?? PAGE_SIZE_DEFAULT;
 
   try {
+    const [transmissionTypeId, fuelTypeId, locationId] = await Promise.all([
+      resolveNamedRef("transmissionType", filters.transmissionTypeId),
+      resolveNamedRef("fuelType", filters.fuelTypeId),
+      resolveLocationRef(filters.locationId),
+    ]);
     const where = {
       status: "ACTIVE" as const,
       ...(filters.categorySlug ? { category: { slug: filters.categorySlug } } : {}),
       ...(filters.brandSlug ? { brand: { slug: filters.brandSlug } } : {}),
       ...(filters.carTypeSlug ? { carType: { slug: filters.carTypeSlug } } : {}),
-      ...(filters.transmissionTypeId ? { transmissionTypeId: filters.transmissionTypeId } : {}),
-      ...(filters.fuelTypeId ? { fuelTypeId: filters.fuelTypeId } : {}),
-      ...(filters.locationId && filters.locationId !== "all"
+      ...(transmissionTypeId ? { transmissionTypeId } : {}),
+      ...(fuelTypeId ? { fuelTypeId } : {}),
+      ...(locationId && locationId !== "all"
         ? {
             OR: [
-              { locations: { some: { locationId: filters.locationId } } },
+              { locations: { some: { locationId } } },
               { locations: { none: {} } },
             ],
           }
@@ -650,7 +694,7 @@ async function listPublicCars_uncached(filters: PublicCarFilters): Promise<{ car
       prisma.car.count({ where }),
     ]);
 
-    return { cars: toPlain(cars) as unknown as PublicCarCard[], total, page, pageSize };
+    return { cars: toPlain(await attachKmPlans(cars)) as unknown as PublicCarCard[], total, page, pageSize };
   } catch {
     return { cars: [], total: 0, page, pageSize };
   }
@@ -690,7 +734,8 @@ async function getPublicCarBySlug_uncached(slug: string) {
     if (!car) return null;
     // Featured photo first (stable for the rest), so the gallery and cards show the same lead image.
     const images = [...car.images].sort((a, b) => Number(b.isFeatured) - Number(a.isFeatured));
-    return toPlain({ ...car, images });
+    const [withPlans] = await attachKmPlans([car]);
+    return toPlain({ ...withPlans!, images });
   } catch { return null; }
 }
 

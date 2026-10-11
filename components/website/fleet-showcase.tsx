@@ -80,7 +80,7 @@ export function FleetShowcase({
     return <p className="py-12 text-center font-medium text-white/60">No cars in this category yet — check back soon.</p>;
   }
 
-  const price = car.pricing ? Number(car.pricing.dailyPrice) : 2500;
+  const price = car.kmPlans?.[0]?.dailyPrice ?? (car.pricing ? Number(car.pricing.dailyPrice) : 2500);
   const seats = car.seatOption?.count ?? 5;
   const luggage = car.carCapacity?.luggageCapacity || car.carCapacity?.label || (seats >= 7 ? "3-4 Bags" : "2 Bags");
   const stageSrc = failed[car.id] ? getCarFallbackImage(car.brand.name, car.category?.name) : imageOf(car);
@@ -274,7 +274,7 @@ export function FleetShowcase({
                   <div className="absolute inset-x-2 bottom-1.5">
                     <div className="truncate text-[11px] font-black text-white uppercase">{c.name}</div>
                     <div className="text-[10px] font-semibold text-amber-300">
-                      ₹{(c.pricing ? Number(c.pricing.dailyPrice) : 2500).toLocaleString("en-IN")}/day
+                      ₹{(c.kmPlans?.[0]?.dailyPrice ?? (c.pricing ? Number(c.pricing.dailyPrice) : 2500)).toLocaleString("en-IN")}/day
                     </div>
                   </div>
                 </div>

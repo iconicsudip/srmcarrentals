@@ -23,6 +23,7 @@ import { Badge } from "@/components/ui/badge";
 import { getCarFallbackImage } from "@/lib/car-fallback-image";
 import { CarGallery } from "@/components/website/car-gallery";
 import { BookingEngine } from "@/components/website/booking-engine";
+import { resolveCarKmPlans, type CarKmPlan } from "@/lib/pricing/km-plans";
 import { getWhatsAppNumbers } from "@/lib/whatsapp/numbers";
 import { getPaymentOptions } from "@/lib/payments/options";
 import { pickWhatsAppNumber } from "@/lib/whatsapp/pick";
@@ -102,6 +103,18 @@ export default async function CarDetailPage({ params }: CarDetailPageProps) {
 
   const similarCars = await listSimilarCars(car.id, car.categoryId, 8);
 
+  // KM plans (same numbers as the cards and the pricing engine)
+  const kmPlans: CarKmPlan[] =
+    (car as unknown as { kmPlans?: CarKmPlan[] }).kmPlans ??
+    resolveCarKmPlans({
+      id: car.id,
+      dailyPrice: Number(car.pricing?.dailyPrice ?? 1500),
+      hourlyPrice: car.pricing?.hourlyPrice ? Number(car.pricing.hourlyPrice) : null,
+      includedKmPerDay: Number(car.pricing?.includedKmPerDay ?? 120),
+      extraKmPrice: Number(car.pricing?.extraKmPrice ?? 10),
+    });
+  const basePlan = kmPlans[0]!;
+
   // Specs grid mapping dynamically derived from individual car configuration
   const specs = [
     {
@@ -126,7 +139,7 @@ export default async function CarDetailPage({ params }: CarDetailPageProps) {
       icon: Gauge,
       label: t("carpage.spec-engine-cylinders"),
       value: car.cylinderOption ? `${car.cylinderOption.count} Cylinders` : "4 Cylinders",
-      subtitle: car.pricing ? `${car.pricing.includedKmPerDay} km/day included` : "Smooth driving performance",
+      subtitle: car.pricing ? `${basePlan.km} km/day included` : "Smooth driving performance",
     },
     {
       icon: DoorOpen,
@@ -165,7 +178,7 @@ export default async function CarDetailPage({ params }: CarDetailPageProps) {
     offers: car.pricing
       ? {
         "@type": "Offer",
-        price: car.pricing.dailyPrice,
+        price: basePlan.dailyPrice,
         priceCurrency: "INR",
       }
       : undefined,
@@ -214,7 +227,7 @@ export default async function CarDetailPage({ params }: CarDetailPageProps) {
             {/* Phones: booking call-to-action right under the photo */}
             <MobileQuickBook
               carName={car.name}
-              price={`From ₹${Number(car.pricing?.dailyPrice ?? 1500).toLocaleString("en-IN")} / day`}
+              price={`From ₹${basePlan.dailyPrice.toLocaleString("en-IN")} / day`}
               phone={company.phone}
               whatsappNumber={pickWhatsAppNumber(whatsappNumbers, car.locations?.[0]?.location?.city)}
               advancePercent={payOpts.advancePercent}
@@ -249,16 +262,16 @@ export default async function CarDetailPage({ params }: CarDetailPageProps) {
                   <div>
                     <div className="text-[11px] text-neutral-500 uppercase font-medium">{t("carpage.daily-rate")}</div>
                     <div className="text-lg font-black text-orange-600">
-                      {formatInr(car.pricing.dailyPrice)}
+                      {formatInr(basePlan.dailyPrice)}
                       <span className="text-xs font-normal text-neutral-500"> {t("carpage.day")}</span>
                     </div>
                   </div>
 
-                  {car.pricing.hourlyPrice && Number(car.pricing.hourlyPrice) > 0 && (
+                  {basePlan.hourlyPrice && basePlan.hourlyPrice > 0 && (
                     <div>
                       <div className="text-[11px] text-neutral-500 uppercase font-medium">{t("carpage.hourly-rate")}</div>
                       <div className="text-lg font-black text-neutral-950">
-                        {formatInr(car.pricing.hourlyPrice)}
+                        {formatInr(basePlan.hourlyPrice ?? 0)}
                         <span className="text-xs font-normal text-neutral-500"> {t("carpage.hr")}</span>
                       </div>
                     </div>
@@ -266,7 +279,7 @@ export default async function CarDetailPage({ params }: CarDetailPageProps) {
 
                   <div>
                     <div className="text-[11px] text-neutral-500 uppercase font-medium">{t("carpage.included-km")}</div>
-                    <div className="text-lg font-black text-neutral-950">{car.pricing.includedKmPerDay} km / day</div>
+                    <div className="text-lg font-black text-neutral-950">{basePlan.km} km / day</div>
                   </div>
 
                   <div>
@@ -294,6 +307,31 @@ export default async function CarDetailPage({ params }: CarDetailPageProps) {
                     <div className="mt-3 text-xs font-semibold text-neutral-500">{spec.label}</div>
                     <div className="text-sm font-bold text-neutral-950">{spec.value}</div>
                     <div className="mt-0.5 text-[10px] text-neutral-400">{spec.subtitle}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* KM plans */}
+            <div className="rounded-3xl border border-neutral-200/90 bg-white p-6 shadow-sm">
+              <h2 className="text-lg font-bold text-neutral-950">{t("carpage.km-plans-title")}</h2>
+              <p className="mt-1 text-sm text-neutral-500">{t("carpage.km-plans-subtitle", { rate: formatInr(Number(car.pricing?.extraKmPrice ?? 10)) })}</p>
+              <div className="mt-4 grid grid-cols-3 gap-3">
+                {kmPlans.map((plan) => (
+                  <div
+                    key={plan.plan}
+                    className={`relative rounded-2xl border p-4 text-center ${plan.isPopular ? "border-orange-500 bg-orange-50/60" : "border-neutral-200 bg-neutral-50/70"}`}
+                  >
+                    {plan.isPopular && (
+                      <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 rounded-full bg-orange-500 px-2.5 py-0.5 text-[9px] font-black tracking-wider text-white uppercase">
+                        {t("booking.km-popular")}
+                      </span>
+                    )}
+                    <div className="text-xl font-black text-neutral-950">{plan.km} km</div>
+                    <div className="mt-1 text-sm font-bold text-orange-600">{formatInr(plan.dailyPrice)}<span className="text-[11px] font-medium text-neutral-500"> / 24h</span></div>
+                    {plan.hourlyPrice ? (
+                      <div className="text-[11px] text-neutral-500">{formatInr(plan.hourlyPrice)} / hr</div>
+                    ) : null}
                   </div>
                 ))}
               </div>
@@ -473,9 +511,10 @@ export default async function CarDetailPage({ params }: CarDetailPageProps) {
               carName={car.name}
               carImage={car.images[0]?.url}
               fuelType={car.fuelType?.name || "Diesel"}
-              dailyPrice={Number(car.pricing?.dailyPrice ?? 1500)}
-              hourlyPrice={car.pricing?.hourlyPrice ? Number(car.pricing.hourlyPrice) : null}
-              includedKmPerDay={car.pricing?.includedKmPerDay ?? 120}
+              dailyPrice={basePlan.dailyPrice}
+              hourlyPrice={basePlan.hourlyPrice}
+              includedKmPerDay={basePlan.km}
+              kmPlans={kmPlans}
               extraKmPrice={Number(car.pricing?.extraKmPrice ?? 10)}
               phone={company.phone}
               whatsappNumbers={whatsappNumbers}
@@ -496,7 +535,7 @@ export default async function CarDetailPage({ params }: CarDetailPageProps) {
           </div>
         )}
       </div>
-      <MobileBookBar label={car.name} price={`From ₹${Number(car.pricing?.dailyPrice ?? 1500).toLocaleString("en-IN")} / day`} />
+      <MobileBookBar label={car.name} price={`From ₹${basePlan.dailyPrice.toLocaleString("en-IN")} / day`} />
     </div>
   );
 }

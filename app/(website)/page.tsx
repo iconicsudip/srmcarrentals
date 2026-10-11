@@ -35,6 +35,9 @@ const VideoShowcaseSection = dynamic(() =>
   import("@/components/website/video-showcase-section").then((m) => m.VideoShowcaseSection),
 );
 
+import { after } from "next/server";
+import { maybeRunWeeklyGoogleReviewsSync } from "@/lib/google-reviews/sync";
+import { getInstagramFeed } from "@/lib/instagram/feed";
 import { getDynamicSeoForPath, DynamicJsonLd } from "@/lib/seo/dynamic-seo";
 
 export const revalidate = 60;
@@ -52,6 +55,8 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function HomePage() {
+  // Weekly Saturday refresh of Google reviews (runs after the response; a no-op the rest of the week)
+  after(() => maybeRunWeeklyGoogleReviewsSync());
   const [content, company, faqContent, cars, categories, brands, chauffeurServices, tours, testimonials, gallery, locations, counts, services, siteText] =
     await Promise.all([
       getHomepageContent(),
@@ -97,7 +102,7 @@ export default async function HomePage() {
       <WhyChooseUsSection content={content.whyChooseUs} />
       <FaqSection data={faqContent} phone={company.phone} />
       <TestimonialsSection testimonials={testimonials} heading={siteText.sections.testimonials} />
-      <GallerySection images={gallery} company={company} />
+      <GallerySection images={gallery} company={company} instagramPosts={await getInstagramFeed()} />
       <B2bSection content={content.b2b} phone={company.phone} />
     </>
   );

@@ -410,7 +410,7 @@ async function main() {
         extraHourPrice: car.extraHourPrice,
         minHourlyBookingHours: 1,
         gracePeriodMinutes: 30,
-        extraHourRoundingMode: "ROUND_UP",
+        extraHourRoundingMode: "EXACT_HOUR",
       },
     });
 

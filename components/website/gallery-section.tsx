@@ -2,6 +2,7 @@ import Image from "next/image";
 import { Camera } from "lucide-react";
 
 import type { CompanyContent } from "@/modules/settings/site-content.schemas";
+import type { InstagramPost } from "@/lib/instagram/feed";
 
 export interface GalleryImageData {
   id: string;
@@ -10,8 +11,21 @@ export interface GalleryImageData {
   link: string | null;
 }
 
-export function GallerySection({ images, company }: { images: GalleryImageData[]; company: CompanyContent }) {
-  if (images.length === 0) return null;
+export function GallerySection({
+  images,
+  company,
+  instagramPosts = [],
+}: {
+  images: GalleryImageData[];
+  company: CompanyContent;
+  /** Live posts from the connected Instagram account; when present they replace the gallery photos. */
+  instagramPosts?: InstagramPost[];
+}) {
+  const tiles: GalleryImageData[] =
+    instagramPosts.length > 0
+      ? instagramPosts.map((p) => ({ id: p.id, imageUrl: p.imageUrl, caption: p.caption, link: p.permalink }))
+      : images;
+  if (tiles.length === 0) return null;
   const handle = company.socialLinks.instagram ? "@" + company.socialLinks.instagram.split("/").filter(Boolean).pop() : null;
 
   return (
@@ -39,10 +53,10 @@ export function GallerySection({ images, company }: { images: GalleryImageData[]
       </div>
 
       <div className="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-4">
-        {images.map((image) => {
+        {tiles.map((image) => {
           const content = (
             <div className="relative aspect-square overflow-hidden rounded-2xl border border-neutral-200/90 bg-neutral-100 shadow-sm transition-all hover:shadow-lg hover:border-orange-500/40">
-              <Image src={image.imageUrl} alt={image.caption ?? ""} fill sizes="300px" className="object-cover transition-transform duration-500 hover:scale-105" />
+              <Image src={image.imageUrl} alt={image.caption?.slice(0, 120) ?? "Instagram post"} fill sizes="(max-width: 640px) 50vw, 25vw" className="object-cover transition-transform duration-500 hover:scale-105" />
             </div>
           );
           return image.link ? (

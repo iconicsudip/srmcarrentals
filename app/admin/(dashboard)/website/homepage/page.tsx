@@ -51,7 +51,7 @@ const DEFAULT_COMPANY: CompanyContent = {
   phone: "",
   email: "",
   address: "",
-  socialLinks: { instagram: "", facebook: "", youtube: "", whatsapp: "" },
+  socialLinks: { instagram: "", facebook: "", youtube: "", whatsapp: "", linkedin: "", twitter: "", telegram: "" },
   footerLinks: { services: [], carsAndBrands: [], company: [] },
 };
 
@@ -328,12 +328,16 @@ function CompanyContentForm() {
         <Card>
           <CardHeader>
             <CardTitle>Social Links</CardTitle>
+            <CardDescription>Shown as icons in the website footer. Leave a field empty to hide that icon.</CardDescription>
           </CardHeader>
           <CardContent className="grid gap-4 sm:grid-cols-2">
             <TextField control={form.control} name="socialLinks.instagram" label="Instagram URL" />
             <TextField control={form.control} name="socialLinks.facebook" label="Facebook URL" />
             <TextField control={form.control} name="socialLinks.youtube" label="YouTube URL" />
             <TextField control={form.control} name="socialLinks.whatsapp" label="WhatsApp Link" />
+            <TextField control={form.control} name="socialLinks.linkedin" label="LinkedIn URL" />
+            <TextField control={form.control} name="socialLinks.twitter" label="X (Twitter) URL" />
+            <TextField control={form.control} name="socialLinks.telegram" label="Telegram URL" />
           </CardContent>
         </Card>
 

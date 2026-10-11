@@ -370,3 +370,18 @@
   from { transform: scaleX(0); }
   to   { transform: scaleX(1); }
 }
+
+@keyframes reviewMarquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+.review-marquee {
+  animation: reviewMarquee var(--marquee-duration, 120s) linear infinite;
+  will-change: transform;
+}
+.review-marquee-reverse { animation-direction: reverse; }
+.review-marquee-wrap:hover .review-marquee,
+.review-marquee-wrap:active .review-marquee { animation-play-state: paused; }
+@media (prefers-reduced-motion: reduce) {
+  .review-marquee { animation: none; }
+}

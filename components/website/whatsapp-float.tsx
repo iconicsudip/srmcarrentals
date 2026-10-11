@@ -42,7 +42,10 @@ export function WhatsAppFloat({ cities, text }: { cities: string[]; text: SiteTe
   React.useEffect(() => {
     if (!open) return;
     setDone(false);
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
+    const onKey = (e: KeyboardEvent) => {
+      // Escape closes the calendar first, not the whole chat
+      if (e.key === "Escape" && !document.querySelector("[data-picker-portal]")) setOpen(false);
+    };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [open]);

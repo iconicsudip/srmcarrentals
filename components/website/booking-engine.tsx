@@ -6,7 +6,7 @@ import * as React from "react";
 import { useSearchParams } from "next/navigation";
 import { AlertCircle, CheckCircle2, Loader2, MapPin, MessageCircle, Plane, Phone, ShieldCheck, ShoppingBag, Tag } from "lucide-react";
 import { toast } from "sonner";
-import { buildKmTiers, clampKmPlan } from "@/lib/pricing/km-tiers";
+import { clampPlan, type CarKmPlan } from "@/lib/pricing/km-plans";
 import { pickWhatsAppNumber, toWaNumber, type WhatsAppNumbers } from "@/lib/whatsapp/pick";
 import type { PricingCalculateResponse } from "@srm/types";
 
@@ -28,13 +28,15 @@ export interface BookingEngineProps {
   fuelType?: string;
   includedKmPerDay: number;
   extraKmPrice?: number;
+  /** The 3 KM plans for this car (admin-set prices, else calculated). */
+  kmPlans: CarKmPlan[];
   phone: string;
   /** City-wise WhatsApp routing (from admin settings). */
   whatsappNumbers?: WhatsAppNumbers | null;
   /** From Admin → Settings → Payments. */
   advancePercent?: number;
   securityDeposit?: number;
-  locations: { id: string; name: string; city: string; state: string; dropCharge?: any }[];
+  locations: { id: string; slug?: string; name: string; city: string; state: string; dropCharge?: any }[];
   airports: { id: string; name: string; code: string; city: string }[];
   insurances: { id: string; name: string; dailyPrice?: any; fixedPrice?: any; description?: string | null }[];
   extraServices: { id: string; name: string; price: any; pricingType: string; description?: string | null }[];
@@ -94,11 +96,12 @@ export function BookingEngine({
   carSlug,
   carName,
   carImage,
-  dailyPrice,
-  hourlyPrice,
+  dailyPrice: baseDailyPrice,
+  hourlyPrice: baseHourlyPrice,
   fuelType,
   includedKmPerDay,
   extraKmPrice = 10,
+  kmPlans,
   phone,
   whatsappNumbers,
   advancePercent = ADVANCE_PERCENT,
@@ -111,12 +114,14 @@ export function BookingEngine({
   const t = useCopy();
   const searchParams = useSearchParams();
 
-  const qLocationId = searchParams.get("locationId") ?? searchParams.get("location");
+  const qLocationRef = searchParams.get("location") ?? searchParams.get("locationId");
+  // The URL carries the location's slug (legacy links may carry its id)
+  const qLocationId = locations.find((l) => l.id === qLocationRef || l.slug === qLocationRef)?.id ?? null;
   const qPickup = searchParams.get("pickupDate");
   const qDrop = searchParams.get("dropDate");
 
   // Mode: "DAILY" or "HOURLY"
-  const hasHourly = hourlyPrice != null && Number(hourlyPrice) > 0;
+  const hasHourly = baseHourlyPrice != null && Number(baseHourlyPrice) > 0;
   const [rentalMode, setRentalMode] = React.useState<"DAILY" | "HOURLY">("DAILY");
 
   // Schedule dates
@@ -164,12 +169,11 @@ export function BookingEngine({
   const effectiveDropLocationId = differentDropLocation ? selectedDropLocationId : selectedLocationId;
   const [selectedAirportId, setSelectedAirportId] = React.useState<string>(airports[0]?.id ?? "");
 
-  // KM plan: 1 = standard included KM, 2/3 = pre-bought extra KM (priced by the engine, not guessed)
-  const [kmPlan, setKmPlan] = React.useState<1 | 2 | 3>(() => clampKmPlan(Number(searchParams.get("kmPlan")) || 1));
-  const kmTiers = React.useMemo(
-    () => buildKmTiers({ dailyPrice, includedKmPerDay, extraKmPrice }),
-    [dailyPrice, includedKmPerDay, extraKmPrice],
-  );
+  // KM plan (e.g. 120 / 240 / 350 km per 24h): each plan has its own daily and hourly price, set in admin
+  const [kmPlan, setKmPlan] = React.useState<1 | 2 | 3>(() => clampPlan(Number(searchParams.get("kmPlan")) || 1));
+  const activePlan = kmPlans.find((p) => p.plan === kmPlan) ?? kmPlans[0];
+  const dailyPrice = activePlan?.dailyPrice ?? baseDailyPrice;
+  const hourlyPrice = activePlan?.hourlyPrice ?? baseHourlyPrice;
 
   // Add-ons & Protection
   const [selectedInsuranceId, setSelectedInsuranceId] = React.useState<string | undefined>(
@@ -424,7 +428,7 @@ export function BookingEngine({
       tax: pricingResult?.totalTax ?? 0,
       total: finalTotal,
       fuelType: fuelType || "Diesel",
-      includedKm: (pricingResult?.rental?.includedKm ?? (duration.days || 1) * includedKmPerDay) * kmPlan,
+      includedKm: pricingResult?.rental?.includedKm ?? (duration.days || 1) * (activePlan?.km ?? includedKmPerDay),
       kmPlan,
       extraKmPrice: pricingResult?.rental?.extraKmPrice ?? 10,
       securityDeposit,
@@ -490,14 +494,14 @@ export function BookingEngine({
       )}
 
       {/* KM plan — per 24 hours */}
-      {rentalMode === "DAILY" && (
+      {kmPlans.length > 0 && (
         <div className="mt-5">
           <div className="flex items-center justify-between">
             <Label className="text-xs font-medium text-neutral-700">{t("booking.km-plan")}</Label>
             <span className="text-[11px] text-neutral-500">{t("booking.km-extra-rate", { rate: formatInr(extraKmPrice) })}</span>
           </div>
           <div className="mt-1.5 grid grid-cols-3 gap-2">
-            {kmTiers.map((tier) => {
+            {kmPlans.map((tier) => {
               const active = tier.plan === kmPlan;
               return (
                 <button
@@ -516,8 +520,8 @@ export function BookingEngine({
                       {t("booking.km-popular")}
                     </span>
                   )}
-                  <span className="text-sm leading-tight font-black text-neutral-950">{formatInr(tier.pricePerDay)}</span>
-                  <span className="mt-0.5 text-[11px] font-bold text-neutral-700">{tier.kmPerDay} km</span>
+                  <span className="text-sm leading-tight font-black text-neutral-950">{rentalMode === "HOURLY" && tier.hourlyPrice ? `${formatInr(tier.hourlyPrice)}/hr` : formatInr(tier.dailyPrice)}</span>
+                  <span className="mt-0.5 text-[11px] font-bold text-neutral-700">{tier.km} km</span>
                   <span className="text-[9px] text-neutral-500">{t("booking.km-per-day")}</span>
                 </button>
               );

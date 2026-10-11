@@ -210,14 +210,17 @@ export function DateTimePicker({ label, value, onChange, minDateTime, maxDate }:
   const currentH24 = h24;
   const availMins = validMinutes(date, currentH24, minDT);
 
-  // Close on outside click
+  const [mounted, setMounted] = React.useState(false);
+  React.useEffect(() => setMounted(true), []);
+
+  // Lock background scroll while the sheet is open (restores whatever was set before, e.g. by a dialog)
   React.useEffect(() => {
     if (!open) return;
-    const handler = (e: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) setOpen(false);
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
     };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
   }, [open]);
 
   // Close on Escape
@@ -292,9 +295,34 @@ export function DateTimePicker({ label, value, onChange, minDateTime, maxDate }:
         </span>
       </button>
 
-      {/* Popover */}
-      {open && (
-        <div className="absolute top-full left-0 z-50 mt-2 w-72 rounded-2xl border border-neutral-200 bg-white backdrop-blur-xl shadow-2xl shadow-neutral-950/15 overflow-hidden">
+      {/* Sheet: bottom sheet on phones, centered card on larger screens — never taller than the viewport */}
+      {open &&
+        mounted &&
+        createPortal(
+          <div
+            data-picker-portal
+            style={{ pointerEvents: "auto" }}
+            className="fixed inset-0 z-[99999] flex items-end justify-center bg-neutral-950/60 backdrop-blur-sm animate-in fade-in duration-150 sm:items-center sm:p-4"
+          >
+            <div className="absolute inset-0" onClick={() => setOpen(false)} aria-hidden="true" />
+            <div
+              role="dialog"
+              aria-modal="true"
+              aria-label={label || "Select date & time"}
+              className="relative flex max-h-[92svh] w-full max-w-sm flex-col overflow-hidden rounded-t-3xl border border-neutral-200 bg-white shadow-2xl animate-in slide-in-from-bottom-6 sm:rounded-3xl sm:slide-in-from-bottom-0"
+            >
+              <div className="flex shrink-0 items-center justify-between border-b border-neutral-100 px-4 py-3">
+                <span className="text-sm font-black tracking-tight text-neutral-950 uppercase">{label || "Select date & time"}</span>
+                <button
+                  type="button"
+                  onClick={() => setOpen(false)}
+                  aria-label="Close"
+                  className="flex size-7 items-center justify-center rounded-lg border border-neutral-200 text-neutral-500 hover:bg-neutral-100"
+                >
+                  <X className="size-4" />
+                </button>
+              </div>
+              <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
           <DayPicker
             mode="single"
             selected={date}
@@ -357,7 +385,8 @@ export function DateTimePicker({ label, value, onChange, minDateTime, maxDate }:
             </div>
           )}
 
-          <div className="px-3 py-2.5 border-t border-neutral-100 mt-1">
+              </div>
+          <div className="shrink-0 border-t border-neutral-100 px-3 py-2.5 pb-[calc(0.625rem+env(safe-area-inset-bottom))]">
             <button
               type="button"
               onClick={() => setOpen(false)}
@@ -366,8 +395,10 @@ export function DateTimePicker({ label, value, onChange, minDateTime, maxDate }:
               Confirm
             </button>
           </div>
-        </div>
-      )}
+            </div>
+          </div>,
+          document.body,
+        )}
     </div>
   );
 }
@@ -693,7 +724,7 @@ export function TripSchedulePicker({
           />
 
           {/* Modal Container */}
-          <div className="relative z-10 w-full max-w-[420px] max-h-[90vh] flex flex-col rounded-3xl border border-neutral-200 bg-white p-4 sm:p-5 shadow-2xl shadow-neutral-950/20 overflow-hidden text-neutral-900">
+          <div className="relative z-10 w-full max-w-[420px] max-h-[92svh] flex flex-col rounded-3xl border border-neutral-200 bg-white p-4 sm:p-5 shadow-2xl shadow-neutral-950/20 overflow-hidden text-neutral-900">
             {/* Header (Always Visible) */}
             <div className="flex items-center justify-between border-b border-neutral-150 pb-3 shrink-0">
               <div>

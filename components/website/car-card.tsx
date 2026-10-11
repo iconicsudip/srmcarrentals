@@ -2,7 +2,7 @@
 
 import * as React from "react";
 
-import { buildKmTiers } from "@/lib/pricing/km-tiers";
+import { resolveCarKmPlans, type CarKmPlan } from "@/lib/pricing/km-plans";
 import { CarWhatsAppBook } from "@/components/website/car-whatsapp-book";
 import { getCarFallbackImage } from "@/lib/car-fallback-image";
 import Image from "next/image";
@@ -37,7 +37,9 @@ export interface CarCardData {
     includedKmPerDay?: number | null;
     extraKmPrice?: string | number | null;
   } | null;
-  locations?: { locationId: string; location: { id: string; name: string } }[];
+  locations?: { locationId: string; location: { id: string; name: string; slug?: string } }[];
+  /** 3 KM plans (admin-set prices, else calculated) — see lib/pricing/km-plans.ts */
+  kmPlans?: CarKmPlan[];
 }
 
 export interface CarCardProps {
@@ -85,7 +87,7 @@ function CarCardInner({
 
   const queryParams = React.useMemo(() => {
     const q = new URLSearchParams();
-    if (locationId) q.set("locationId", locationId);
+    if (locationId) q.set("location", locationId);
     if (!showBasePriceOnly && pickupDate) q.set("pickupDate", pickupDate);
     if (!showBasePriceOnly && dropDate) q.set("dropDate", dropDate);
     const qs = q.toString();
@@ -94,8 +96,8 @@ function CarCardInner({
 
   const carHref = `/car/${car.slug}${queryParams}`;
   const image = car.images[0];
-  const dailyPrice = car.pricing ? Number(car.pricing.dailyPrice) : 2500;
-  const baseKm = Number(car.pricing?.includedKmPerDay ?? 250);
+  const dailyPrice = car.kmPlans?.[0]?.dailyPrice ?? (car.pricing ? Number(car.pricing.dailyPrice) : 2500);
+  const baseKm = car.kmPlans?.[0]?.km ?? Number(car.pricing?.includedKmPerDay ?? 250);
   const extraKmRate = Number(car.pricing?.extraKmPrice ?? 15);
 
   const categoryName = car.category?.name ?? car.brand.name;
@@ -115,23 +117,24 @@ function CarCardInner({
     setImgSrc(image?.url || fallbackImg);
   }, [image?.url, fallbackImg]);
 
-  // KM plans — same numbers the car page and the pricing engine use (see lib/pricing/km-tiers.ts)
-  const packages = React.useMemo(
-    () =>
-      buildKmTiers({ dailyPrice, includedKmPerDay: baseKm, extraKmPrice: extraKmRate }).map((tier) => ({
-        id: `plan-${tier.plan}`,
-        plan: tier.plan,
-        kmLimit: tier.kmPerDay * tripDays,
-        price: tier.pricePerDay * tripDays,
-        extraKmPrice: extraKmRate,
-        isPopular: tier.isPopular,
-      })),
-    [dailyPrice, baseKm, extraKmRate, tripDays],
-  );
+  // KM plans — the same numbers the car page and the pricing engine use (admin-set, else calculated)
+  const packages = React.useMemo(() => {
+    const plans =
+      car.kmPlans ??
+      resolveCarKmPlans({ id: car.id, dailyPrice, hourlyPrice: null, includedKmPerDay: baseKm, extraKmPrice: extraKmRate });
+    return plans.map((plan) => ({
+      id: `plan-${plan.plan}`,
+      plan: plan.plan,
+      kmLimit: plan.km * tripDays,
+      price: plan.dailyPrice * tripDays,
+      extraKmPrice: extraKmRate,
+      isPopular: plan.isPopular,
+    }));
+  }, [car.kmPlans, car.id, dailyPrice, baseKm, extraKmRate, tripDays]);
 
   function getBookHref(kmLimit?: number, pkgPrice?: number, plan?: number) {
     const q = new URLSearchParams();
-    if (locationId) q.set("locationId", locationId);
+    if (locationId) q.set("location", locationId);
     if (!showBasePriceOnly && pickupDate) q.set("pickupDate", pickupDate);
     if (!showBasePriceOnly && dropDate) q.set("dropDate", dropDate);
     if (plan && plan > 1) q.set("kmPlan", String(plan));
@@ -445,7 +448,7 @@ function CarCardInner({
           }}
           pickupDate={pickupDate ?? undefined}
           dropDate={dropDate ?? undefined}
-          locations={car.locations?.map((l) => ({ id: l.location.id, name: l.location.name })) ?? []}
+          locations={car.locations?.map((l) => ({ id: l.location.id, name: l.location.name, slug: l.location.slug })) ?? []}
           defaultLocationId={locationId}
           label="Book on WhatsApp"
           className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#25D366] py-3 text-xs font-black text-white shadow-md shadow-emerald-500/25 transition hover:bg-[#1ebe5a] active:scale-[0.99] cursor-pointer"

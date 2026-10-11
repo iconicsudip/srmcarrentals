@@ -127,6 +127,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { title: "24 Hour Pricing", href: "/admin/pricing/24-hour", icon: Clock, permission: "pricing.manage" },
       { title: "Hourly Pricing", href: "/admin/pricing/hourly", icon: Timer, permission: "pricing.manage" },
       { title: "KM Pricing", href: "/admin/pricing/km", icon: Route, permission: "pricing.manage" },
+      { title: "KM Plans", href: "/admin/pricing/km-plans", icon: Route, permission: "pricing.manage" },
       { title: "Extra KM Charges", href: "/admin/pricing/extra-km", icon: Gauge, permission: "pricing.manage" },
       { title: "Extra Hour Charges", href: "/admin/pricing/extra-hour", icon: Hourglass, permission: "pricing.manage" },
       { title: "Seasonal Pricings", href: "/admin/pricing/seasonal", icon: CalendarRange, permission: "pricing.seasonal.manage" },
@@ -198,6 +199,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { title: "Terms & Conditions", href: "/admin/website/terms", icon: ScrollText, permission: "homepage.manage" },
       { title: "Testimonials", href: "/admin/website/testimonials", icon: Star, permission: "testimonials.manage" },
       { title: "Gallery", href: "/admin/website/gallery", icon: ImageIcon, permission: "gallery.manage" },
+      { title: "Instagram Feed", href: "/admin/website/instagram", icon: ImageIcon, permission: "settings.manage" },
     ],
   },
   {
