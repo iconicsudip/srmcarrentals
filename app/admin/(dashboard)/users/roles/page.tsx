@@ -39,7 +39,7 @@ export default function RolesPage() {
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {roles?.map((role) => (
             <Card key={role.id}>
-              <CardHeader className="flex-row items-start justify-between space-y-0">
+              <CardHeader className="flex flex-row items-start justify-between space-y-0">
                 <div>
                   <CardTitle className="flex items-center gap-2 text-base">
                     <ShieldCheck className="text-muted-foreground size-4" /> {role.label}

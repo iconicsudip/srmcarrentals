@@ -37,7 +37,7 @@ export function MonthGrid({ year, month, onNavigate, renderDay }: MonthGridProps
 
   return (
     <Card>
-      <CardHeader className="flex-row items-center justify-between space-y-0">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0">
         <h2 className="text-lg font-semibold">
           {firstOfMonth.toLocaleDateString("en-US", { month: "long", year: "numeric" })}
         </h2>
