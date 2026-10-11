@@ -147,6 +147,8 @@ export function formatCustomerPhoneForRazorpay(phone?: string): string | undefin
 export async function createSmartPaymentLink(params: {
   amount: number;
   purpose: string;
+  /** Longer text for Razorpay's payment page / SMS / e-mail (defaults to `purpose`). */
+  description?: string;
   customerName: string;
   customerPhone?: string;
   customerEmail?: string;
@@ -187,7 +189,7 @@ export async function createSmartPaymentLink(params: {
         amount: Math.round(params.amount * 100), // In paise
         currency: "INR",
         accept_partial: Boolean(params.allowPartial),
-        description: params.purpose,
+        description: params.description || params.purpose,
         customer: {
           name: params.customerName,
           email: params.customerEmail || undefined,
@@ -365,6 +367,28 @@ export async function syncSmartPaymentLinkStatus(id: string): Promise<SmartPayme
   }
 
   return target;
+}
+
+/** Our stored reference may be a Razorpay payment id (pay_…) or a payment-link id (plink_…); returns the pay_… id. */
+export async function resolveRazorpayPaymentId(ref?: string | null): Promise<string | null> {
+  if (!ref) return null;
+  if (ref.startsWith("pay_") && !/^pay_rzp_\d+$/.test(ref)) return ref;
+  const config = await getRazorpayConfig();
+  if (!config.keyId || !config.keySecret) return null;
+  // Payment-link reference: ask Razorpay which payment settled it
+  const links = await listSmartLinks();
+  const linkId = ref.startsWith("plink_") ? ref : links.find((l) => l.id === ref)?.razorpayLinkId;
+  if (!linkId) return null;
+  try {
+    const res = await fetch(`https://api.razorpay.com/v1/payment_links/${linkId}`, {
+      headers: { Authorization: getBasicAuthHeader(config.keyId, config.keySecret) },
+    });
+    if (!res.ok) return null;
+    const data = (await res.json()) as { payments?: { payment_id?: string; status?: string }[] };
+    return data.payments?.find((p) => p.status === "captured")?.payment_id ?? data.payments?.[0]?.payment_id ?? null;
+  } catch {
+    return null;
+  }
 }
 
 export async function processRazorpayRefund(params: {

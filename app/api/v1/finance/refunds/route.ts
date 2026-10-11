@@ -3,6 +3,8 @@ import { requirePermission } from "@/lib/auth/rbac";
 import { ok, paginated } from "@/lib/http/api-response";
 import { buildPaginationMeta, parsePagination } from "@/lib/http/pagination";
 import { withErrorHandling } from "@/lib/http/with-error-handling";
+import { BadRequestError } from "@/lib/http/errors";
+import { refundPayment } from "@/modules/payments/refunds.service";
 
 export const GET = withErrorHandling(async (req) => {
   await requirePermission("refunds.manage");
@@ -43,20 +45,12 @@ export const GET = withErrorHandling(async (req) => {
   return paginated(refunds, buildPaginationMeta(page, limit, total));
 });
 
+/** Refund (part of) a payment — through Razorpay for online payments, or record a manual refund. */
 export const POST = withErrorHandling(async (req) => {
   await requirePermission("refunds.manage");
-  const body = await req.json();
-
-  const refund = await prisma.refund.create({
-    data: {
-      paymentId: body.paymentId,
-      amount: body.amount,
-      reason: body.reason || "Security Deposit Release",
-      status: body.status || "PROCESSED",
-      providerRefundId: body.providerRefundId || `ref_${Date.now()}`,
-      processedAt: new Date(),
-    },
-  });
-
-  return ok(refund);
+  const body = (await req.json()) as { paymentId?: string; amount?: number | string; reason?: string; manual?: boolean };
+  if (!body.paymentId) throw new BadRequestError("paymentId is required");
+  const amount = body.amount === undefined || body.amount === "" ? undefined : Number(body.amount);
+  if (amount !== undefined && !Number.isFinite(amount)) throw new BadRequestError("Invalid refund amount");
+  return ok(await refundPayment({ paymentId: body.paymentId, amount, reason: body.reason, manual: Boolean(body.manual) }));
 });

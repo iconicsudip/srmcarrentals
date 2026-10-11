@@ -53,6 +53,11 @@ export async function POST(req: Request) {
                 data: { status: "CONFIRMED" },
               });
 
+              const rzpPaymentId = payload?.payment?.entity?.id || plink.id;
+              const alreadyRecorded = await prisma.payment.findFirst({
+                where: { bookingId: booking.id, providerPaymentId: rzpPaymentId },
+              });
+              if (!alreadyRecorded) {
               const payment = await prisma.payment.create({
                 data: {
                   bookingId: booking.id,
@@ -76,6 +81,7 @@ export async function POST(req: Request) {
                   rawResponse: event,
                 },
               });
+              }
             }
           }
         }
@@ -95,7 +101,10 @@ export async function POST(req: Request) {
           });
 
           const amountInr = (paymentEntity.amount || 0) / 100;
-          await prisma.payment.create({
+          const alreadyCaptured = await prisma.payment.findFirst({
+            where: { bookingId: booking.id, providerPaymentId: paymentEntity.id },
+          });
+          if (!alreadyCaptured) await prisma.payment.create({
             data: {
               bookingId: booking.id,
               provider: "RAZORPAY",

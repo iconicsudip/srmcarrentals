@@ -15,6 +15,8 @@ import { splitAdvance } from "@/lib/checkout/advance";
 import { getPaymentOptions } from "@/lib/payments/options";
 import { bookingDetailsKey, maskAadhaar, type BookingCheckoutDetails } from "@/lib/booking-details/types";
 import { setSetting } from "@/modules/settings/settings.service";
+import { buildBookingDescription } from "@/lib/razorpay/booking-description";
+import { getCompanyContent } from "@/modules/website/public-content.service";
 import { cancelSmartPaymentLink, createSmartPaymentLink, listSmartLinks } from "@/lib/razorpay/razorpay-service";
 
 const BOOKING_DETAIL_INCLUDE = {
@@ -36,7 +38,7 @@ const BOOKING_DETAIL_INCLUDE = {
   coupon: true,
   pricingSnapshot: true,
   extraServices: { include: { extraService: true } },
-  payments: true,
+  payments: { include: { refunds: true } },
   invoice: true,
 } satisfies Prisma.BookingInclude;
 
@@ -63,6 +65,39 @@ async function upsertGuestCustomer(
       phone: details.phone,
       ...(existingUser ? { userId: existingUser.id } : {}),
     },
+  });
+}
+
+type BookingForMessage = {
+  car?: { name: string } | null;
+  pickupDateTime: Date;
+  dropDateTime: Date;
+  pickupLocation?: { name: string } | null;
+  dropLocation?: { name: string } | null;
+  pickupAirport?: { name: string } | null;
+  dropAirport?: { name: string } | null;
+};
+
+/** Booking summary placed in the Razorpay link so the customer's SMS / e-mail / receipt carries it. */
+async function describeBookingForPayment(
+  booking: BookingForMessage,
+  o: { bookingReference: string; advance: number; total: number; advancePercent: number; deposit: number; origin?: string },
+): Promise<string> {
+  const company = await getCompanyContent().catch(() => null);
+  const base = (o.origin || process.env.NEXT_PUBLIC_APP_URL || "https://srmcarrentals.com").replace(/\/$/, "");
+  return buildBookingDescription({
+    bookingReference: o.bookingReference,
+    carName: booking.car?.name ?? "Self-drive car",
+    pickupAt: booking.pickupDateTime,
+    dropAt: booking.dropDateTime,
+    pickupPlace: booking.pickupLocation?.name ?? booking.pickupAirport?.name,
+    dropPlace: booking.dropLocation?.name ?? booking.dropAirport?.name,
+    advanceAmount: o.advance,
+    balanceAmount: Math.max(0, o.total - o.advance),
+    depositAmount: o.deposit,
+    advancePercent: o.advancePercent,
+    bookingUrl: `${base}/booking/${o.bookingReference}`,
+    supportPhone: company?.phone,
   });
 }
 
@@ -271,6 +306,14 @@ export async function createBooking(input: CreateBookingInput, origin?: string) 
       const link = await createSmartPaymentLink({
         amount: splitAdvance(Number(pricing.total), payOpts.advancePercent).now,
         purpose: `SRM Self-Drive Booking #${bookingReference} — ${payOpts.advancePercent}% advance`,
+        description: await describeBookingForPayment(bookingRecord, {
+          bookingReference,
+          advance: splitAdvance(Number(pricing.total), payOpts.advancePercent).now,
+          total: Number(pricing.total),
+          advancePercent: payOpts.advancePercent,
+          deposit: payOpts.securityDeposit,
+          origin,
+        }),
         customerName: custName,
         customerPhone: custPhone,
         customerEmail: custEmail && !custEmail.includes("@guest.") ? custEmail : undefined,
@@ -501,6 +544,14 @@ export async function getOrCreateBookingPaymentLink(bookingReference: string, or
   const link = await createSmartPaymentLink({
     amount: amount > 0 ? amount : 1,
     purpose: `SRM Self-Drive Booking #${bookingReference}`,
+    description: await describeBookingForPayment(booking, {
+      bookingReference: booking.bookingReference,
+      advance: amount,
+      total: Number(booking.pricingSnapshot?.grandTotal || 0),
+      advancePercent: payOpts.advancePercent,
+      deposit: payOpts.securityDeposit,
+      origin,
+    }),
     customerName: custName,
     customerPhone: custPhone,
     customerEmail: custEmail && !custEmail.includes("@guest.") ? custEmail : undefined,

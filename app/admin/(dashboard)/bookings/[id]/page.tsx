@@ -17,6 +17,7 @@ import {
   useStartTrip,
 } from "@/hooks/use-bookings";
 import { ConfirmDialog } from "@/components/admin/confirm-dialog";
+import { BookingPaymentsCard, type PaymentRow } from "@/components/admin/bookings/booking-payments-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -119,6 +120,8 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
           </Card>
 
           {(booking as any).checkoutDetails && <CheckoutDetailsCard details={(booking as any).checkoutDetails} />}
+
+          <BookingPaymentsCard bookingId={booking.id} payments={((booking as unknown as { payments?: PaymentRow[] }).payments ?? [])} />
 
           {s && (
             <Card>
