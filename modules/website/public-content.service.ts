@@ -458,6 +458,20 @@ export async function listActiveBrandsWithCarCounts() {
   } catch { return []; }
 }
 
+/** Active categories with how many active cars each has (for the homepage category circles). */
+async function listCategoriesWithCounts_uncached() {
+  try {
+    const rows = await prisma.carCategory.findMany({
+      where: { status: "ACTIVE" },
+      orderBy: { name: "asc" },
+      select: { id: true, name: true, slug: true, imageUrl: true, _count: { select: { cars: { where: { status: "ACTIVE" } } } } },
+    });
+    return rows.map((c) => ({ id: c.id, name: c.name, slug: c.slug, imageUrl: c.imageUrl, carCount: c._count.cars })).filter((c) => c.carCount > 0);
+  } catch {
+    return [];
+  }
+}
+
 export async function listActiveCategories() {
   try {
     return await prisma.carCategory.findMany({ where: { status: "ACTIVE" }, orderBy: { name: "asc" } });
@@ -689,7 +703,7 @@ async function listPublicCars_uncached(filters: PublicCarFilters): Promise<{ car
             ? [{ createdAt: "desc" as const }]
             : [{ isFeatured: "desc" as const }, { createdAt: "desc" as const }];
 
-    const [cars, total] = await prisma.$transaction([
+    const [cars, total] = await Promise.all([
       prisma.car.findMany({ where, include: CAR_CARD_INCLUDE, orderBy, skip: (page - 1) * pageSize, take: pageSize }),
       prisma.car.count({ where }),
     ]);
@@ -752,7 +766,7 @@ async function getPublicTourBySlug_uncached(slug: string) {
 
 async function getFleetCounts_uncached() {
   try {
-    const [carCount, chauffeurCount, tourCount] = await prisma.$transaction([
+    const [carCount, chauffeurCount, tourCount] = await Promise.all([
       prisma.car.count({ where: { status: "ACTIVE" } }),
       prisma.chauffeurService.count({ where: { status: "ACTIVE" } }),
       prisma.tour.count({ where: { status: "ACTIVE" } }),
@@ -796,7 +810,7 @@ async function getPublicBlogs_uncached(params?: {
       ];
     }
 
-    const [total, blogs] = await prisma.$transaction([
+    const [total, blogs] = await Promise.all([
       prisma.blog.count({ where }),
       prisma.blog.findMany({
         where,
@@ -938,6 +952,7 @@ export { DEFAULT_AVAILABLE_SERVICES } from "@/modules/settings/settings.service"
 export const getAvailableServices = cached("getAvailableServices", getAvailableServicesUncached);
 
 export const getHomepageContent = cached("getHomepageContent", getHomepageContent_uncached);
+export const listCategoriesWithCounts = cached("listCategoriesWithCounts", listCategoriesWithCounts_uncached);
 
 /** Site-wide labels & headings, editable in admin ("homepage.text"); missing fields fall back to defaults. */
 async function getSiteText_uncached(): Promise<SiteText> {

@@ -35,7 +35,7 @@ export async function listUsers(pagination: PaginationParams, search?: string, r
       : {}),
   };
 
-  const [data, total] = await prisma.$transaction([
+  const [data, total] = await Promise.all([
     prisma.user.findMany({
       where,
       select: USER_SELECT,

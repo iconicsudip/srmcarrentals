@@ -5,7 +5,9 @@
 // ============================================================================
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  // Lets list queries load related rows in ONE SQL query instead of one round-trip per relation
+  previewFeatures = ["relationJoins"]
 }
 
 datasource db {

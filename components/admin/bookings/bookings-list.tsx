@@ -3,14 +3,13 @@
 import * as React from "react";
 import Link from "next/link";
 import { flexRender, getCoreRowModel, useReactTable, type ColumnDef } from "@tanstack/react-table";
-import { ClipboardX, Search } from "lucide-react";
+import { ClipboardX } from "lucide-react";
 
-import { useDebouncedValue } from "@/hooks/use-debounced-value";
+import { BookingsFilters, EMPTY_FILTERS, type BookingFilterValues } from "@/components/admin/bookings/bookings-filters";
 import { useBookingList, type BookingListItem } from "@/hooks/use-bookings";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
@@ -28,10 +27,19 @@ const STATUS_VARIANT: Record<string, "success" | "warning" | "info" | "muted" | 
 
 export function BookingsList({ title, description, status }: { title: string; description: string; status?: string }) {
   const [page, setPage] = React.useState(1);
-  const [searchInput, setSearchInput] = React.useState("");
-  const search = useDebouncedValue(searchInput, 300);
+  const [filters, setFilters] = React.useState<BookingFilterValues>(EMPTY_FILTERS);
 
-  const { data, isLoading } = useBookingList({ page, limit: 10, status, search: search || undefined });
+  const { data, isLoading } = useBookingList({
+    page,
+    limit: 10,
+    status: status ?? (filters.status !== "ALL" ? filters.status : undefined),
+    search: filters.search || undefined,
+    carId: filters.carId !== "ALL" ? filters.carId : undefined,
+    locationId: filters.locationId !== "ALL" ? filters.locationId : undefined,
+    paymentStatus: filters.paymentStatus !== "ALL" ? filters.paymentStatus : undefined,
+    dateFrom: filters.dateFrom || undefined,
+    dateTo: filters.dateTo || undefined,
+  });
 
   const columns: ColumnDef<BookingListItem>[] = [
     {
@@ -92,18 +100,14 @@ export function BookingsList({ title, description, status }: { title: string; de
 
       <Card>
         <CardHeader className="pb-4">
-          <div className="relative max-w-sm">
-            <Search className="text-muted-foreground absolute top-1/2 left-2.5 size-4 -translate-y-1/2" />
-            <Input
-              value={searchInput}
-              onChange={(e) => {
-                setSearchInput(e.target.value);
-                setPage(1);
-              }}
-              placeholder="Search by reference, customer name, or email..."
-              className="pl-8"
-            />
-          </div>
+          <BookingsFilters
+            value={filters}
+            fixedStatus={Boolean(status)}
+            onChange={(v) => {
+              setFilters(v);
+              setPage(1);
+            }}
+          />
         </CardHeader>
         <CardContent>
           <Table>

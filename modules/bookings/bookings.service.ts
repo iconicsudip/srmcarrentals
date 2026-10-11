@@ -361,6 +361,21 @@ export interface BookingListFilters {
   search?: string;
   carId?: string;
   customerId?: string;
+  /** Pickup date range, "YYYY-MM-DD" (inclusive, India time). */
+  dateFrom?: string;
+  dateTo?: string;
+  /** Matches the pickup or drop location. */
+  locationId?: string;
+  paymentStatus?: "paid" | "unpaid" | "refunded";
+}
+
+const IST_MS = 5.5 * 3_600_000;
+/** "YYYY-MM-DD" at 00:00 India time as a UTC Date (end=true → the last millisecond of that day). */
+function istDay(day: string, end = false): Date | null {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(day);
+  if (!m) return null;
+  const start = Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3])) - IST_MS;
+  return new Date(end ? start + 86_400_000 - 1 : start);
 }
 
 export async function listBookings(req: Request, filters: BookingListFilters) {
@@ -371,6 +386,22 @@ export async function listBookings(req: Request, filters: BookingListFilters) {
     ...(filters.status ? { status: filters.status as Prisma.EnumBookingStatusFilter["equals"] } : {}),
     ...(filters.carId ? { carId: filters.carId } : {}),
     ...(filters.customerId ? { customerId: filters.customerId } : {}),
+    ...(filters.locationId ? { AND: [{ OR: [{ pickupLocationId: filters.locationId }, { dropLocationId: filters.locationId }] }] } : {}),
+    ...(filters.dateFrom || filters.dateTo
+      ? {
+          pickupDateTime: {
+            ...(filters.dateFrom && istDay(filters.dateFrom) ? { gte: istDay(filters.dateFrom)! } : {}),
+            ...(filters.dateTo && istDay(filters.dateTo, true) ? { lte: istDay(filters.dateTo, true)! } : {}),
+          },
+        }
+      : {}),
+    ...(filters.paymentStatus === "paid"
+      ? { payments: { some: { status: { in: ["PAID", "PARTIALLY_PAID"] as ("PAID" | "PARTIALLY_PAID")[] } } } }
+      : filters.paymentStatus === "unpaid"
+        ? { payments: { none: { status: { in: ["PAID", "PARTIALLY_PAID", "REFUNDED"] as ("PAID" | "PARTIALLY_PAID" | "REFUNDED")[] } } } }
+        : filters.paymentStatus === "refunded"
+          ? { payments: { some: { refunds: { some: {} } } } }
+          : {}),
     ...(filters.search
       ? {
           OR: [
@@ -378,13 +409,15 @@ export async function listBookings(req: Request, filters: BookingListFilters) {
             { customer: { firstName: { contains: filters.search, mode: "insensitive" } } },
             { customer: { lastName: { contains: filters.search, mode: "insensitive" } } },
             { customer: { email: { contains: filters.search, mode: "insensitive" } } },
+            { customer: { phone: { contains: filters.search.replace(/\s+/g, ""), mode: "insensitive" } } },
           ],
         }
       : {}),
   };
 
-  const [data, total] = await prisma.$transaction([
+  const [data, total] = await Promise.all([
     prisma.booking.findMany({
+      relationLoadStrategy: "join",
       where,
       include: {
         car: { include: { brand: true, model: true } },

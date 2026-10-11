@@ -73,8 +73,9 @@ export async function listCars(pagination: PaginationParams, filters: CarListFil
     ...(filters.isFeatured !== undefined ? { isFeatured: filters.isFeatured } : {}),
   };
 
-  const [data, total] = await prisma.$transaction([
+  const [data, total] = await Promise.all([
     prisma.car.findMany({
+      relationLoadStrategy: "join", // one SQL query for all relations (fewer DB round-trips)
       where,
       include: CAR_LIST_INCLUDE,
       orderBy: { createdAt: "desc" },

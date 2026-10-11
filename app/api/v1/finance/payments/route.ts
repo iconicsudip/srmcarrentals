@@ -27,6 +27,7 @@ export const GET = withErrorHandling(async (req) => {
   const [total, payments] = await Promise.all([
     prisma.payment.count({ where }),
     prisma.payment.findMany({
+      relationLoadStrategy: "join",
       where,
       skip,
       take: limit,

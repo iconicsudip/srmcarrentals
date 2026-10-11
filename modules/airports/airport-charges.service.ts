@@ -19,7 +19,7 @@ export async function listAirportCharges(req: Request) {
     ...(locationId ? { locationId } : {}),
   };
 
-  const [data, total] = await prisma.$transaction([
+  const [data, total] = await Promise.all([
     prisma.airportLocationCharge.findMany({ where, include: CHARGE_INCLUDE, orderBy: { createdAt: "desc" }, skip, take }),
     prisma.airportLocationCharge.count({ where }),
   ]);

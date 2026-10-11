@@ -31,7 +31,7 @@ export async function listPages(req: Request) {
     ...(status === "DRAFT" || status === "PUBLISHED" ? { status } : {}),
   };
 
-  const [data, total] = await prisma.$transaction([
+  const [data, total] = await Promise.all([
     prisma.page.findMany({ where, orderBy: { createdAt: "desc" }, skip, take }),
     prisma.page.count({ where }),
   ]);

@@ -26,6 +26,10 @@ export const GET = withErrorHandling(async (req) => {
     search: url.searchParams.get("search") ?? undefined,
     carId: url.searchParams.get("carId") ?? undefined,
     customerId: url.searchParams.get("customerId") ?? undefined,
+    dateFrom: url.searchParams.get("dateFrom") ?? undefined,
+    dateTo: url.searchParams.get("dateTo") ?? undefined,
+    locationId: url.searchParams.get("locationId") ?? undefined,
+    paymentStatus: (url.searchParams.get("paymentStatus") as "paid" | "unpaid" | "refunded" | null) ?? undefined,
   });
   return paginated(data, meta);
 });

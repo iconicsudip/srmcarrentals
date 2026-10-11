@@ -3,6 +3,8 @@ import dynamic from "next/dynamic";
 
 import { B2bSection } from "@/components/website/b2b-section";
 import { BrandFleetSection } from "@/components/website/brand-fleet-section";
+import { CategoryCircles } from "@/components/website/category-circles";
+import { PriceSortedCars } from "@/components/website/price-sorted-cars";
 import { CategoryCardsSection } from "@/components/website/category-cards-section";
 import { ChauffeurSection } from "@/components/website/chauffeur-section";
 import { FleetSection } from "@/components/website/fleet-section";
@@ -23,6 +25,8 @@ import {
   listActiveBrandsWithCarCounts,
   listActiveCars,
   listActiveCategories,
+  listCategoriesWithCounts,
+  listPublicCars,
   listActiveChauffeurServices,
   listActiveGalleryImages,
   listActiveLocations,
@@ -57,7 +61,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function HomePage() {
   // Weekly Saturday refresh of Google reviews (runs after the response; a no-op the rest of the week)
   after(() => maybeRunWeeklyGoogleReviewsSync());
-  const [content, company, faqContent, cars, categories, brands, chauffeurServices, tours, testimonials, gallery, locations, counts, services, siteText] =
+  const [content, company, faqContent, cars, categories, brands, chauffeurServices, tours, testimonials, gallery, locations, counts, services, siteText, circleCategories, sortedCars] =
     await Promise.all([
       getHomepageContent(),
       getCompanyContent(),
@@ -73,6 +77,8 @@ export default async function HomePage() {
       getFleetCounts(),
       getAvailableServices(),
       getSiteText(),
+      listCategoriesWithCounts(),
+      listPublicCars({ sort: "price-asc", pageSize: 60 }),
     ]);
 
   const jsonLd = {
@@ -92,6 +98,12 @@ export default async function HomePage() {
 
       <HeroSection content={content.hero} locations={locations} services={services} carCount={counts.carCount} text={siteText.hero} widgetText={siteText.bookingWidget} />
       <TrustBadgeRow badges={content.trustBadges} />
+      {services.cars && (
+        <>
+          <CategoryCircles categories={circleCategories} />
+          <PriceSortedCars cars={sortedCars.cars} total={sortedCars.total} />
+        </>
+      )}
       <CategoryCardsSection counts={counts} services={services} cards={siteText.categoryCards} heading={siteText.sections.categories} />
       {services.cars && <FleetSection cars={cars} categories={categories} totalCount={counts.carCount} heading={siteText.sections.fleet} text={siteText.fleet} />}
       {services.taxi && <ChauffeurSection services={chauffeurServices} phone={company.phone} heading={siteText.sections.chauffeur} />}

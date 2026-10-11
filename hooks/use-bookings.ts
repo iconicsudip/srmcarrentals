@@ -55,7 +55,19 @@ export interface BookingDetail extends BookingListItem {
 
 const KEY = ["bookings"] as const;
 
-export function useBookingList(params: { page: number; limit: number; status?: string; search?: string; carId?: string }) {
+export interface BookingListParams {
+  page: number;
+  limit: number;
+  status?: string;
+  search?: string;
+  carId?: string;
+  dateFrom?: string;
+  dateTo?: string;
+  locationId?: string;
+  paymentStatus?: string;
+}
+
+export function useBookingList(params: BookingListParams) {
   return useQuery({
     queryKey: [...KEY, params],
     queryFn: () => {
@@ -63,6 +75,10 @@ export function useBookingList(params: { page: number; limit: number; status?: s
       if (params.status) q.set("status", params.status);
       if (params.search) q.set("search", params.search);
       if (params.carId) q.set("carId", params.carId);
+      if (params.dateFrom) q.set("dateFrom", params.dateFrom);
+      if (params.dateTo) q.set("dateTo", params.dateTo);
+      if (params.locationId) q.set("locationId", params.locationId);
+      if (params.paymentStatus) q.set("paymentStatus", params.paymentStatus);
       return api.get<PaginatedResult<BookingListItem>>(`/bookings?${q.toString()}`);
     },
     placeholderData: (prev) => prev,

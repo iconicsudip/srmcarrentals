@@ -30,7 +30,7 @@ export async function listRentalPackages(req: Request) {
   const where: Prisma.RentalPackageWhereInput =
     status === "ACTIVE" || status === "INACTIVE" ? { status } : {};
 
-  const [data, total] = await prisma.$transaction([
+  const [data, total] = await Promise.all([
     prisma.rentalPackage.findMany({ where, include: PACKAGE_INCLUDE, orderBy: { createdAt: "desc" }, skip, take }),
     prisma.rentalPackage.count({ where }),
   ]);

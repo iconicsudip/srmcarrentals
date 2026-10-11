@@ -27,7 +27,7 @@ export async function getDashboardOverview(): Promise<DashboardOverview> {
     totalCustomers,
     totalDrivers,
     revenueAgg,
-  ] = await prisma.$transaction([
+  ] = await Promise.all([
     prisma.car.count(),
     prisma.car.count({ where: { status: "ACTIVE" } }),
     prisma.booking.count(),

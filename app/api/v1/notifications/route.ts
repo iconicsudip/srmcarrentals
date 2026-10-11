@@ -17,7 +17,7 @@ export const GET = withErrorHandling(async (req) => {
   const session = await requireSession();
   const { page, limit, skip, take } = parsePagination(req.url);
 
-  const [data, total] = await prisma.$transaction([
+  const [data, total] = await Promise.all([
     prisma.notification.findMany({
       where: { OR: [{ userId: session.sub }, { userId: null }] },
       orderBy: { createdAt: "desc" },
