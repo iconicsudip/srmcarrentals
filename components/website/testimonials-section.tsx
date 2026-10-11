@@ -1,6 +1,7 @@
 "use client";
 
-import { Star } from "lucide-react";
+import Link from "next/link";
+import { ArrowRight, Star } from "lucide-react";
 
 import { GoogleLogo } from "@/components/website/testimonial-card";
 
@@ -90,6 +91,16 @@ export function TestimonialsSection({
         {/* All reviews: swipeable, auto-advancing row (loads more as you scroll) */}
         <div className="mt-14">
           <ReviewsCarousel initial={testimonials.slice(0, 48)} total={total} />
+        </div>
+
+        <div className="mt-10 flex justify-center">
+          <Link
+            href="/reviews"
+            className="group inline-flex items-center gap-2 rounded-full border border-amber-400/50 bg-amber-400/10 px-7 py-3 text-sm font-black tracking-wide text-amber-200 transition hover:bg-amber-400 hover:text-neutral-950"
+          >
+            See all {total.toLocaleString("en-IN")} reviews
+            <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
+          </Link>
         </div>
       </div>
     </section>
