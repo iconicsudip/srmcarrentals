@@ -32,13 +32,22 @@ export async function uploadCarImage(carId: string, file: File, altText?: string
     prisma.carImage.aggregate({ where: { carId }, _max: { sortOrder: true } }),
   ]);
 
+  // The first image is featured by default. Also take over the featured slot when every existing image
+  // is a legacy S3 URL (that bucket is not publicly readable), so the new upload is what visitors see.
+  const existing = await prisma.carImage.findMany({ where: { carId }, select: { url: true } });
+  const onlyLegacyS3 = existing.length > 0 && existing.every((e) => e.url.includes("amazonaws.com"));
+  const makeFeatured = existingCount === 0 || onlyLegacyS3;
+  if (makeFeatured && existingCount > 0) {
+    await prisma.carImage.updateMany({ where: { carId }, data: { isFeatured: false } });
+  }
+
   return prisma.carImage.create({
     data: {
       carId,
       url,
       altText,
       sortOrder: (maxSort._max.sortOrder ?? -1) + 1,
-      isFeatured: existingCount === 0, // first uploaded image becomes the featured image by default
+      isFeatured: makeFeatured,
     },
   });
 }

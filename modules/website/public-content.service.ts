@@ -402,7 +402,7 @@ const CAR_CARD_INCLUDE = {
     },
     take: 4,
   },
-  images: { orderBy: { sortOrder: "asc" as const }, take: 1 },
+  images: { orderBy: [{ isFeatured: "desc" }, { sortOrder: "asc" }] as ({ isFeatured: "desc" } | { sortOrder: "asc" })[], take: 1 },
   pricing: true,
   locations: { include: { location: true } },
 } as const;
@@ -688,7 +688,9 @@ async function getPublicCarBySlug_uncached(slug: string) {
   try {
     const car = await fetchCarDetailRaw(slug);
     if (!car) return null;
-    return toPlain(car);
+    // Featured photo first (stable for the rest), so the gallery and cards show the same lead image.
+    const images = [...car.images].sort((a, b) => Number(b.isFeatured) - Number(a.isFeatured));
+    return toPlain({ ...car, images });
   } catch { return null; }
 }
 

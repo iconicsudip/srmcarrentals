@@ -33,7 +33,7 @@ const CAR_LIST_INCLUDE = {
   model: true,
   category: true,
   carType: true,
-  images: { where: { isFeatured: true }, take: 1 },
+  images: { orderBy: [{ isFeatured: "desc" }, { sortOrder: "asc" }], take: 1 },
   pricing: true,
   locations: { include: { location: true } },
 } satisfies Prisma.CarInclude;
