@@ -5,6 +5,7 @@ import { CheckCircle2, Loader2, MessageCircle, MessageSquare, Phone } from "luci
 import { toast } from "sonner";
 
 import { apiFetch } from "@/lib/api-client";
+import { DateTimePicker } from "@/components/website/datetime-picker";
 import {
   DEFAULT_TAXI_FORM,
   TAXI_FORM_SETTING_KEY,
@@ -32,6 +33,12 @@ export interface TaxiBookingTarget {
 const inputClass =
   "w-full rounded-xl border border-neutral-200 bg-white px-3.5 py-2.5 text-sm text-neutral-900 placeholder:text-neutral-400 outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20";
 
+const pad2 = (n: number) => String(n).padStart(2, "0");
+function nowSlot(): string {
+  const d = new Date();
+  return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}T${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
+}
+
 function FieldInput({
   field,
   value,
@@ -52,6 +59,16 @@ function FieldInput({
 
   if (field.type === "textarea") {
     return <textarea {...common} rows={3} onChange={(e) => onChange(e.target.value)} />;
+  }
+  if (field.type === "datetime-local" || field.type === "date") {
+    return (
+      <DateTimePicker
+        label=""
+        value={value}
+        onChange={(val) => onChange(field.type === "date" ? val.slice(0, 10) : val)}
+        minDateTime={nowSlot()}
+      />
+    );
   }
   if (field.type === "select") {
     return (
@@ -151,7 +168,13 @@ export function TaxiBookingDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[92vh] overflow-y-auto border-neutral-200 bg-white text-neutral-900 sm:max-w-xl">
+      <DialogContent
+        onInteractOutside={(e) => {
+          // The calendar is portaled to <body>; don't treat taps inside it as "outside the dialog".
+          if ((e.target as HTMLElement | null)?.closest?.("[data-picker-portal]")) e.preventDefault();
+        }}
+        className="max-h-[92vh] overflow-y-auto border-neutral-200 bg-white text-neutral-900 sm:max-w-xl"
+      >
         <DialogHeader>
           <DialogTitle className="text-xl font-black uppercase tracking-tight text-neutral-950">
             {config.title}

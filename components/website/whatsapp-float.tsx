@@ -7,9 +7,17 @@ import { toast } from "sonner";
 import { apiFetch } from "@/lib/api-client";
 import type { SiteText } from "@/modules/settings/site-content.schemas";
 import { toTenDigits } from "@/lib/car-enquiry/types";
+import { DateTimePicker } from "@/components/website/datetime-picker";
 
 const inputClass =
   "w-full rounded-xl border border-neutral-200 bg-white px-3.5 py-2.5 text-sm text-neutral-900 placeholder:text-neutral-400 outline-none transition focus:border-[#25D366] focus:ring-2 focus:ring-[#25D366]/20";
+
+const pad2 = (n: number) => String(n).padStart(2, "0");
+/** Current local time as "YYYY-MM-DDTHH:mm" (earliest selectable pickup). */
+function nowSlot(): string {
+  const d = new Date();
+  return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}T${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
+}
 
 /**
  * Floating "chat on WhatsApp" button. Opens a short form (city, need, contact),
@@ -175,10 +183,10 @@ export function WhatsAppFloat({ cities, text }: { cities: string[]; text: SiteTe
                     </label>
                   </div>
 
-                  <label className="block">
+                  <div>
                     <span className="mb-1 block text-[11px] font-bold tracking-wider text-neutral-600 uppercase">Pickup date &amp; time</span>
-                    <input type="datetime-local" value={v.pickupAt} onChange={set("pickupAt")} className={inputClass} />
-                  </label>
+                    <DateTimePicker label="" value={v.pickupAt} onChange={(val) => setV((p) => ({ ...p, pickupAt: val }))} minDateTime={nowSlot()} />
+                  </div>
 
                   <label className="block">
                     <span className="mb-1 block text-[11px] font-bold tracking-wider text-neutral-600 uppercase">Message</span>

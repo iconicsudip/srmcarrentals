@@ -274,7 +274,7 @@ export function DateTimePicker({ label, value, onChange, minDateTime, maxDate }:
 
   return (
     <div className="relative flex flex-col gap-1.5" ref={containerRef}>
-      <Label className="text-xs font-semibold text-neutral-700">{label}</Label>
+      {label && <Label className="text-xs font-semibold text-neutral-700">{label}</Label>}
 
       {/* Trigger */}
       <button
@@ -684,7 +684,7 @@ export function TripSchedulePicker({
 
       {/* ── UNIFIED POPOVER / MODAL (PORTALED TO BODY) ── */}
       {open && mounted && createPortal(
-        <div className="fixed inset-0 z-[99999] flex items-center justify-center p-3 sm:p-4 bg-neutral-950/60 backdrop-blur-md animate-in fade-in duration-150">
+        <div data-picker-portal style={{ pointerEvents: "auto" }} className="fixed inset-0 z-[99999] flex items-center justify-center p-3 sm:p-4 bg-neutral-950/60 backdrop-blur-md animate-in fade-in duration-150">
           {/* Backdrop click to close */}
           <div
             className="fixed inset-0 cursor-pointer"

@@ -6,12 +6,21 @@ import { toast } from "sonner";
 
 import { apiFetch } from "@/lib/api-client";
 import { toTenDigits } from "@/lib/car-enquiry/types";
+import { TripSchedulePicker } from "@/components/website/datetime-picker";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 const inputClass =
   "w-full rounded-xl border border-neutral-200 bg-white px-3.5 py-2.5 text-sm text-neutral-900 placeholder:text-neutral-400 outline-none transition focus:border-[#25D366] focus:ring-2 focus:ring-[#25D366]/20";
 
 const asLocalInput = (v?: string) => (v && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(v) ? v.slice(0, 16) : "");
+
+const pad = (n: number) => String(n).padStart(2, "0");
+/** "YYYY-MM-DDTHH:00" for `hoursFromNow`, rounded to the next full hour. */
+function defaultSlot(hoursFromNow: number): string {
+  const d = new Date(Date.now() + hoursFromNow * 3_600_000);
+  d.setMinutes(0, 0, 0);
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:00`;
+}
 
 const fmt = (v: string) =>
   new Date(v).toLocaleString("en-IN", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
@@ -49,8 +58,8 @@ export function CarWhatsAppBook({
     name: "",
     phone: "",
     email: "",
-    pickupAt: asLocalInput(pickupDate),
-    dropAt: asLocalInput(dropDate),
+    pickupAt: asLocalInput(pickupDate) || defaultSlot(24),
+    dropAt: asLocalInput(dropDate) || defaultSlot(48),
     locationId: (defaultLocationId && locations.some((l) => l.id === defaultLocationId) ? defaultLocationId : locations[0]?.id) ?? "",
     pickupLocation: "",
     notes: "",
@@ -131,7 +140,13 @@ export function CarWhatsAppBook({
       </button>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-h-[92vh] overflow-y-auto border-neutral-200 bg-white text-neutral-900 sm:max-w-lg">
+        <DialogContent
+          onInteractOutside={(e) => {
+          // The calendar is portaled to <body>; don't treat taps inside it as "outside the dialog".
+          if ((e.target as HTMLElement | null)?.closest?.("[data-picker-portal]")) e.preventDefault();
+        }}
+          className="max-h-[92vh] overflow-y-auto border-neutral-200 bg-white text-neutral-900 sm:max-w-lg"
+        >
           <DialogHeader>
             <DialogTitle className="text-xl font-black uppercase tracking-tight text-neutral-950">Book on WhatsApp</DialogTitle>
             <DialogDescription className="text-neutral-500">
@@ -185,11 +200,16 @@ export function CarWhatsAppBook({
                   className={inputClass}
                 />
               </Field>
-              <Field label="Pickup Date & Time" required>
-                <input required type="datetime-local" value={v.pickupAt} onChange={set("pickupAt")} className={inputClass} />
-              </Field>
-              <Field label="Drop Date & Time" required>
-                <input required type="datetime-local" value={v.dropAt} min={v.pickupAt || undefined} onChange={set("dropAt")} className={inputClass} />
+              <Field label="Trip dates & times" required className="sm:col-span-2">
+                <TripSchedulePicker
+                  pickup={v.pickupAt}
+                  drop={v.dropAt}
+                  onChange={({ pickup, drop }) => setV((p) => ({ ...p, pickupAt: pickup, dropAt: drop }))}
+                  minHours={24}
+                  maxDays={30}
+                  rentalMode="DAILY"
+                  compact
+                />
               </Field>
               <Field label="Pickup City / Branch" required={locations.length > 0} className="sm:col-span-2">
                 {locations.length > 0 ? (
