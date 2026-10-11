@@ -352,6 +352,7 @@ export default function CheckoutPage() {
         extraServiceIds: primaryItem.extraServices.map((s) => s.id),
         couponCode: primaryItem.couponCode,
         paymentMethod,
+        kmPlan: primaryItem.kmPlan && primaryItem.kmPlan > 1 ? primaryItem.kmPlan : undefined,
         // Everything else shown/entered on this page, captured with the booking
         details: {
           customer: {

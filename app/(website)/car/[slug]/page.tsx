@@ -475,7 +475,8 @@ export default async function CarDetailPage({ params }: CarDetailPageProps) {
               fuelType={car.fuelType?.name || "Diesel"}
               dailyPrice={Number(car.pricing?.dailyPrice ?? 1500)}
               hourlyPrice={car.pricing?.hourlyPrice ? Number(car.pricing.hourlyPrice) : null}
-              includedKmPerDay={car.pricing?.includedKmPerDay ?? 300}
+              includedKmPerDay={car.pricing?.includedKmPerDay ?? 120}
+              extraKmPrice={Number(car.pricing?.extraKmPrice ?? 10)}
               phone={company.phone}
               whatsappNumbers={whatsappNumbers}
               advancePercent={payOpts.enableOnline ? payOpts.advancePercent : 0}

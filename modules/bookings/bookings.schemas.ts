@@ -24,6 +24,7 @@ export const createBookingSchema = z
     pickupAirportId: z.string().optional(),
     dropAirportId: z.string().optional(),
     estimatedKm: z.coerce.number().nonnegative().optional().default(0),
+    kmPlan: z.coerce.number().int().min(1).max(3).optional().default(1),
     rentalPackageId: z.string().optional(),
     extraServiceIds: z.array(z.string()).optional().default([]),
     insuranceId: z.string().optional(),

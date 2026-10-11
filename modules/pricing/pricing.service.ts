@@ -218,11 +218,13 @@ export async function calculatePricing(input: PricingCalculateDto): Promise<Pric
   }
 
   // ---- 3. KM pricing ----
+  // A KM plan (2×/3×) means the customer pre-buys that many KM: estimated KM = plan × included KM.
+  const kmPlan = input.kmPlan && input.kmPlan > 1 ? input.kmPlan : 1;
   const km = calculateKmPricing({
     fullDays,
     includedKmPerDay: includedKmPerUnit,
     extraKmPrice,
-    estimatedKm: input.estimatedKm,
+    estimatedKm: kmPlan > 1 ? fullDays * includedKmPerUnit * kmPlan : input.estimatedKm,
   });
 
   // ---- 4. Seasonal pricing (adjusts the rental base price) ----

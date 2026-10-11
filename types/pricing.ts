@@ -11,6 +11,7 @@ export interface PricingCalculateRequest {
   pickupAirportId?: string;
   dropAirportId?: string;
   estimatedKm?: number;
+  kmPlan?: number;
   rentalPackageId?: string;
   extraServiceIds?: string[];
   insuranceId?: string;

@@ -12,6 +12,10 @@ export interface CopyEntry {
 
 export const COPY: Record<string, CopyEntry> = {
   // @@generated-entries@@
+  "booking.km-plan": { group: "booking", default: "KM plan (per 24 hours)" },
+  "booking.km-extra-rate": { group: "booking", default: "Extra KM {rate}/km" },
+  "booking.km-popular": { group: "booking", default: "Popular" },
+  "booking.km-per-day": { group: "booking", default: "per day" },
   "checkout.online-short": { group: "checkout", default: "Pay {now} now, {later} at handover." },
   "checkout.online-info-label": { group: "checkout", default: "How online payment works" },
   "checkout.pickup": { group: "checkout", default: "Pickup" },

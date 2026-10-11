@@ -33,6 +33,8 @@ export interface CartItem {
   createdAt: number;
   fuelType?: string;
   includedKm?: number;
+  /** KM plan multiplier chosen on the car page (1 = standard). */
+  kmPlan?: number;
   extraKmPrice?: number;
   securityDeposit?: number;
   city?: string;

@@ -12,6 +12,8 @@ export const pricingCalculateSchema = z
     pickupAirportId: z.string().min(1).optional(),
     dropAirportId: z.string().min(1).optional(),
     estimatedKm: z.coerce.number().nonnegative().optional().default(0),
+    /** KM plan multiplier (1 = standard included KM, 2/3 = pre-bought extra KM). */
+    kmPlan: z.coerce.number().int().min(1).max(3).optional().default(1),
     rentalPackageId: z.string().min(1).optional(),
     extraServiceIds: z.array(z.string()).optional().default([]),
     insuranceId: z.string().min(1).optional(),

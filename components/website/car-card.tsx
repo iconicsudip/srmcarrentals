@@ -2,6 +2,7 @@
 
 import * as React from "react";
 
+import { buildKmTiers } from "@/lib/pricing/km-tiers";
 import { CarWhatsAppBook } from "@/components/website/car-whatsapp-book";
 import { getCarFallbackImage } from "@/lib/car-fallback-image";
 import Image from "next/image";
@@ -114,50 +115,26 @@ function CarCardInner({
     setImgSrc(image?.url || fallbackImg);
   }, [image?.url, fallbackImg]);
 
-  // 3 Dynamic KM-basis packages matching Image 2
-  const packages = React.useMemo(() => {
-    // Tier 1: ~66% of standard base KM (e.g. 165 KM for 250 base * days)
-    const km1 = Math.round(Math.max(100, baseKm * 0.66) * tripDays);
-    const price1 = Math.round(dailyPrice * tripDays * 0.90);
-
-    // Tier 2: ~132% of standard base KM (e.g. 330 KM for 250 base * days) - Most Popular
-    const km2 = Math.round(Math.max(200, baseKm * 1.32) * tripDays);
-    const price2 = Math.round(dailyPrice * tripDays * 1.04);
-
-    // Tier 3: ~193% of standard base KM (e.g. 482 KM for 250 base * days)
-    const km3 = Math.round(Math.max(300, baseKm * 1.93) * tripDays);
-    const price3 = Math.round(dailyPrice * tripDays * 1.18);
-
-    return [
-      {
-        id: "economy",
-        kmLimit: km1,
-        price: price1,
+  // KM plans — same numbers the car page and the pricing engine use (see lib/pricing/km-tiers.ts)
+  const packages = React.useMemo(
+    () =>
+      buildKmTiers({ dailyPrice, includedKmPerDay: baseKm, extraKmPrice: extraKmRate }).map((tier) => ({
+        id: `plan-${tier.plan}`,
+        plan: tier.plan,
+        kmLimit: tier.kmPerDay * tripDays,
+        price: tier.pricePerDay * tripDays,
         extraKmPrice: extraKmRate,
-        isPopular: false,
-      },
-      {
-        id: "popular",
-        kmLimit: km2,
-        price: price2,
-        extraKmPrice: extraKmRate,
-        isPopular: true,
-      },
-      {
-        id: "extended",
-        kmLimit: km3,
-        price: price3,
-        extraKmPrice: extraKmRate,
-        isPopular: false,
-      },
-    ];
-  }, [dailyPrice, baseKm, extraKmRate, tripDays]);
+        isPopular: tier.isPopular,
+      })),
+    [dailyPrice, baseKm, extraKmRate, tripDays],
+  );
 
-  function getBookHref(kmLimit?: number, pkgPrice?: number) {
+  function getBookHref(kmLimit?: number, pkgPrice?: number, plan?: number) {
     const q = new URLSearchParams();
     if (locationId) q.set("locationId", locationId);
     if (!showBasePriceOnly && pickupDate) q.set("pickupDate", pickupDate);
     if (!showBasePriceOnly && dropDate) q.set("dropDate", dropDate);
+    if (plan && plan > 1) q.set("kmPlan", String(plan));
     if (kmLimit) q.set("kmLimit", String(kmLimit));
     if (pkgPrice) q.set("price", String(pkgPrice));
     const qs = q.toString();
@@ -438,7 +415,7 @@ function CarCardInner({
 
               {/* Book Now Button */}
               <Link
-                href={getBookHref(pkg.kmLimit, pkg.price)}
+                href={getBookHref(pkg.kmLimit, pkg.price, pkg.plan)}
                 onClick={() => setBookingKey(`${pkg.kmLimit}-${pkg.price}`)}
                 aria-busy={bookingKey === `${pkg.kmLimit}-${pkg.price}`}
                 className="shimmer-sheen w-full mt-1 flex items-center justify-center gap-1 rounded-lg sm:rounded-xl bg-orange-500 hover:bg-orange-600 text-white text-[11px] sm:text-xs font-bold py-2 sm:py-2.5 px-1.5 sm:px-3 shadow-md shadow-orange-500/25 hover:shadow-orange-500/40 hover:-translate-y-0.5 active:translate-y-0 transition-all"

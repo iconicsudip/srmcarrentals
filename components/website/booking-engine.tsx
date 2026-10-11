@@ -6,6 +6,7 @@ import * as React from "react";
 import { useSearchParams } from "next/navigation";
 import { AlertCircle, CheckCircle2, Loader2, MapPin, MessageCircle, Plane, Phone, ShieldCheck, ShoppingBag, Tag } from "lucide-react";
 import { toast } from "sonner";
+import { buildKmTiers, clampKmPlan } from "@/lib/pricing/km-tiers";
 import { pickWhatsAppNumber, toWaNumber, type WhatsAppNumbers } from "@/lib/whatsapp/pick";
 import type { PricingCalculateResponse } from "@srm/types";
 
@@ -26,6 +27,7 @@ export interface BookingEngineProps {
   hourlyPrice?: number | null;
   fuelType?: string;
   includedKmPerDay: number;
+  extraKmPrice?: number;
   phone: string;
   /** City-wise WhatsApp routing (from admin settings). */
   whatsappNumbers?: WhatsAppNumbers | null;
@@ -96,6 +98,7 @@ export function BookingEngine({
   hourlyPrice,
   fuelType,
   includedKmPerDay,
+  extraKmPrice = 10,
   phone,
   whatsappNumbers,
   advancePercent = ADVANCE_PERCENT,
@@ -161,8 +164,12 @@ export function BookingEngine({
   const effectiveDropLocationId = differentDropLocation ? selectedDropLocationId : selectedLocationId;
   const [selectedAirportId, setSelectedAirportId] = React.useState<string>(airports[0]?.id ?? "");
 
-  // Distance estimation
-  const [estimatedKm] = React.useState<string>("300");
+  // KM plan: 1 = standard included KM, 2/3 = pre-bought extra KM (priced by the engine, not guessed)
+  const [kmPlan, setKmPlan] = React.useState<1 | 2 | 3>(() => clampKmPlan(Number(searchParams.get("kmPlan")) || 1));
+  const kmTiers = React.useMemo(
+    () => buildKmTiers({ dailyPrice, includedKmPerDay, extraKmPrice }),
+    [dailyPrice, includedKmPerDay, extraKmPrice],
+  );
 
   // Add-ons & Protection
   const [selectedInsuranceId, setSelectedInsuranceId] = React.useState<string | undefined>(
@@ -247,7 +254,7 @@ export function BookingEngine({
           dropIsAirport: deliveryType === "AIRPORT",
           pickupAirportId: deliveryType === "AIRPORT" ? selectedAirportId : undefined,
           dropAirportId: deliveryType === "AIRPORT" ? selectedAirportId : undefined,
-          estimatedKm: Number(estimatedKm) || 0,
+          kmPlan,
           insuranceId: selectedInsuranceId,
           extraServiceIds: selectedExtraIds,
           couponCode: appliedCoupon,
@@ -268,7 +275,7 @@ export function BookingEngine({
     selectedLocationId,
     effectiveDropLocationId,
     selectedAirportId,
-    estimatedKm,
+    kmPlan,
     selectedInsuranceId,
     selectedExtraIds,
     appliedCoupon,
@@ -417,7 +424,8 @@ export function BookingEngine({
       tax: pricingResult?.totalTax ?? 0,
       total: finalTotal,
       fuelType: fuelType || "Diesel",
-      includedKm: pricingResult?.rental?.includedKm ?? (duration.days || 1) * 240,
+      includedKm: (pricingResult?.rental?.includedKm ?? (duration.days || 1) * includedKmPerDay) * kmPlan,
+      kmPlan,
       extraKmPrice: pricingResult?.rental?.extraKmPrice ?? 10,
       securityDeposit,
       city: selectedBranch?.city ?? "Udaipur",
@@ -478,6 +486,43 @@ export function BookingEngine({
           >
             {t("booking.hourly-toggle", { price: Number(hourlyPrice).toLocaleString("en-IN") })}
           </button>
+        </div>
+      )}
+
+      {/* KM plan — per 24 hours */}
+      {rentalMode === "DAILY" && (
+        <div className="mt-5">
+          <div className="flex items-center justify-between">
+            <Label className="text-xs font-medium text-neutral-700">{t("booking.km-plan")}</Label>
+            <span className="text-[11px] text-neutral-500">{t("booking.km-extra-rate", { rate: formatInr(extraKmPrice) })}</span>
+          </div>
+          <div className="mt-1.5 grid grid-cols-3 gap-2">
+            {kmTiers.map((tier) => {
+              const active = tier.plan === kmPlan;
+              return (
+                <button
+                  key={tier.plan}
+                  type="button"
+                  onClick={() => setKmPlan(tier.plan)}
+                  aria-pressed={active}
+                  className={`relative flex flex-col items-center rounded-xl border px-1.5 py-2.5 text-center transition-all ${
+                    active
+                      ? "border-orange-500 bg-orange-50 shadow-md shadow-orange-500/15"
+                      : "border-neutral-200 bg-neutral-50 hover:border-orange-500/40"
+                  }`}
+                >
+                  {tier.isPopular && (
+                    <span className="absolute -top-2 rounded-full bg-orange-500 px-2 py-px text-[8px] font-black tracking-wider text-white uppercase">
+                      {t("booking.km-popular")}
+                    </span>
+                  )}
+                  <span className="text-sm leading-tight font-black text-neutral-950">{formatInr(tier.pricePerDay)}</span>
+                  <span className="mt-0.5 text-[11px] font-bold text-neutral-700">{tier.kmPerDay} km</span>
+                  <span className="text-[9px] text-neutral-500">{t("booking.km-per-day")}</span>
+                </button>
+              );
+            })}
+          </div>
         </div>
       )}
 
