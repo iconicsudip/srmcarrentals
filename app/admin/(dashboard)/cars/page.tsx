@@ -34,7 +34,7 @@ interface CarListItem {
   carType: { name: string };
   images: { url: string; altText: string | null }[];
   pricing: { dailyPrice: string; hourlyPrice?: string | null; includedKmPerDay?: number; extraKmPrice?: string } | null;
-  locations?: { locationId: string; location: { id: string; name: string } }[];
+  locations?: { locationId: string; location: { id: string; name: string; city?: string } }[];
 }
 
 const STATUS_BADGE: Record<CarListItem["status"], "success" | "muted" | "warning"> = {
@@ -127,17 +127,20 @@ export default function CarsPage() {
     { id: "type", header: "Type", cell: ({ row }) => row.original.carType.name },
     {
       id: "locations",
-      header: "Locations",
+      header: "Cities",
       cell: ({ row }) => {
-        const locs = row.original.locations;
-        if (!locs || locs.length === 0) {
-          return <Badge variant="outline" className="text-xs">All Locations</Badge>;
+        // Cars are available per city — show each city once (a car assigned to a pickup point shows that point's city)
+        const cities = Array.from(
+          new Set((row.original.locations ?? []).map((l) => (l.location.city || l.location.name).replace(/\s*\(.*\)\s*$/, "").trim()).filter(Boolean)),
+        );
+        if (cities.length === 0) {
+          return <Badge variant="outline" className="text-xs">All Cities</Badge>;
         }
         return (
           <div className="flex flex-wrap gap-1 max-w-[160px]">
-            {locs.map((l) => (
-              <Badge key={l.locationId} variant="secondary" className="text-[10px] px-1.5 py-0">
-                {l.location.name}
+            {cities.map((c) => (
+              <Badge key={c} variant="secondary" className="text-[10px] px-1.5 py-0">
+                {c}
               </Badge>
             ))}
           </div>

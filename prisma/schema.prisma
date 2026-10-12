@@ -680,8 +680,16 @@ model SeasonalPricing {
 // LOCATIONS & AIRPORTS
 // ============================================================================
 
+/// CITY = a city entry (managed under Cities; cars are made available per city),
+/// POINT = a real pickup / drop location inside a city.
+enum LocationKind {
+  CITY
+  POINT
+}
+
 model Location {
   id              String   @id @default(cuid())
+  kind            LocationKind @default(POINT)
   name            String
   slug            String   @unique
   city            String
@@ -703,6 +711,7 @@ model Location {
 
   @@index([status])
   @@index([city])
+  @@index([kind])
   @@map("locations")
 }
 

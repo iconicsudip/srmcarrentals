@@ -32,6 +32,7 @@ export default async function CarsPage({ searchParams }: CarsPageProps) {
     transmissionTypeId: params.transmission,
     fuelTypeId: params.fuel,
     locationId: params.locationId || params.location,
+    city: params.city,
     search: params.search,
     sort: (params.sort as PublicCarFilters["sort"]) ?? "featured",
     page: params.page ? Number(params.page) : 1,

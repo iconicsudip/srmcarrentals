@@ -110,7 +110,7 @@ export const COPY: Record<string, CopyEntry> = {
   "booking.reserve-your-drive": { group: "booking", default: "Reserve Your Drive" },
   "booking.checking-availability": { group: "booking", default: "Checking availability…" },
   "booking.available-for-selected-dates": { group: "booking", default: "Available for selected dates" },
-  "booking.instant-selection": { group: "booking", default: "✓ Instant Selection" },
+  "booking.instant-selection": { group: "booking", default: "Instant Selection" },
   "booking.not-available-for-selected": { group: "booking", default: "Not available for selected dates" },
   "booking.try-other-dates": { group: "booking", default: "Try other dates" },
   "booking.delivery-handover-point": { group: "booking", default: "Delivery & Handover Point" },

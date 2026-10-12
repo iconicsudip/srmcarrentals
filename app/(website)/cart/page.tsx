@@ -1,5 +1,7 @@
 "use client";
 
+import { pickupPointsOnly } from "@/lib/location-points";
+import { normalizeRouteCharges, resolveDropCharge, type RouteCharges } from "@/lib/pricing/location-routes";
 import { includedKmLabel } from "@/lib/cart/trip-breakdown";
 import { CarThumb } from "@/components/website/car-thumb";
 import { useCopy } from "@/components/copy-provider";
@@ -54,6 +56,12 @@ export default function CartPage() {
   const [phone, setPhone] = React.useState("+91 9414551250");
   const [whatsapp, setWhatsapp] = React.useState("919414551250");
   const [locations, setLocations] = React.useState<LocationOption[]>([]);
+  const [routes, setRoutes] = React.useState<RouteCharges>({});
+  React.useEffect(() => {
+    apiFetch<RouteCharges>("/pricing/location-routes", { skipAuthRedirect: true })
+      .then((r) => setRoutes(normalizeRouteCharges(r)))
+      .catch(() => {});
+  }, []);
   const [couponCode, setCouponCode] = React.useState("");
   const [, setAppliedCoupon] = React.useState<string | null>(null);
 
@@ -95,6 +103,8 @@ export default function CartPage() {
   const primaryItem = items[0];
 
   // Delivery drop option selection for primary item
+  // Pickup → drop charge (a pair price set in admin, else the drop location's own charge)
+  const feeOf = (loc: LocationOption) => resolveDropCharge(routes, primaryItem?.pickupLocationId, loc);
   const selectedLocationId = primaryItem?.dropLocationId || "";
   const selectedLocation = locations.find((l) => l.id === selectedLocationId);
   const deliveryCharge = Number(primaryItem?.locationDropCharge ?? selectedLocation?.dropCharge ?? 0);
@@ -127,7 +137,7 @@ export default function CartPage() {
     const loc = locations.find((l) => l.id === locationId);
     if (!loc) return;
 
-    const newFee = loc.dropCharge;
+    const newFee = feeOf(loc);
     const prevFee = primaryItem.locationDropCharge ?? 0;
     const diff = newFee - prevFee;
 
@@ -298,7 +308,7 @@ export default function CartPage() {
                                     <span>{t("cart.drop-location")}</span>
                                     <span className="text-right">
                                       {selectedLocation.name}
-                                      {selectedLocation.dropCharge > 0 ? ` (+₹${selectedLocation.dropCharge})` : " (Free)"}
+                                      {feeOf(selectedLocation) > 0 ? ` (+₹${feeOf(selectedLocation)})` : " (Free)"}
                                     </span>
                                   </div>
                                 )}
@@ -441,8 +451,8 @@ export default function CartPage() {
                         className="w-full appearance-none rounded-xl border border-neutral-200 bg-white px-3.5 py-2.5 pr-8 text-xs font-semibold text-neutral-900 outline-none transition hover:border-orange-500 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 cursor-pointer shadow-sm"
                       >
                         <option value="" className="bg-white text-neutral-900">Standard Branch Pickup (Free)</option>
-                        {locations.map((loc) => {
-                          const charge = loc.dropCharge;
+                        {pickupPointsOnly(locations).map((loc) => {
+                          const charge = feeOf(loc);
                           const priceText = charge > 0 ? ` - ₹${charge}` : " - Free";
                           return (
                             <option key={loc.id} value={loc.id} className="bg-white text-neutral-900">

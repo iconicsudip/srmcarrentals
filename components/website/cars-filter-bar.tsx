@@ -3,7 +3,8 @@
 import { toSlug } from "@/lib/slug";
 import * as React from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { Calendar, Check, Loader2, ChevronDown, MapPin, RotateCcw, Search, SlidersHorizontal, Sparkles, X } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
+import { Building2, Calendar, Check, Loader2, ChevronDown, MapPin, RotateCcw, Search, SlidersHorizontal, Sparkles, X } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { TripSchedulePicker } from "@/components/website/datetime-picker";
 
@@ -158,6 +159,13 @@ export function CarsFilterBar({
   const currentLocationRef = searchParams.get("location") ?? searchParams.get("locationId") ?? "";
   // Resolve whichever form is in the URL (slug or legacy id) to the location's slug for display/selection
   const currentLocationId = (locations.find((l) => l.id === currentLocationRef || (l as { slug?: string }).slug === currentLocationRef) as { id: string; slug?: string } | undefined)?.slug ?? currentLocationRef;
+  const normCity = (c?: string | null) => (c ?? "").replace(/\s*\(.*\)\s*$/, "").trim();
+  const cityList = Array.from(new Set(locations.map((l) => normCity(l.city)).filter(Boolean)));
+  // City comes from the URL, else from the chosen pickup point
+  const currentCity =
+    searchParams.get("city") ??
+    normCity((locations.find((l) => l.id === currentLocationRef || (l as { slug?: string }).slug === currentLocationRef) as { city?: string } | undefined)?.city);
+  const cityLocations = currentCity ? locations.filter((l) => normCity(l.city).toLowerCase() === currentCity.toLowerCase()) : locations;
   const currentPickupDate = searchParams.get("pickupDate") ?? "";
   const currentDropDate   = searchParams.get("dropDate") ?? "";
 
@@ -178,26 +186,38 @@ export function CarsFilterBar({
     pickupValue !== currentPickupDate || dropValue !== currentDropDate;
 
   // Build chip list from active filters
-  const activeChips: { label: string; key: string }[] = [];
+  const activeChips: { label: string; key: string; icon?: LucideIcon }[] = [];
 
   if (currentLocationId) {
     const loc = locations.find((l) => l.id === currentLocationRef || (l as { slug?: string }).slug === currentLocationRef);
-    activeChips.push({ label: `📍 ${loc?.name ?? "Selected Location"}`, key: "location" });
+    activeChips.push({ label: loc?.name ?? "Selected Location", key: "location", icon: MapPin });
   }
 
   if (currentPickupDate && currentDropDate) {
     const dateLabel = formatChipDates(currentPickupDate, currentDropDate);
     if (dateLabel) {
-      activeChips.push({ label: `🗓️ ${dateLabel}`, key: "dates" });
+      activeChips.push({ label: dateLabel, key: "dates", icon: Calendar });
     }
   }
 
   if (currentSearch)    activeChips.push({ label: `"${currentSearch}"`, key: "search" });
+  if (currentCity)      activeChips.push({ label: currentCity, key: "city", icon: Building2 });
   if (currentCategory)  activeChips.push({ label: categories.find(c => (c.slug ?? c.id) === currentCategory)?.name ?? currentCategory, key: "category" });
   if (currentBrand)     activeChips.push({ label: brands.find(b => (b.slug ?? b.id) === currentBrand)?.name ?? currentBrand, key: "brand" });
   if (currentType)      activeChips.push({ label: carTypes.find(t => (t.slug ?? t.id) === currentType)?.name ?? currentType, key: "type" });
   if (currentTx)        activeChips.push({ label: transmissionTypes.find(t => t.id === currentTx || toSlug(t.name) === currentTx)?.name ?? currentTx, key: "transmission" });
   if (currentFuel)      activeChips.push({ label: fuelTypes.find(f => f.id === currentFuel || toSlug(f.name) === currentFuel)?.name ?? currentFuel, key: "fuel" });
+
+  function updateCity(value: string) {
+    const params = new URLSearchParams(searchParams.toString());
+    if (value === ALL || !value) params.delete("city");
+    else params.set("city", value);
+    // pickup points belong to a city — picking another city clears the point
+    params.delete("location");
+    params.delete("locationId");
+    params.delete("page");
+    startTransition(() => router.push(`${pathname}?${params.toString()}`));
+  }
 
   function updateParam(key: string, value: string) {
     const params = new URLSearchParams(searchParams.toString());
@@ -241,6 +261,10 @@ export function CarsFilterBar({
     } else if (key === "location") {
       params.delete("locationId");
       params.delete("location");
+    } else if (key === "city") {
+      params.delete("city");
+      params.delete("location");
+      params.delete("locationId");
     } else {
       params.delete(key);
       if (key === "search") setSearchInput("");
@@ -288,6 +312,7 @@ export function CarsFilterBar({
               key={chip.key}
               className="flex items-center gap-1.5 rounded-full border border-orange-500/30 bg-orange-50 px-2.5 py-1 text-[11px] font-semibold text-orange-700 shadow-xs"
             >
+              {chip.icon && <chip.icon className="size-3 shrink-0 text-orange-500" />}
               <span className="max-w-[190px] truncate">{chip.label}</span>
               <button
                 type="button"
@@ -348,12 +373,12 @@ export function CarsFilterBar({
             <Sparkles className="size-3 text-orange-500" />
             Trip & Location
           </span>
-          {Boolean(currentPickupDate || currentDropDate || currentLocationId) && (
+          {Boolean(currentPickupDate || currentDropDate || currentLocationId || currentCity) && (
             <button
               type="button"
               onClick={() => {
                 if (currentPickupDate || currentDropDate) handleClearDates();
-                if (currentLocationId) updateParam("location", ALL);
+                if (currentCity || currentLocationId) updateCity(ALL);
               }}
               className="text-[10px] font-semibold text-neutral-500 hover:text-orange-600 transition cursor-pointer"
             >
@@ -362,31 +387,25 @@ export function CarsFilterBar({
           )}
         </div>
 
-        {/* Pickup & Return Location */}
-        {locations.length > 0 && (
+        {/* City — cars are available per city */}
+        {cityList.length > 0 && (
           <div className="flex flex-col gap-1.5">
             <label className="text-[10px] font-bold tracking-wider text-neutral-600 uppercase flex items-center gap-1.5">
               <MapPin className="size-3 text-orange-500" />
-              Pickup & Return Location
+              Pickup City
             </label>
             <div className="relative">
               <select
-                value={currentLocationId || ALL}
-                onChange={(e) => updateParam("location", e.target.value)}
+                value={currentCity || ALL}
+                onChange={(e) => updateCity(e.target.value)}
                 className="w-full appearance-none rounded-xl border border-neutral-200 bg-white py-2.5 pl-3 pr-8 text-xs text-neutral-900 outline-none focus:border-orange-500 transition cursor-pointer shadow-xs"
               >
-                <option value={ALL} className="bg-white text-neutral-900">
-                  All Locations (Any Branch)
-                </option>
-                {locations.map((loc) => {
-                  const charge = Number((loc as any).dropCharge ?? 0);
-                  const priceLabel = charge > 0 ? ` — ₹${charge.toLocaleString("en-IN")} Drop` : "";
-                  return (
-                    <option key={loc.id} value={(loc as { slug?: string }).slug ?? loc.id} className="bg-white text-neutral-900">
-                      {loc.name} {loc.city ? `(${loc.city})` : ""}{priceLabel}
-                    </option>
-                  );
-                })}
+                <option value={ALL}>All Cities</option>
+                {cityList.map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
+                ))}
               </select>
               <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 size-3.5 text-neutral-400" />
             </div>

@@ -1,7 +1,7 @@
 import { requirePermission } from "@/lib/auth/rbac";
 import { noContent, ok } from "@/lib/http/api-response";
 import { withErrorHandling } from "@/lib/http/with-error-handling";
-import { locationsCrud } from "@/modules/locations/locations.crud";
+import { locationsCrud, updateLocation } from "@/modules/locations/locations.crud";
 
 type Ctx = { params: Promise<{ id: string }> };
 
@@ -14,7 +14,7 @@ type Ctx = { params: Promise<{ id: string }> };
 export const PATCH = withErrorHandling<Ctx>(async (req, { params }) => {
   await requirePermission("locations.manage");
   const { id } = await params;
-  return ok(await locationsCrud.update(req, id));
+  return ok(await updateLocation(req, id));
 });
 
 export const DELETE = withErrorHandling<Ctx>(async (_req, { params }) => {

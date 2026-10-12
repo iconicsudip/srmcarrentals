@@ -366,13 +366,6 @@ export default async function BookingConfirmationPage({ params, searchParams }: 
                   </div>
                 )}
 
-                {pricing?.locationDropCharge != null && Number(pricing.locationDropCharge) > 0 && (
-                  <div className="flex justify-between text-neutral-700">
-                    <span>Drop Location Fee</span>
-                    <span className="font-semibold text-neutral-950">{formatInr(pricing.locationDropCharge)}</span>
-                  </div>
-                )}
-
                 {pricing?.insuranceCharge != null && Number(pricing.insuranceCharge) > 0 && (
                   <div className="flex justify-between text-neutral-700">
                     <span>Protection Plan</span>
@@ -396,8 +389,16 @@ export default async function BookingConfirmationPage({ params, searchParams }: 
 
                 <div className="flex justify-between border-t border-neutral-200 pt-2 text-neutral-500">
                   <span>Subtotal</span>
-                  <span className="font-medium text-neutral-700">{formatInr(pricing?.subtotal ?? 0)}</span>
+                  <span className="font-medium text-neutral-700">{formatInr(Math.max(0, Number(pricing?.subtotal ?? 0) - Number(pricing?.locationDropCharge ?? 0)))}</span>
                 </div>
+
+                {pricing?.locationDropCharge != null && Number(pricing.locationDropCharge) > 0 && (
+                  <div className="flex justify-between text-neutral-700">
+                    <span>Drop Location Fee</span>
+                    <span className="font-semibold text-neutral-950">{formatInr(pricing.locationDropCharge)}</span>
+                  </div>
+                )}
+
 
                 {pricing?.taxAmount != null && Number(pricing.taxAmount) > 0 && (
                   <div className="flex justify-between text-neutral-500">

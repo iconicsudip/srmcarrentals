@@ -3,7 +3,7 @@
 import { useCopy } from "@/components/copy-provider";
 import * as React from "react";
 import Link from "next/link";
-import { Calendar, CarFront, Clock, Loader2, MapPin, MessageSquare, ShieldCheck, ShoppingBag, Trash2, X } from "lucide-react";
+import { Calendar, CarFront, Check, Clock, Loader2, MapPin, MessageSquare, ShieldCheck, ShoppingBag, Trash2, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 import { useCart } from "@/lib/cart/cart-store";
@@ -37,6 +37,8 @@ export function CartDrawer({ phone = "+91 9414551250" }: { phone?: string }) {
   const t = useCopy();
   const router = useRouter();
   const { items, count, total, isDrawerOpen, closeCart, removeItem, clear } = useCart();
+  // The subtotal excludes drop-location fees; they are added on top of it
+  const dropFees = items.reduce((sum, item) => sum + (item.locationDropCharge ?? 0), 0);
   const [isCheckingOut, setIsCheckingOut] = React.useState(false);
   const [deletingId, setDeletingId] = React.useState<string | null>(null);
 
@@ -241,8 +243,14 @@ export function CartDrawer({ phone = "+91 9414551250" }: { phone?: string }) {
           <div className="border-t border-neutral-150 pt-4 space-y-3">
             <div className="flex items-center justify-between text-xs text-neutral-600">
               <span>Vehicles ({count})</span>
-              <span className="font-semibold text-neutral-900">{formatInr(total)}</span>
+              <span className="font-semibold text-neutral-900">{formatInr(Math.max(0, total - dropFees))}</span>
             </div>
+            {dropFees > 0 && (
+              <div className="flex items-center justify-between text-xs text-neutral-600">
+                <span>Drop location fee</span>
+                <span className="font-semibold text-orange-600">+{formatInr(dropFees)}</span>
+              </div>
+            )}
 
             <div className="flex items-center justify-between text-base font-black text-neutral-950">
               <span>{t("cartdrawer.total-payable")}</span>
@@ -250,7 +258,7 @@ export function CartDrawer({ phone = "+91 9414551250" }: { phone?: string }) {
             </div>
 
             <div className="text-[11px] text-emerald-700 font-semibold">
-              ✓ Refundable Security Deposit ₹3,000–₹5,000 (at pickup)
+              <Check className="mr-1 inline size-3.5 -translate-y-px" />Refundable Security Deposit ₹3,000–₹5,000 (at pickup)
             </div>
 
             {/* Proceed to Checkout CTA */}

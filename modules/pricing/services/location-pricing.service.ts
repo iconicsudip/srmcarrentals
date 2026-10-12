@@ -1,3 +1,5 @@
+import { resolveDropCharge } from "@/lib/pricing/location-routes";
+import { getRouteCharges } from "@/lib/pricing/location-routes.server";
 import { prisma } from "@/lib/prisma";
 import { NotFoundError } from "@/lib/http/errors";
 
@@ -18,7 +20,8 @@ export async function resolveLocations(pickupLocationId?: string, dropLocationId
   if (pickupLocationId && !pickupLocation) throw new NotFoundError("Pickup location not found");
   if (dropLocationId && !dropLocation) throw new NotFoundError("Drop location not found");
 
-  const dropCharge = dropLocation?.dropCharge ? Number(dropLocation.dropCharge) : 0;
+  // A charge set for this exact pickup → drop pair wins; otherwise the drop location's own charge applies.
+  const dropCharge = resolveDropCharge(await getRouteCharges(), pickupLocation?.id, dropLocation);
 
   return { pickupLocation, dropLocation, dropCharge };
 }

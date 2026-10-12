@@ -1,5 +1,6 @@
 "use client";
 
+import { pickupPointsOnly } from "@/lib/location-points";
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import { CheckCircle2, ChevronDown, Headphones, Loader2, MapPin, Search, Sparkles, Tag } from "lucide-react";
@@ -109,7 +110,7 @@ export function BookingWidget({
   // Group locations dynamically by City
   const locationsByCity = React.useMemo(() => {
     const map = new Map<string, LocationOption[]>();
-    for (const loc of locations) {
+    for (const loc of pickupPointsOnly(locations)) {
       const city = loc.city?.trim() || "Rajasthan";
       if (!map.has(city)) map.set(city, []);
       map.get(city)!.push(loc);
@@ -124,14 +125,23 @@ export function BookingWidget({
     }
   }, [locationId, locations]);
 
+  // Self-drive search is city based (the pickup & drop point are chosen later, when confirming the booking)
+  const cityNames = Array.from(locationsByCity.keys());
+  const [cityValue, setCityValue] = React.useState<string>("");
+  const activeCity = cityValue && cityNames.includes(cityValue) ? cityValue : cityNames[0] ?? "";
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     const params = new URLSearchParams();
 
-    const selectedLoc = locations.find((l) => l.id === locationId);
-    if (selectedLoc) {
-      params.set("location", selectedLoc.slug ?? selectedLoc.id);
-      if (selectedLoc.city) params.set("city", selectedLoc.city);
+    if (mode === "self-drive") {
+      if (activeCity) params.set("city", activeCity);
+    } else {
+      const selectedLoc = locations.find((l) => l.id === locationId);
+      if (selectedLoc) {
+        params.set("location", selectedLoc.slug ?? selectedLoc.id);
+        if (selectedLoc.city) params.set("city", selectedLoc.city);
+      }
     }
 
     if (pickupDateTime) params.set("pickupDate", new Date(pickupDateTime).toISOString());
@@ -195,7 +205,28 @@ export function BookingWidget({
               : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1.3fr_2.4fr_auto]"
           }`}
         >
-          {/* 1. SELECT LOCATION / CITY (Dynamically Loaded & Grouped) */}
+          {/* 1. SELECT CITY (self-drive) — pickup & drop points come later, at booking time */}
+          {mode === "self-drive" ? (
+            <div className="flex flex-col gap-1.5 min-w-0">
+              <label className="text-[10px] font-bold tracking-widest text-neutral-600 uppercase">Pickup City</label>
+              <div className="relative">
+                <MapPin className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-orange-500" />
+                <select
+                  id="booking-widget-location-select"
+                  value={activeCity}
+                  onChange={(e) => setCityValue(e.target.value)}
+                  className="h-11 sm:h-12 w-full appearance-none rounded-xl border border-neutral-200 bg-white pl-10 pr-9 text-xs sm:text-sm font-semibold text-neutral-900 outline-none transition hover:border-orange-500/50 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 cursor-pointer shadow-xs"
+                >
+                  {cityNames.map((c) => (
+                    <option key={c} value={c} className="bg-white text-neutral-900">
+                      {c}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="pointer-events-none absolute right-3.5 top-1/2 size-4 -translate-y-1/2 text-neutral-400" />
+              </div>
+            </div>
+          ) : (
           <div className="flex flex-col gap-1.5 min-w-0">
             <label className="text-[10px] font-bold tracking-widest text-neutral-600 uppercase">
               Pickup City / Branch
@@ -225,6 +256,7 @@ export function BookingWidget({
               <ChevronDown className="pointer-events-none absolute right-3.5 top-1/2 size-4 -translate-y-1/2 text-neutral-400" />
             </div>
           </div>
+          )}
 
           {/* 2. DROP LOCATION (Only in Chauffeur/Taxi mode) */}
           {mode === "chauffeur" && (

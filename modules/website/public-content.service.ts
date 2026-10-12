@@ -35,10 +35,10 @@ const FALLBACK_HOMEPAGE: HomepageContent = {
     backgroundImages: [],
   },
   trustBadges: [
-    { icon: "🛡️", label: "Zero Security Deposit Options" },
-    { icon: "⚡", label: "Instant Digital KYC & Handover" },
-    { icon: "🚗", label: "100% Sanitized & Insured Fleet" },
-    { icon: "📞", label: "24/7 Roadside Mechanical Support" },
+    { icon: "ShieldCheck", label: "Zero Security Deposit Options" },
+    { icon: "Zap", label: "Instant Digital KYC & Handover" },
+    { icon: "CarFront", label: "100% Sanitized & Insured Fleet" },
+    { icon: "PhoneCall", label: "24/7 Roadside Mechanical Support" },
   ],
   philosophy: {
     badge: "OUR PHILOSOPHY",
@@ -58,10 +58,10 @@ const FALLBACK_HOMEPAGE: HomepageContent = {
     title: "WHY DRIVE WITH US?",
     subtitle: "Experience seamless mobility with unmatched service standards.",
     items: [
-      { icon: "🛡️", title: "Comprehensive Insurance", description: "All vehicles carry full commercial insurance with zero liability headache." },
-      { icon: "⚡", title: "Flexible Hourly & Daily", description: "Hourly, daily, weekly, or monthly rentals tailored to your travel plans." },
-      { icon: "📍", title: "Doorstep & Airport Delivery", description: "Pickup and drop at airports, railway stations, hotels, or your home." },
-      { icon: "🔧", title: "Pristine Maintenance", description: "Every car is mechanically tested, detailed, and inspected before each trip." },
+      { icon: "ShieldCheck", title: "Comprehensive Insurance", description: "All vehicles carry full commercial insurance with zero liability headache." },
+      { icon: "Zap", title: "Flexible Hourly & Daily", description: "Hourly, daily, weekly, or monthly rentals tailored to your travel plans." },
+      { icon: "MapPin", title: "Doorstep & Airport Delivery", description: "Pickup and drop at airports, railway stations, hotels, or your home." },
+      { icon: "Wrench", title: "Pristine Maintenance", description: "Every car is mechanically tested, detailed, and inspected before each trip." },
     ],
   },
   b2b: {
@@ -79,9 +79,9 @@ const FALLBACK_HOMEPAGE: HomepageContent = {
       { value: "B2B", label: "Preferred Rates", highlight: true },
     ],
     items: [
-      { icon: "💼", title: "Corporate Accounts", description: "GST invoicing, monthly billing, and dedicated relationship manager." },
-      { icon: "🎉", title: "Weddings & VIP Events", description: "Uniformed chauffeurs, luxury convoy management, and decorated cars." },
-      { icon: "✈️", title: "Airport Delegation", description: "Coordinated flight tracking and seamless guest transfers." },
+      { icon: "Briefcase", title: "Corporate Accounts", description: "GST invoicing, monthly billing, and dedicated relationship manager." },
+      { icon: "PartyPopper", title: "Weddings & VIP Events", description: "Uniformed chauffeurs, luxury convoy management, and decorated cars." },
+      { icon: "Plane", title: "Airport Delegation", description: "Coordinated flight tracking and seamless guest transfers." },
     ],
   },
   videoShowcase: {
@@ -142,10 +142,10 @@ const FALLBACK_ABOUT: AboutPageContent = {
     imageUrl: "",
   },
   features: [
-    { icon: "🚗", title: "Self-Drive Freedom", description: "Rent by the hour, day, week, or month. Drive on your own terms with no intrusive chaperones." },
-    { icon: "🛡️", title: "Sanitized & Insured", description: "Every car is mechanically inspected, detailed, and comprehensively insured before key handover." },
-    { icon: "⚡", title: "Instant Booking", description: "Book in minutes online. Quick 2-3 hour verification with doorstep delivery at airports and hotels." },
-    { icon: "📞", title: "24/7 Roadside Assistance", description: "Our technical support team is always on call across Udaipur, Jaipur, and highway routes." },
+    { icon: "CarFront", title: "Self-Drive Freedom", description: "Rent by the hour, day, week, or month. Drive on your own terms with no intrusive chaperones." },
+    { icon: "ShieldCheck", title: "Sanitized & Insured", description: "Every car is mechanically inspected, detailed, and comprehensively insured before key handover." },
+    { icon: "Zap", title: "Instant Booking", description: "Book in minutes online. Quick 2-3 hour verification with doorstep delivery at airports and hotels." },
+    { icon: "PhoneCall", title: "24/7 Roadside Assistance", description: "Our technical support team is always on call across Udaipur, Jaipur, and highway routes." },
   ],
   branches: [
     {
@@ -177,9 +177,9 @@ const FALLBACK_CONTACT: ContactPageContent = {
   },
   emergencyNotice: "Need urgent roadside assistance or emergency support? Call our 24/7 hotline: +91 9414551250",
   contactMethods: [
-    { icon: "📞", label: "Phone Support", value: "+91 9414551250", href: "tel:+919414551250", description: "Direct reservations & inquiry line" },
-    { icon: "💬", label: "WhatsApp Desk", value: "+91 9414551250", href: "https://wa.me/919414551250", description: "Instant responses within minutes" },
-    { icon: "✉️", label: "Email Support", value: "srmrentan0171@gmail.com", href: "mailto:srmrentan0171@gmail.com", description: "Corporate bookings and document verification" },
+    { icon: "PhoneCall", label: "Phone Support", value: "+91 9414551250", href: "tel:+919414551250", description: "Direct reservations & inquiry line" },
+    { icon: "MessageCircle", label: "WhatsApp Desk", value: "+91 9414551250", href: "https://wa.me/919414551250", description: "Instant responses within minutes" },
+    { icon: "Mail", label: "Email Support", value: "srmrentan0171@gmail.com", href: "mailto:srmrentan0171@gmail.com", description: "Corporate bookings and document verification" },
   ],
   branches: [
     {
@@ -650,6 +650,8 @@ export interface PublicCarFilters {
   transmissionTypeId?: string;
   fuelTypeId?: string;
   locationId?: string;
+  /** City name — cars available in that city (a pickup point filters by its city). */
+  city?: string;
   search?: string;
   sort?: "featured" | "price-asc" | "price-desc" | "newest";
   page?: number;
@@ -665,6 +667,12 @@ async function resolveNamedRef(model: "transmissionType" | "fuelType", ref?: str
   const wanted = ref.toLowerCase();
   return rows.find((r) => r.id === ref || toSlug(r.name) === wanted)?.id ?? ref;
 }
+/** The city a pickup point belongs to (cars are available per city, pickup points sit under a city). */
+async function resolveCityForLocation(ref?: string): Promise<string | undefined> {
+  if (!ref || ref === "all") return undefined;
+  const loc = await prisma.location.findFirst({ where: { OR: [{ id: ref }, { slug: ref }] }, select: { city: true } });
+  return loc?.city?.replace(/\s*\(.*\)\s*$/, "").trim() || undefined;
+}
 async function resolveLocationRef(ref?: string): Promise<string | undefined> {
   if (!ref || ref === "all") return ref;
   const loc = await prisma.location.findFirst({ where: { OR: [{ id: ref }, { slug: ref }] }, select: { id: true } });
@@ -676,11 +684,12 @@ async function listPublicCars_uncached(filters: PublicCarFilters): Promise<{ car
   const pageSize = filters.pageSize ?? PAGE_SIZE_DEFAULT;
 
   try {
-    const [transmissionTypeId, fuelTypeId, locationId] = await Promise.all([
+    const [transmissionTypeId, fuelTypeId, locationCity] = await Promise.all([
       resolveNamedRef("transmissionType", filters.transmissionTypeId),
       resolveNamedRef("fuelType", filters.fuelTypeId),
-      resolveLocationRef(filters.locationId),
+      resolveCityForLocation(filters.locationId),
     ]);
+    const city = (filters.city && filters.city !== "all" ? filters.city : locationCity)?.trim();
     const where = {
       status: "ACTIVE" as const,
       ...(filters.categorySlug ? { category: { slug: filters.categorySlug } } : {}),
@@ -688,10 +697,11 @@ async function listPublicCars_uncached(filters: PublicCarFilters): Promise<{ car
       ...(filters.carTypeSlug ? { carType: { slug: filters.carTypeSlug } } : {}),
       ...(transmissionTypeId ? { transmissionTypeId } : {}),
       ...(fuelTypeId ? { fuelTypeId } : {}),
-      ...(locationId && locationId !== "all"
+      // Cars are available per city: any car with a pickup point in that city (or not tied to a city yet)
+      ...(city
         ? {
             OR: [
-              { locations: { some: { locationId } } },
+              { locations: { some: { location: { city: { startsWith: city, mode: "insensitive" as const } } } } },
               { locations: { none: {} } },
             ],
           }

@@ -6,6 +6,7 @@ import * as React from "react";
 import { useSearchParams } from "next/navigation";
 import { AlertCircle, CheckCircle2, Loader2, MapPin, MessageCircle, Plane, Phone, ShieldCheck, ShoppingBag, Tag } from "lucide-react";
 import { toast } from "sonner";
+import { resolveDropCharge, type RouteCharges } from "@/lib/pricing/location-routes";
 import { clampPlan, type CarKmPlan } from "@/lib/pricing/km-plans";
 import { pickWhatsAppNumber, toWaNumber, type WhatsAppNumbers } from "@/lib/whatsapp/pick";
 import type { PricingCalculateResponse } from "@srm/types";
@@ -39,6 +40,10 @@ export interface BookingEngineProps {
   advancePercent?: number;
   securityDeposit?: number;
   locations: { id: string; slug?: string; name: string; city: string; state: string; dropCharge?: any }[];
+  /** Where the car can be dropped (any city). Defaults to `locations`. */
+  dropLocations?: { id: string; slug?: string; name: string; city: string; state: string; dropCharge?: any }[];
+  /** Pickup → drop charges set in admin (fall back to each location's own drop charge). */
+  routes?: RouteCharges;
   airports: { id: string; name: string; code: string; city: string }[];
   insurances: { id: string; name: string; dailyPrice?: any; fixedPrice?: any; description?: string | null }[];
   extraServices: { id: string; name: string; price: any; pricingType: string; description?: string | null }[];
@@ -110,6 +115,8 @@ export function BookingEngine({
   advancePercent = ADVANCE_PERCENT,
   securityDeposit = 3000,
   locations,
+  dropLocations,
+  routes,
   airports,
   insurances,
   extraServices,
@@ -158,15 +165,45 @@ export function BookingEngine({
 
   // Locations
   const [deliveryType, setDeliveryType] = React.useState<"BRANCH" | "AIRPORT" | "DOORSTEP">("BRANCH");
+  // Cars are available per city; pickup & drop points sit under the chosen city
+  const cityKey = (c?: string | null) => (c ?? "").replace(/\s*\(.*\)\s*$/, "").trim();
+  const cityOptions = React.useMemo(() => Array.from(new Set(locations.map((l) => cityKey(l.city)).filter(Boolean))), [locations]);
+  const qCity = cityOptions.find((c) => c.toLowerCase() === (searchParams.get("city") ?? "").toLowerCase());
+  const [selectedCity, setSelectedCity] = React.useState<string>(() => {
+    const fromLocation = cityKey(locations.find((l) => l.id === qLocationId)?.city);
+    return fromLocation || qCity || cityOptions[0] || "";
+  });
+  const cityLocations = React.useMemo(
+    () => (selectedCity ? locations.filter((l) => cityKey(l.city).toLowerCase() === selectedCity.toLowerCase()) : locations),
+    [locations, selectedCity],
+  );
   const [selectedLocationId, setSelectedLocationId] = React.useState<string>(() => {
     if (qLocationId && locations.some((l) => l.id === qLocationId)) {
       return qLocationId;
     }
-    return locations[0]?.id ?? "";
+    return cityLocations[0]?.id ?? locations[0]?.id ?? "";
   });
+  const handleCityChange = (city: string) => {
+    setSelectedCity(city);
+    const inCity = locations.filter((l) => cityKey(l.city).toLowerCase() === city.toLowerCase());
+    const first = inCity[0]?.id ?? "";
+    setSelectedLocationId(first);
+    setSelectedDropLocationId(first);
+    setDropCity(city);
+  };
+  // Drop-off can be in any city; the charge depends on the pickup → drop pair
+  const allDropLocations = dropLocations && dropLocations.length > 0 ? dropLocations : locations;
+  const dropCityOptions = React.useMemo(() => Array.from(new Set(allDropLocations.map((l) => cityKey(l.city)).filter(Boolean))), [allDropLocations]);
+  const [dropCity, setDropCity] = React.useState<string>(selectedCity);
+  const dropCityLocations = allDropLocations.filter((l) => cityKey(l.city).toLowerCase() === dropCity.toLowerCase());
+  const handleDropCityChange = (city: string) => {
+    setDropCity(city);
+    setSelectedDropLocationId(allDropLocations.find((l) => cityKey(l.city).toLowerCase() === city.toLowerCase())?.id ?? "");
+  };
+  const feeFor = (fromId: string, to?: { id: string; dropCharge?: unknown } | null) => resolveDropCharge(routes, fromId, to);
   const [differentDropLocation, setDifferentDropLocation] = React.useState(false);
   const [selectedDropLocationId, setSelectedDropLocationId] = React.useState<string>(() => {
-    return locations[0]?.id ?? "";
+    return (qLocationId && locations.some((l) => l.id === qLocationId) ? qLocationId : cityLocations[0]?.id) ?? locations[0]?.id ?? "";
   });
   const effectiveDropLocationId = differentDropLocation ? selectedDropLocationId : selectedLocationId;
   const [selectedAirportId, setSelectedAirportId] = React.useState<string>(airports[0]?.id ?? "");
@@ -594,15 +631,31 @@ export function BookingEngine({
         {/* Dropdown for Branch or Airport */}
         {deliveryType === "BRANCH" ? (
           <div className="space-y-3">
+            {cityOptions.length > 1 && (
+              <div>
+                <Label className="text-xs text-neutral-700 font-medium">City</Label>
+                <select
+                  value={selectedCity}
+                  onChange={(e) => handleCityChange(e.target.value)}
+                  className="mt-1 w-full rounded-xl border border-neutral-200 bg-white p-2.5 text-xs text-neutral-900 outline-none focus:border-orange-500 cursor-pointer shadow-sm"
+                >
+                  {cityOptions.map((c) => (
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
             <div>
               <div className="flex items-center justify-between">
                 <Label className="text-xs text-neutral-700 font-medium">
                   {differentDropLocation ? t("booking.pickup-branch") : t("booking.branch-both")}
                 </Label>
                 {!differentDropLocation && (
-                  <span className={`text-[11px] font-semibold ${Number(locations.find((l) => l.id === selectedLocationId)?.dropCharge ?? 0) > 0 ? "text-orange-600" : "text-emerald-600"}`}>
-                    {Number(locations.find((l) => l.id === selectedLocationId)?.dropCharge ?? 0) > 0
-                      ? t("booking.drop-fee", { amount: Number(locations.find((l) => l.id === selectedLocationId)?.dropCharge).toLocaleString("en-IN") })
+                  <span className={`text-[11px] font-semibold ${feeFor(selectedLocationId, locations.find((l) => l.id === selectedLocationId)) > 0 ? "text-orange-600" : "text-emerald-600"}`}>
+                    {feeFor(selectedLocationId, locations.find((l) => l.id === selectedLocationId)) > 0
+                      ? t("booking.drop-fee", { amount: feeFor(selectedLocationId, locations.find((l) => l.id === selectedLocationId)).toLocaleString("en-IN") })
                       : t("booking.free-drop")}
                   </span>
                 )}
@@ -617,12 +670,17 @@ export function BookingEngine({
                 }}
                 className="mt-1 w-full rounded-xl border border-neutral-200 bg-white p-2.5 text-xs text-neutral-900 outline-none focus:border-orange-500 cursor-pointer shadow-sm"
               >
-                {locations.map((loc) => {
-                  const charge = Number(loc.dropCharge ?? 0);
-                  const priceLabel = charge > 0 ? ` — ${t("booking.drop-fee-amount", { amount: charge.toLocaleString("en-IN") })}` : ` — ${t("booking.free-drop")}`;
+                {cityLocations.map((loc) => {
+                  const charge = feeFor(loc.id, loc);
+                  // With a different drop-off the fee depends on the pair, so the pickup list shows no fee
+                  const priceLabel = differentDropLocation
+                    ? ""
+                    : charge > 0
+                      ? ` — ${t("booking.drop-fee-amount", { amount: charge.toLocaleString("en-IN") })}`
+                      : ` — ${t("booking.free-drop")}`;
                   return (
                     <option key={loc.id} value={loc.id} className="bg-white text-neutral-900">
-                      {loc.name} ({loc.city}){priceLabel}
+                      {loc.name}{priceLabel}
                     </option>
                   );
                 })}
@@ -638,6 +696,7 @@ export function BookingEngine({
                   setDifferentDropLocation(checked);
                   if (!checked) {
                     setSelectedDropLocationId(selectedLocationId);
+                    setDropCity(selectedCity);
                   }
                 }}
                 className="rounded border-neutral-300 bg-white accent-orange-500"
@@ -646,30 +705,53 @@ export function BookingEngine({
             </label>
 
             {differentDropLocation && (
-              <div>
-                <div className="flex items-center justify-between">
-                  <Label className="text-xs text-neutral-700 font-medium">{t("booking.dropoff-branch-office")}</Label>
-                  <span className={`text-[11px] font-semibold ${Number(locations.find((l) => l.id === selectedDropLocationId)?.dropCharge ?? 0) > 0 ? "text-orange-600" : "text-emerald-600"}`}>
-                    {Number(locations.find((l) => l.id === selectedDropLocationId)?.dropCharge ?? 0) > 0
-                      ? t("booking.drop-fee", { amount: Number(locations.find((l) => l.id === selectedDropLocationId)?.dropCharge).toLocaleString("en-IN") })
-                      : t("booking.free-drop")}
-                  </span>
+              <div className="space-y-3">
+                {dropCityOptions.length > 1 && (
+                  <div>
+                    <Label className="text-xs text-neutral-700 font-medium">Drop-off city</Label>
+                    <select
+                      value={dropCity}
+                      onChange={(e) => handleDropCityChange(e.target.value)}
+                      className="mt-1 w-full rounded-xl border border-neutral-200 bg-white p-2.5 text-xs text-neutral-900 outline-none focus:border-orange-500 cursor-pointer shadow-sm"
+                    >
+                      {dropCityOptions.map((c) => (
+                        <option key={c} value={c}>
+                          {c}
+                          {c.toLowerCase() !== selectedCity.toLowerCase() ? " (different city)" : ""}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+                <div>
+                  <div className="flex items-center justify-between">
+                    <Label className="text-xs text-neutral-700 font-medium">{t("booking.dropoff-branch-office")}</Label>
+                    <span className={`text-[11px] font-semibold ${feeFor(selectedLocationId, allDropLocations.find((l) => l.id === selectedDropLocationId)) > 0 ? "text-orange-600" : "text-emerald-600"}`}>
+                      {feeFor(selectedLocationId, allDropLocations.find((l) => l.id === selectedDropLocationId)) > 0
+                        ? t("booking.drop-fee", { amount: feeFor(selectedLocationId, allDropLocations.find((l) => l.id === selectedDropLocationId)).toLocaleString("en-IN") })
+                        : t("booking.free-drop")}
+                    </span>
+                  </div>
+                  <select
+                    value={selectedDropLocationId}
+                    onChange={(e) => setSelectedDropLocationId(e.target.value)}
+                    className="mt-1 w-full rounded-xl border border-neutral-200 bg-white p-2.5 text-xs text-neutral-900 outline-none focus:border-orange-500 cursor-pointer shadow-sm"
+                  >
+                    {dropCityLocations.map((loc) => {
+                      const charge = feeFor(selectedLocationId, loc);
+                      const priceLabel = charge > 0 ? ` — ${t("booking.drop-fee-amount", { amount: charge.toLocaleString("en-IN") })}` : ` — ${t("booking.free-drop")}`;
+                      return (
+                        <option key={loc.id} value={loc.id} className="bg-white text-neutral-900">
+                          {loc.name}{priceLabel}
+                        </option>
+                      );
+                    })}
+                  </select>
+                  <p className="mt-1 text-[11px] text-neutral-500">
+                    One fee for {locations.find((l) => l.id === selectedLocationId)?.name ?? "pickup"} → {allDropLocations.find((l) => l.id === selectedDropLocationId)?.name ?? "drop-off"}:{" "}
+                    <span className="font-semibold text-neutral-700">{formatInr(feeFor(selectedLocationId, allDropLocations.find((l) => l.id === selectedDropLocationId)))}</span> (the pickup location&apos;s own fee does not apply)
+                  </p>
                 </div>
-                <select
-                  value={selectedDropLocationId}
-                  onChange={(e) => setSelectedDropLocationId(e.target.value)}
-                  className="mt-1 w-full rounded-xl border border-neutral-200 bg-white p-2.5 text-xs text-neutral-900 outline-none focus:border-orange-500 cursor-pointer shadow-sm"
-                >
-                  {locations.map((loc) => {
-                    const charge = Number(loc.dropCharge ?? 0);
-                    const priceLabel = charge > 0 ? ` — ${t("booking.drop-fee-amount", { amount: charge.toLocaleString("en-IN") })}` : ` — ${t("booking.free-drop")}`;
-                    return (
-                      <option key={loc.id} value={loc.id} className="bg-white text-neutral-900">
-                        {loc.name} ({loc.city}){priceLabel}
-                      </option>
-                    );
-                  })}
-                </select>
               </div>
             )}
           </div>
@@ -830,13 +912,6 @@ export function BookingEngine({
                 </div>
               )}
 
-              {pricingResult.locationDropCharge > 0 && (
-                <div className="flex justify-between text-neutral-600">
-                  <span>{t("booking.drop-location-fee")}</span>
-                  <span>{formatInr(pricingResult.locationDropCharge)}</span>
-                </div>
-              )}
-
               {pricingResult.insurance && pricingResult.insurance.price > 0 && (
                 <div className="flex justify-between text-neutral-600">
                   <span>{t("booking.protection-plan-2")}</span>
@@ -855,6 +930,19 @@ export function BookingEngine({
                 <div className="flex justify-between font-bold text-emerald-600">
                   <span>{t("booking.discount")}</span>
                   <span>-{formatInr(pricingResult.discount)}</span>
+                </div>
+              )}
+
+              {/* Subtotal never includes the drop-location fee — that is added on top, before tax */}
+              <div className="flex justify-between border-t border-neutral-200 pt-2 font-semibold text-neutral-700">
+                <span>Subtotal</span>
+                <span>{formatInr(Math.max(0, pricingResult.subtotal - (pricingResult.locationDropCharge ?? 0)))}</span>
+              </div>
+
+              {pricingResult.locationDropCharge > 0 && (
+                <div className="flex justify-between text-neutral-600">
+                  <span>{t("booking.drop-location-fee")}</span>
+                  <span>{formatInr(pricingResult.locationDropCharge)}</span>
                 </div>
               )}
 

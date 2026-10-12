@@ -92,6 +92,7 @@ function CarCardInner({
     serverParams?.location ??
     clientSearchParams.get("locationId") ??
     clientSearchParams.get("location");
+  const cityParam = serverParams?.city ?? clientSearchParams.get("city");
   const pickupDate = serverParams?.pickupDate ?? clientSearchParams.get("pickupDate");
   const dropDate = serverParams?.dropDate ?? clientSearchParams.get("dropDate");
 
@@ -107,11 +108,12 @@ function CarCardInner({
   const queryParams = React.useMemo(() => {
     const q = new URLSearchParams();
     if (locationId) q.set("location", locationId);
+    if (cityParam) q.set("city", cityParam);
     if (!showBasePriceOnly && pickupDate) q.set("pickupDate", pickupDate);
     if (!showBasePriceOnly && dropDate) q.set("dropDate", dropDate);
     const qs = q.toString();
     return qs ? `?${qs}` : "";
-  }, [locationId, pickupDate, dropDate, showBasePriceOnly]);
+  }, [locationId, cityParam, pickupDate, dropDate, showBasePriceOnly]);
 
   const carHref = `/car/${car.slug}${queryParams}`;
   // Same car, different price per pickup location (when the selected location has its own prices)

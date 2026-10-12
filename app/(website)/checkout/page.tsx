@@ -1,5 +1,7 @@
 "use client";
 
+import { pickupPointsOnly } from "@/lib/location-points";
+import { normalizeRouteCharges, resolveDropCharge, type RouteCharges } from "@/lib/pricing/location-routes";
 import { includedKmLabel, tripSplitLabel } from "@/lib/cart/trip-breakdown";
 import { splitAdvance } from "@/lib/checkout/advance";
 import { DEFAULT_PAYMENT_OPTIONS, type PaymentOptions } from "@/lib/payments/types";
@@ -66,6 +68,12 @@ export default function CheckoutPage() {
     dropCharge: number;
   }
   const [locations, setLocations] = React.useState<LocationOption[]>([]);
+  const [routes, setRoutes] = React.useState<RouteCharges>({});
+  React.useEffect(() => {
+    apiFetch<RouteCharges>("/pricing/location-routes", { skipAuthRedirect: true })
+      .then((r) => setRoutes(normalizeRouteCharges(r)))
+      .catch(() => {});
+  }, []);
   const [isChangingLocation, setIsChangingLocation] = React.useState(false);
 
   React.useEffect(() => {
@@ -90,6 +98,8 @@ export default function CheckoutPage() {
   }, []);
 
   const primaryItem = items[0];
+  // Pickup → drop charge (a pair price set in admin, else the drop location's own charge)
+  const feeOf = (loc: { id: string; dropCharge?: unknown }) => resolveDropCharge(routes, primaryItem?.pickupLocationId, loc);
 
   // Delivery location & charges
   const selectedLocation = locations.find((l) => l.id === primaryItem?.dropLocationId);
@@ -176,8 +186,8 @@ export default function CheckoutPage() {
     if (!loc) return;
     updateItem(primaryItem.id, {
       dropLocationId: loc.id,
-      locationDropCharge: loc.dropCharge,
-      total: Math.max(0, primaryItem.total + loc.dropCharge - (primaryItem.locationDropCharge ?? 0)),
+      locationDropCharge: feeOf(loc),
+      total: Math.max(0, primaryItem.total + feeOf(loc) - (primaryItem.locationDropCharge ?? 0)),
       locationName: primaryItem.locationName?.includes("→")
         ? `${primaryItem.locationName.split("→")[0]?.trim()} → ${loc.name}`
         : `${primaryItem.locationName || "Udaipur"} → ${loc.name}`,
@@ -997,9 +1007,9 @@ export default function CheckoutPage() {
                           className="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-xs font-semibold text-neutral-900 outline-none focus:border-orange-500 cursor-pointer shadow-xs"
                         >
                           <option value="">Standard Branch Pickup (Free)</option>
-                          {locations.map((loc) => (
+                          {pickupPointsOnly(locations).map((loc) => (
                             <option key={loc.id} value={loc.id} className="bg-white text-neutral-900">
-                              {loc.name} {loc.dropCharge > 0 ? `(+₹${loc.dropCharge})` : "(Free)"}
+                              {loc.name} {feeOf(loc) > 0 ? `(+₹${feeOf(loc)})` : "(Free)"}
                             </option>
                           ))}
                         </select>

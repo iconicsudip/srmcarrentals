@@ -1,0 +1,43 @@
+/** Countries, Indian states / union territories and their main cities — used by the Locations form dropdowns. */
+export const COUNTRIES = ["India", "Nepal", "Bhutan", "Sri Lanka", "United Arab Emirates"];
+
+export const INDIA_CITIES: Record<string, string[]> = {
+  "Andhra Pradesh": ["Visakhapatnam", "Vijayawada", "Guntur", "Tirupati", "Nellore", "Kurnool", "Rajahmundry"],
+  "Arunachal Pradesh": ["Itanagar"],
+  Assam: ["Guwahati", "Dibrugarh", "Silchar", "Jorhat"],
+  Bihar: ["Patna", "Gaya", "Bhagalpur", "Muzaffarpur", "Darbhanga"],
+  Chhattisgarh: ["Raipur", "Bhilai", "Bilaspur", "Korba"],
+  Goa: ["Panaji", "Margao", "Vasco da Gama", "Mapusa"],
+  Gujarat: ["Ahmedabad", "Surat", "Vadodara", "Rajkot", "Navsari", "Bhavnagar", "Jamnagar", "Gandhinagar", "Bharuch", "Valsad", "Vapi", "Anand", "Junagadh", "Bhuj"],
+  Haryana: ["Gurugram", "Faridabad", "Panipat", "Ambala", "Karnal", "Hisar", "Rohtak"],
+  "Himachal Pradesh": ["Shimla", "Manali", "Dharamshala", "Solan", "Kullu"],
+  Jharkhand: ["Ranchi", "Jamshedpur", "Dhanbad", "Bokaro"],
+  Karnataka: ["Bengaluru", "Mysuru", "Mangaluru", "Hubballi", "Belagavi", "Udupi", "Hampi"],
+  Kerala: ["Thiruvananthapuram", "Kochi", "Kozhikode", "Thrissur", "Munnar", "Alappuzha"],
+  "Madhya Pradesh": ["Bhopal", "Indore", "Gwalior", "Jabalpur", "Ujjain", "Khajuraho"],
+  Maharashtra: ["Mumbai", "Pune", "Nagpur", "Nashik", "Aurangabad", "Thane", "Navi Mumbai", "Kolhapur", "Shirdi"],
+  Manipur: ["Imphal"],
+  Meghalaya: ["Shillong"],
+  Mizoram: ["Aizawl"],
+  Nagaland: ["Kohima", "Dimapur"],
+  Odisha: ["Bhubaneswar", "Cuttack", "Puri", "Rourkela"],
+  Punjab: ["Ludhiana", "Amritsar", "Jalandhar", "Patiala", "Mohali"],
+  Rajasthan: ["Udaipur", "Jaipur", "Jodhpur", "Jaisalmer", "Bikaner", "Ajmer", "Pushkar", "Kota", "Mount Abu", "Chittorgarh", "Alwar", "Bhilwara"],
+  Sikkim: ["Gangtok"],
+  "Tamil Nadu": ["Chennai", "Coimbatore", "Madurai", "Tiruchirappalli", "Salem", "Ooty", "Pondicherry"],
+  Telangana: ["Hyderabad", "Warangal", "Nizamabad"],
+  Tripura: ["Agartala"],
+  "Uttar Pradesh": ["Lucknow", "Kanpur", "Agra", "Varanasi", "Noida", "Ghaziabad", "Prayagraj", "Mathura", "Ayodhya"],
+  Uttarakhand: ["Dehradun", "Haridwar", "Rishikesh", "Nainital", "Mussoorie"],
+  "West Bengal": ["Kolkata", "Howrah", "Siliguri", "Durgapur", "Darjeeling"],
+  "Andaman and Nicobar Islands": ["Port Blair"],
+  Chandigarh: ["Chandigarh"],
+  "Dadra and Nagar Haveli and Daman and Diu": ["Daman", "Diu", "Silvassa"],
+  Delhi: ["New Delhi", "Delhi"],
+  "Jammu and Kashmir": ["Srinagar", "Jammu", "Pahalgam"],
+  Ladakh: ["Leh", "Kargil"],
+  Lakshadweep: ["Kavaratti"],
+  Puducherry: ["Puducherry"],
+};
+
+export const INDIA_STATES = Object.keys(INDIA_CITIES);

@@ -37,7 +37,10 @@ export interface LookupField {
   label: string;
   type?: "text" | "number" | "textarea" | "url" | "image" | "richtext" | "select" | "tags" | "date" | "switch";
   placeholder?: string;
-  selectOptions?: { label: string; value: string }[];
+  /** Fixed list, or a function of the current form values (e.g. cities of the chosen state). */
+  selectOptions?: { label: string; value: string }[] | ((values: Record<string, unknown>) => { label: string; value: string }[]);
+  /** Names of other fields to clear when this one changes (e.g. state → city). */
+  clears?: string[];
   /** Shown under the field, e.g. hint text for "tags" fields. */
   description?: string;
 }
@@ -113,6 +116,7 @@ export function LookupManager<T extends LookupRow>({
     resolver: zodResolver(formSchema),
     defaultValues: createDefaultValues ?? {},
   });
+  const watchedValues = form.watch();
 
   function openCreate() {
     setEditingRow(null);
@@ -372,12 +376,23 @@ export function LookupManager<T extends LookupRow>({
                             }
                           />
                         ) : fieldConfig.type === "select" ? (
-                          <Select value={(field.value as string) ?? ""} onValueChange={field.onChange}>
+                          <Select
+                            value={(field.value as string) ?? ""}
+                            onValueChange={(v) => {
+                              field.onChange(v);
+                              fieldConfig.clears?.forEach((n) => form.setValue(n, "", { shouldValidate: false }));
+                            }}
+                          >
                             <SelectTrigger className="w-full">
                               <SelectValue placeholder={fieldConfig.placeholder} />
                             </SelectTrigger>
                             <SelectContent>
-                              {fieldConfig.selectOptions?.map((opt) => (
+                              {(() => {
+                                const base = typeof fieldConfig.selectOptions === "function" ? fieldConfig.selectOptions(watchedValues) : (fieldConfig.selectOptions ?? []);
+                                const cur = (field.value as string) ?? "";
+                                // keep a saved value that is not in the list selectable
+                                return cur && !base.some((o) => o.value === cur) ? [{ label: cur, value: cur }, ...base] : base;
+                              })().map((opt) => (
                                 <SelectItem key={opt.value} value={opt.value}>
                                   {opt.label}
                                 </SelectItem>

@@ -120,7 +120,9 @@ export const NAV_GROUPS: NavGroup[] = [
     label: "Locations & Pricing",
     icon: MapPin,
     items: [
+      { title: "Cities", href: "/admin/locations/cities", icon: Building2, permission: "locations.manage" },
       { title: "Locations", href: "/admin/locations", icon: MapPin, permission: "locations.manage" },
+      { title: "Pickup → Drop Charges", href: "/admin/pricing/drop-charges", icon: Route, permission: "pricing.manage" },
       { title: "Airports", href: "/admin/airports", icon: Plane, permission: "airports.manage" },
       { title: "Airport Charges", href: "/admin/airports/charges", icon: Wallet, permission: "airports.manage" },
       { title: "Rental Packages", href: "/admin/pricing/packages", icon: Package, permission: "pricing.packages.manage" },

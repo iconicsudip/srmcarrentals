@@ -122,7 +122,7 @@ export const aboutPageContentSchema = z.object({
     imageUrl: z.string().optional().or(z.literal("")),
   }),
   features: z.array(z.object({
-    icon: z.string().default("🚗"),
+    icon: z.string().default("CarFront"),
     title: z.string().min(1),
     description: z.string().min(1),
   })).default([]),
@@ -144,7 +144,7 @@ export const contactPageContentSchema = z.object({
   }),
   emergencyNotice: z.string().default("Need urgent assistance or roadside support? Call our 24/7 emergency hotline: +91 9414551250"),
   contactMethods: z.array(z.object({
-    icon: z.string().default("📞"),
+    icon: z.string().default("PhoneCall"),
     label: z.string().min(1),
     value: z.string().min(1),
     href: z.string().min(1),

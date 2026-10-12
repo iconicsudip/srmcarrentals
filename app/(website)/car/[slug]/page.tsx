@@ -23,6 +23,8 @@ import { Badge } from "@/components/ui/badge";
 import { getCarFallbackImage } from "@/lib/car-fallback-image";
 import { CarGallery } from "@/components/website/car-gallery";
 import { BookingEngine } from "@/components/website/booking-engine";
+import { getRouteCharges } from "@/lib/pricing/location-routes.server";
+import { pickupPointsOnly } from "@/lib/location-points";
 import { RichText } from "@/components/website/rich-text";
 import { resolveCarKmPlans, type CarKmPlan } from "@/lib/pricing/km-plans";
 import { getWhatsAppNumbers } from "@/lib/whatsapp/numbers";
@@ -91,6 +93,7 @@ export default async function CarDetailPage({ params }: CarDetailPageProps) {
   const { slug } = await params;
 
   const [whatsappNumbers, payOpts] = await Promise.all([getWhatsAppNumbers(), getPaymentOptions()]);
+  const routeCharges = await getRouteCharges();
   const [car, company, locations, airports, insurances, extraServices] = await Promise.all([
     getPublicCarBySlug(slug),
     getCompanyContent(),
@@ -101,6 +104,22 @@ export default async function CarDetailPage({ params }: CarDetailPageProps) {
   ]);
 
   if (!car) notFound();
+
+  // Pickup & drop choices stay in the car's own city (or cities): the car's assigned locations first, then the
+  // other locations of those same cities. A car with no assigned locations keeps the full list.
+  const normCity = (c?: string | null) => (c ?? "").replace(/\s*\(.*\)\s*$/, "").trim().toLowerCase();
+  const assigned = (car.locations ?? []).map((l) => l.location);
+  const carCities = new Set(assigned.map((l) => normCity(l.city)).filter(Boolean));
+  const assignedIds = new Set(assigned.map((l) => l.id));
+  const bookableLocations =
+    carCities.size === 0
+      ? locations
+      : [
+          ...locations.filter((l) => assignedIds.has(l.id)),
+          ...locations.filter((l) => !assignedIds.has(l.id) && carCities.has(normCity(l.city))),
+        ];
+  const pointsOnly = pickupPointsOnly;
+  const bookableAirports = carCities.size === 0 ? airports : airports.filter((a) => carCities.has(normCity((a as { city?: string }).city)));
 
   const similarCars = await listSimilarCars(car.id, car.categoryId, 8);
 
@@ -520,8 +539,10 @@ export default async function CarDetailPage({ params }: CarDetailPageProps) {
               whatsappNumbers={whatsappNumbers}
               advancePercent={payOpts.enableOnline ? payOpts.advancePercent : 0}
               securityDeposit={payOpts.securityDeposit}
-              locations={locations}
-              airports={airports}
+              locations={pointsOnly(bookableLocations)}
+              dropLocations={pointsOnly(locations)}
+              routes={routeCharges}
+              airports={bookableAirports.length > 0 ? bookableAirports : airports}
               insurances={insurances}
               extraServices={extraServices}
             />

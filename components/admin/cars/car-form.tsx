@@ -215,7 +215,7 @@ export function CarForm({ car }: { car?: CarDetailDto }) {
   const doors = useLookupOptions<CountRow>("/cars/doors", "count");
   const features = useLookupOptions<EntityRow>("/cars/features", "name");
   const safetyFeatures = useLookupOptions<EntityRow>("/cars/safety-features", "name");
-  const locations = useLookupOptions<EntityRow & { city?: string; dropCharge?: number }>("/locations", "name");
+  const locations = useLookupOptions<EntityRow & { city?: string; dropCharge?: number }>("/locations", "name", { kind: "CITY" });
 
   const seatOptions = seats.rows.map((r) => ({ label: r.label || `${r.count} Seats`, value: r.id }));
   const cylinderOptions = cylinders.rows.map((r) => ({ label: r.label || `${r.count} Cylinders`, value: r.id }));
@@ -512,9 +512,9 @@ export function CarForm({ car }: { car?: CarDetailDto }) {
               <CardContent className="pt-6 flex flex-col gap-4">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b pb-4">
                   <div>
-                    <h3 className="font-semibold text-base">Location Availability &amp; Stationing</h3>
+                    <h3 className="font-semibold text-base">City Availability</h3>
                     <p className="text-muted-foreground text-sm">
-                      Select which pickup/drop locations this car is assigned to. If no locations are selected, the car is available fleet-wide across all locations.
+                      Select the cities where this car is available. All pickup & drop locations of a selected city are offered automatically. If no city is selected, the car is available in every city.
                     </p>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
@@ -590,7 +590,7 @@ export function CarForm({ car }: { car?: CarDetailDto }) {
 
                 {locations.rows.length === 0 && (
                   <p className="text-muted-foreground text-sm">
-                    No locations configured yet — add some under Locations &amp; Pricing &gt; Locations.
+                    No cities configured yet — add some under Locations &amp; Pricing &gt; Cities.
                   </p>
                 )}
               </CardContent>

@@ -1,7 +1,7 @@
 import { requirePermission } from "@/lib/auth/rbac";
 import { created, paginated } from "@/lib/http/api-response";
 import { withErrorHandling } from "@/lib/http/with-error-handling";
-import { locationsCrud } from "@/modules/locations/locations.crud";
+import { createLocation, locationsCrud } from "@/modules/locations/locations.crud";
 
 /**
  * @swagger
@@ -19,5 +19,5 @@ export const GET = withErrorHandling(async (req) => {
 
 export const POST = withErrorHandling(async (req) => {
   await requirePermission("locations.manage");
-  return created(await locationsCrud.create(req));
+  return created(await createLocation(req));
 });

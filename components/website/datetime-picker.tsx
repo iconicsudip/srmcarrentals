@@ -5,7 +5,7 @@ import { createPortal } from "react-dom";
 import { DayPicker } from "react-day-picker";
 import type { DateBefore, DateAfter, DateRange } from "react-day-picker";
 import { format, parse, isValid, isSameDay, addDays, differenceInMinutes } from "date-fns";
-import { ArrowRight, Calendar, Check, ChevronLeft, ChevronRight, Clock, X } from "lucide-react";
+import { AlertTriangle, ArrowRight, Calendar, Check, ChevronLeft, ChevronRight, Clock, X } from "lucide-react";
 import { Label } from "@/components/ui/label";
 
 // ─── Internal helpers ─────────────────────────────────────────────────────────
@@ -971,11 +971,11 @@ export function TripSchedulePicker({
               <div className="rounded-xl border border-neutral-200 bg-neutral-50 px-3 py-1.5 text-center text-xs">
                 {isTooShort ? (
                   <span className="font-semibold text-amber-700 text-[11px]">
-                    ⚠️ Minimum {minHours} hours required ({rentalMode === "HOURLY" ? "hourly rental" : "daily 24h formula"})
+                    <AlertTriangle className="mr-1 inline size-3.5 -translate-y-px" />Minimum {minHours} hours required ({rentalMode === "HOURLY" ? "hourly rental" : "daily 24h formula"})
                   </span>
                 ) : isTooLong ? (
                   <span className="font-semibold text-rose-700 text-[11px]">
-                    ⚠️ Maximum rental duration is {maxDays} days
+                    <AlertTriangle className="mr-1 inline size-3.5 -translate-y-px" />Maximum rental duration is {maxDays} days
                   </span>
                 ) : (
                   <div className="flex items-center justify-between text-xs">
