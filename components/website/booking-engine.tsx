@@ -121,7 +121,6 @@ export function BookingEngine({
   const qDrop = searchParams.get("dropDate");
 
   // Mode: "DAILY" or "HOURLY"
-  const hasHourly = baseHourlyPrice != null && Number(baseHourlyPrice) > 0;
   const [rentalMode, setRentalMode] = React.useState<"DAILY" | "HOURLY">("DAILY");
 
   // Schedule dates
@@ -456,42 +455,12 @@ export function BookingEngine({
           </div>
           <div className="shrink-0 rounded-2xl border border-white/15 bg-white/10 px-3.5 py-2 text-right backdrop-blur-md">
             <div className="text-lg leading-none font-black text-amber-300">
-              {rentalMode === "HOURLY" && hasHourly
-                ? `₹${Number(hourlyPrice).toLocaleString("en-IN")}/hr`
-                : `₹${Number(dailyPrice).toLocaleString("en-IN")}/day`}
+              {`₹${Number(dailyPrice).toLocaleString("en-IN")}/day`}
             </div>
             <span className="text-[10px] text-white/60">{rentalMode === "HOURLY" ? "Flexible Hours" : "24-Hour Block"}</span>
           </div>
         </div>
       </div>
-
-      {/* Mode Switch: Daily vs Hourly */}
-      {hasHourly && (
-        <div className="mt-5 flex rounded-full border border-neutral-200 bg-neutral-100/70 p-1 [&>button]:rounded-full">
-          <button
-            type="button"
-            onClick={() => handleModeToggle("DAILY")}
-            className={`flex-1 rounded-lg py-2 text-xs font-bold transition-all ${
-              rentalMode === "DAILY"
-                ? "bg-neutral-900 text-amber-300 shadow-md shadow-neutral-900/20"
-                : "text-neutral-600 hover:text-neutral-950"
-            }`}
-          >
-            {t("booking.daily-toggle")}
-          </button>
-          <button
-            type="button"
-            onClick={() => handleModeToggle("HOURLY")}
-            className={`flex-1 rounded-lg py-2 text-xs font-bold transition-all ${
-              rentalMode === "HOURLY"
-                ? "bg-neutral-900 text-amber-300 shadow-md shadow-neutral-900/20"
-                : "text-neutral-600 hover:text-neutral-950"
-            }`}
-          >
-            {t("booking.hourly-toggle", { price: Number(hourlyPrice).toLocaleString("en-IN") })}
-          </button>
-        </div>
-      )}
 
       {/* KM plan — per 24 hours */}
       {kmPlans.length > 0 && (

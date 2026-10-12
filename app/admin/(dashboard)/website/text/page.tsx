@@ -6,6 +6,7 @@ import { toast } from "sonner";
 
 import { apiFetch } from "@/lib/api-client";
 import { DEFAULT_SITE_TEXT, siteTextSchema, type SiteText } from "@/modules/settings/site-content.schemas";
+import { ImageUploadField } from "@/components/admin/image-upload-field";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -61,6 +62,14 @@ function setIn(obj: Json, path: (string | number)[], value: Json): Json {
 }
 
 function FieldTree({ value, path, onChange }: { value: Json; path: (string | number)[]; onChange: (path: (string | number)[], v: Json) => void }) {
+  if (typeof value === "string" && /^(image|imageUrl|.*Image)$/.test(String(path[path.length - 1]))) {
+    return (
+      <div className="space-y-1.5 sm:col-span-2">
+        <Label>{humanize(String(path[path.length - 1]))}</Label>
+        <ImageUploadField value={value} onChange={(url) => onChange(path, url)} />
+      </div>
+    );
+  }
   if (typeof value === "string" && SELECT_OPTIONS[pathKey(path)]) {
     return (
       <div className="space-y-1.5">

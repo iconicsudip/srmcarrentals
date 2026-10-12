@@ -183,6 +183,8 @@ export async function calculatePricing(input: PricingCalculateDto): Promise<Pric
     unitPrice = plan.dailyPrice;
     includedKmPerUnit = plan.km;
     hourlyPriceEff = plan.hourlyPrice;
+    // Hours beyond whole 24h blocks are charged at the plan's hourly rate (e.g. 26h = 24h price + 2 × hourly).
+    if (hourlyPriceEff != null && hourlyPriceEff > 0) extraHourPrice = hourlyPriceEff;
   }
 
   if (input.rentalPackageId) {
