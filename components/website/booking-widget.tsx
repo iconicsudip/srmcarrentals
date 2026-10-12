@@ -266,13 +266,24 @@ export function BookingWidget({
               </label>
               <div className="relative">
                 <MapPin className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-orange-500" />
-                <input
-                  type="text"
+                <select
                   value={dropAddress}
                   onChange={(e) => setDropAddress(e.target.value)}
-                  placeholder="Drop Location / Hotel / Airport"
-                  className="h-11 sm:h-12 w-full rounded-xl border border-neutral-200 bg-white pl-10 pr-4 text-xs sm:text-sm font-medium text-neutral-900 outline-none placeholder:text-neutral-400 transition hover:border-orange-500/50 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 shadow-xs"
-                />
+                  aria-label="Drop location"
+                  className="h-11 sm:h-12 w-full appearance-none rounded-xl border border-neutral-200 bg-white pl-10 pr-9 text-xs sm:text-sm font-semibold text-neutral-900 outline-none transition hover:border-orange-500/50 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 cursor-pointer shadow-xs"
+                >
+                  <option value="Doorstep Delivery (Hotel / Airport / Home)">Doorstep Delivery (Hotel / Airport / Home)</option>
+                  {Array.from(locationsByCity.entries()).map(([city, locs]) => (
+                    <optgroup key={city} label={city}>
+                      {locs.map((loc) => (
+                        <option key={loc.id} value={`${loc.name}, ${city}`}>
+                          {loc.name}
+                        </option>
+                      ))}
+                    </optgroup>
+                  ))}
+                </select>
+                <ChevronDown className="pointer-events-none absolute right-3.5 top-1/2 size-4 -translate-y-1/2 text-neutral-400" />
               </div>
             </div>
           )}
