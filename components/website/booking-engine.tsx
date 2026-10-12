@@ -198,6 +198,11 @@ export function BookingEngine({
   // Pricing calculation state
   const [calcLoading, setCalcLoading] = React.useState(false);
   const [pricingResult, setPricingResult] = React.useState<PricingCalculateResponse | null>(null);
+  // Selected trip split (from the pricing engine) — drives the plan tiles so they follow the chosen dates
+  const tripDays = Math.max(pricingResult?.duration?.fullDays ?? 1, 1);
+  const tripExtraHours = pricingResult?.duration?.extraHours ?? 0;
+  const fallbackExtraHourPrice = pricingResult?.rental?.extraHourPrice ?? 0;
+  const tripLabel = `${tripDays} ${tripDays === 1 ? "day" : "days"}${tripExtraHours > 0 ? ` + ${tripExtraHours} hr${tripExtraHours === 1 ? "" : "s"}` : ""}`;
   const [calcError, setCalcError] = React.useState<string | null>(null);
 
   const duration = calculateDurationText(pickup, drop);
@@ -481,6 +486,9 @@ export function BookingEngine({
           <div className="mt-1.5 grid grid-cols-3 gap-2">
             {kmPlans.map((tier) => {
               const active = tier.plan === kmPlan;
+              // Price & KM for the selected trip: whole days at the 24h price + leftover hours at the hourly price
+              const tilePrice = tier.dailyPrice * tripDays + tripExtraHours * (tier.hourlyPrice ?? fallbackExtraHourPrice);
+              const tileKm = Math.round(tier.km * (tripDays + tripExtraHours / 24));
               return (
                 <button
                   key={tier.plan}
@@ -498,9 +506,9 @@ export function BookingEngine({
                       {t("booking.km-popular")}
                     </span>
                   )}
-                  <span className="text-sm leading-tight font-black text-neutral-950">{rentalMode === "HOURLY" && tier.hourlyPrice ? `${formatInr(tier.hourlyPrice)}/hr` : formatInr(tier.dailyPrice)}</span>
-                  <span className="mt-0.5 text-[11px] font-bold text-neutral-700">{tier.km} km</span>
-                  <span className="text-[9px] text-neutral-500">{t("booking.km-per-day")}</span>
+                  <span className="text-sm leading-tight font-black text-neutral-950">{formatInr(tilePrice)}</span>
+                  <span className="mt-0.5 text-[11px] font-bold text-neutral-700">{tileKm} km</span>
+                  <span className="text-[9px] text-neutral-500">{tripDays > 1 || tripExtraHours > 0 ? tripLabel : t("booking.km-per-day")}</span>
                 </button>
               );
             })}
