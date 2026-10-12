@@ -41,7 +41,22 @@ const DEFAULT_CONTENT: HomepageContent = {
   trustBadges: [],
   philosophy: { badge: "", title: "MORE THAN A CAR RENTAL.", paragraph1: "", paragraph2: "", imageUrl: "", stats: [] },
   whyChooseUs: { badge: "", title: "WHY DRIVE WITH US?", subtitle: "", items: [] },
-  b2b: { badge: "", title: "BUILT FOR BUSINESS.", subtitle: "", ctaLabel: "Partner With Us", ctaHref: "/contact-us", items: [] },
+  b2b: {
+    badge: "",
+    title: "BUILT FOR BUSINESS.",
+    subtitle: "",
+    ctaLabel: "Partner With Us",
+    ctaHref: "/contact-us",
+    phoneLabel: "Talk to Our Team",
+    imageUrl: "",
+    backgroundImageUrl: "",
+    stats: [
+      { value: "500+", label: "Corporate Clients", highlight: false },
+      { value: "24/7", label: "Fleet Support", highlight: false },
+      { value: "B2B", label: "Preferred Rates", highlight: true },
+    ],
+    items: [],
+  },
   videoShowcase: { badge: "", title: "THE ROAD IS YOURS.", subtitle: "", videoUrl: "" },
 };
 
@@ -247,6 +262,47 @@ function HomepageContentForm() {
             <div className="grid gap-4 sm:grid-cols-2">
               <TextField control={form.control} name="b2b.ctaLabel" label="Button Label" />
               <TextField control={form.control} name="b2b.ctaHref" label="Button Link" />
+              <TextField control={form.control} name="b2b.phoneLabel" label="Phone Button Label" />
+              <div />
+              <FormField
+                control={form.control}
+                name="b2b.imageUrl"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Right-hand photo</FormLabel>
+                    <FormControl>
+                      <ImageUploadField value={field.value ?? ""} onChange={field.onChange} />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="b2b.backgroundImageUrl"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Faint background photo</FormLabel>
+                    <FormControl>
+                      <ImageUploadField value={field.value ?? ""} onChange={field.onChange} />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+              <div className="sm:col-span-2">
+                <FormLabel className="mb-2 block">Numbers on the photo</FormLabel>
+                <RepeatableList
+                  control={form.control}
+                  name="b2b.stats"
+                  emptyItem={{ value: "", label: "", highlight: false }}
+                  addLabel="Add number"
+                  renderItem={(i) => (
+                    <div className="grid gap-2 sm:grid-cols-2">
+                      <TextField control={form.control} name={`b2b.stats.${i}.value`} label="Number (e.g. 500+)" small />
+                      <TextField control={form.control} name={`b2b.stats.${i}.label`} label="Caption" small />
+                    </div>
+                  )}
+                />
+              </div>
             </div>
           }
         />

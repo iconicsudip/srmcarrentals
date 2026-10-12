@@ -1,3 +1,4 @@
+import * as React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Phone } from "lucide-react";
@@ -7,13 +8,21 @@ import { resolveIcon } from "@/lib/icon-map";
 import { stripTrailingPunctuation } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
-export function B2bSection({ content, phone }: { content: HomepageContent["b2b"]; phone: string }) {
+const DEFAULT_STATS: HomepageContent["b2b"]["stats"] = [
+  { value: "500+", label: "Corporate Clients", highlight: false },
+  { value: "24/7", label: "Fleet Support", highlight: false },
+  { value: "B2B", label: "Preferred Rates", highlight: true },
+];
+
+export function B2bSection({ content: saved, phone }: { content: HomepageContent["b2b"]; phone: string }) {
+  // Content saved before these fields existed has no values for them — fall back to the original look.
+  const content = { ...saved, phoneLabel: saved.phoneLabel ?? "Talk to Our Team", imageUrl: saved.imageUrl ?? "", backgroundImageUrl: saved.backgroundImageUrl ?? "", stats: saved.stats ?? DEFAULT_STATS };
   return (
     <section className="relative overflow-hidden border-t border-neutral-200/80 bg-[#FAFAFC]">
       {/* ── Background corporate fleet image ── */}
       <div className="pointer-events-none absolute inset-0" aria-hidden>
         <Image
-          src="https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=1600&q=70&auto=format&fit=crop"
+          src={content.backgroundImageUrl || "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=1600&q=70&auto=format&fit=crop"}
           alt=""
           fill
           sizes="100vw"
@@ -47,7 +56,7 @@ export function B2bSection({ content, phone }: { content: HomepageContent["b2b"]
               {phone && (
                 <Button asChild size="lg" variant="outline" className="border-neutral-300 bg-white text-neutral-800 hover:bg-neutral-50 hover:text-neutral-950 shadow-xs">
                   <a href={`tel:${phone.replace(/\s/g, "")}`}>
-                    <Phone className="size-4 text-orange-500" /> Talk to Our Team
+                    <Phone className="size-4 text-orange-500" /> {content.phoneLabel}
                   </a>
                 </Button>
               )}
@@ -75,7 +84,7 @@ export function B2bSection({ content, phone }: { content: HomepageContent["b2b"]
           <div className="relative hidden lg:block">
             <div className="relative aspect-[4/5] overflow-hidden rounded-3xl border border-neutral-200/90 shadow-xl">
               <Image
-                src="https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=900&q=80&auto=format&fit=crop"
+                src={content.imageUrl || "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=900&q=80&auto=format&fit=crop"}
                 alt="Premium corporate fleet for business travel"
                 fill
                 sizes="45vw"
@@ -84,22 +93,19 @@ export function B2bSection({ content, phone }: { content: HomepageContent["b2b"]
               <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
 
               {/* Floating stat badge */}
-              <div className="absolute bottom-5 left-5 right-5 flex items-center justify-around rounded-2xl border border-neutral-200/80 bg-white/95 px-5 py-4 backdrop-blur-md shadow-xl">
-                <div className="text-center">
-                  <div className="text-2xl font-black text-neutral-950">500+</div>
-                  <div className="text-[11px] text-neutral-500 font-medium">Corporate Clients</div>
+              {content.stats.length > 0 && (
+                <div className="absolute right-5 bottom-5 left-5 flex items-center justify-around rounded-2xl border border-neutral-200/80 bg-white/95 px-5 py-4 shadow-xl backdrop-blur-md">
+                  {content.stats.map((stat, i) => (
+                    <React.Fragment key={i}>
+                      {i > 0 && <div className="h-10 w-px bg-neutral-200" />}
+                      <div className="text-center">
+                        <div className={`text-2xl font-black ${stat.highlight ? "text-orange-600" : "text-neutral-950"}`}>{stat.value}</div>
+                        <div className="text-[11px] font-medium text-neutral-500">{stat.label}</div>
+                      </div>
+                    </React.Fragment>
+                  ))}
                 </div>
-                <div className="h-10 w-px bg-neutral-200" />
-                <div className="text-center">
-                  <div className="text-2xl font-black text-neutral-950">24/7</div>
-                  <div className="text-[11px] text-neutral-500 font-medium">Fleet Support</div>
-                </div>
-                <div className="h-10 w-px bg-neutral-200" />
-                <div className="text-center">
-                  <div className="text-2xl font-black text-orange-600">B2B</div>
-                  <div className="text-[11px] text-neutral-500 font-medium">Preferred Rates</div>
-                </div>
-              </div>
+              )}
             </div>
 
             {/* Ambient glow */}

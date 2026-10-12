@@ -609,7 +609,7 @@ export function CarForm({ car }: { car?: CarDetailDto }) {
 
           {isEdit && (
             <TabsContent value="pricing">
-              <CarKmPlansTab carId={car.id} pricing={car.pricing} />
+              <CarKmPlansTab carId={car.id} pricing={car.pricing} locations={(car.locations ?? []).map((l) => l.location)} />
             </TabsContent>
           )}
 

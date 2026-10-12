@@ -20,7 +20,7 @@ export interface CarPricingDto {
 }
 
 /** KM plans for ONE car: daily (24h) + hourly price for each of the three KM allowances. */
-export function CarKmPlansTab({ carId, pricing }: { carId: string; pricing?: CarPricingDto | null }) {
+export function CarKmPlansTab({ carId, pricing, locations = [] }: { carId: string; pricing?: CarPricingDto | null; locations?: { id: string; name: string; city?: string }[] }) {
   const [config, setConfig] = React.useState<KmPlansConfig>(DEFAULT_KM_PLANS);
   const [loaded, setLoaded] = React.useState(false);
   const [saving, setSaving] = React.useState(false);
@@ -34,6 +34,22 @@ export function CarKmPlansTab({ carId, pricing }: { carId: string; pricing?: Car
   }, []);
 
   const mine = config.prices[carId] ?? {};
+  const mineByLoc = config.locationPrices?.[carId] ?? {};
+
+  const setLocPrice = (locId: string, km: number, key: "daily" | "hourly", value: string) =>
+    setConfig((c) => {
+      const byLoc = { ...(c.locationPrices?.[carId] ?? {}) };
+      const byKm = { ...(byLoc[locId] ?? {}) };
+      const entry = { ...(byKm[String(km)] ?? {}) };
+      const n = Number(value);
+      if (value === "" || !Number.isFinite(n) || n <= 0) delete entry[key];
+      else entry[key] = n;
+      if (entry.daily == null && entry.hourly == null) delete byKm[String(km)];
+      else byKm[String(km)] = entry;
+      if (Object.keys(byKm).length === 0) delete byLoc[locId];
+      else byLoc[locId] = byKm;
+      return { ...c, locationPrices: { ...(c.locationPrices ?? {}), [carId]: byLoc } };
+    });
 
   const setTier = (i: number, km: number) =>
     setConfig((c) => {
@@ -63,7 +79,11 @@ export function CarKmPlansTab({ carId, pricing }: { carId: string; pricing?: Car
     try {
       // Re-read the saved config so other cars' prices edited meanwhile aren't overwritten.
       const fresh = normalizeKmPlans(await api.get<KmPlansConfig>("/pricing/km-plans"));
-      const next: KmPlansConfig = { tiers: config.tiers, prices: { ...fresh.prices, [carId]: config.prices[carId] ?? {} } };
+      const next: KmPlansConfig = {
+        tiers: config.tiers,
+        prices: { ...fresh.prices, [carId]: config.prices[carId] ?? {} },
+        locationPrices: { ...(fresh.locationPrices ?? {}), [carId]: config.locationPrices?.[carId] ?? {} },
+      };
       const saved = await api.put<KmPlansConfig>("/pricing/km-plans", next);
       setConfig(normalizeKmPlans(saved));
       toast.success("KM plans saved — live within a minute");
@@ -88,6 +108,7 @@ export function CarKmPlansTab({ carId, pricing }: { carId: string; pricing?: Car
     : null;
 
   return (
+    <div className="space-y-6">
     <Card>
       <CardHeader className="flex-row items-start justify-between gap-3">
         <div>
@@ -141,5 +162,52 @@ export function CarKmPlansTab({ carId, pricing }: { carId: string; pricing?: Car
         <p className="text-muted-foreground text-xs">The three KM amounts are the same for every car — changing them here changes them for all cars.</p>
       </CardContent>
     </Card>
+
+    {calc && (
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Location-wise prices</CardTitle>
+          <CardDescription>
+            Charge a different price for this car depending on the pickup location. Leave a box empty to use the car&apos;s price above. Click{" "}
+            <span className="font-medium">Save KM plans</span> to apply.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {locations.length === 0 ? (
+            <p className="text-muted-foreground text-sm">Assign this car to locations first (Locations tab), then set a price for each one here.</p>
+          ) : (
+            locations.map((loc) => {
+              const has = Object.keys(mineByLoc[loc.id] ?? {}).length > 0;
+              return (
+                <details key={loc.id} className="rounded-lg border" open={has}>
+                  <summary className="flex cursor-pointer items-center justify-between gap-2 px-4 py-3 text-sm font-medium">
+                    <span>
+                      {loc.name}
+                      {loc.city ? <span className="text-muted-foreground font-normal"> · {loc.city}</span> : null}
+                    </span>
+                    {has && <span className="rounded-full bg-orange-500/10 px-2 py-0.5 text-[11px] font-semibold text-orange-700">Custom prices</span>}
+                  </summary>
+                  <div className="grid gap-3 border-t p-4 md:grid-cols-3">
+                    {config.tiers.map((km, i) => {
+                      const cur = mineByLoc[loc.id]?.[String(km)];
+                      const base = mine[String(km)];
+                      return (
+                        <div key={km} className="space-y-2">
+                          <div className="text-xs font-semibold">{km} km</div>
+                          <Input type="number" min={0} aria-label={`${loc.name} ${km} km daily price`} placeholder={String(base?.daily ?? calc[i]!.dailyPrice)} value={cur?.daily ?? ""} onChange={(e) => setLocPrice(loc.id, km, "daily", e.target.value)} />
+                          <Input type="number" min={0} aria-label={`${loc.name} ${km} km hourly price`} placeholder={base?.hourly != null ? String(base.hourly) : calc[i]!.hourlyPrice != null ? String(calc[i]!.hourlyPrice) : "—"} value={cur?.hourly ?? ""} onChange={(e) => setLocPrice(loc.id, km, "hourly", e.target.value)} />
+                          <p className="text-muted-foreground text-[11px]">₹ per 24h · ₹ per hour</p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </details>
+              );
+            })
+          )}
+        </CardContent>
+      </Card>
+    )}
+    </div>
   );
 }

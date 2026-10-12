@@ -178,6 +178,7 @@ export async function calculatePricing(input: PricingCalculateDto): Promise<Pric
         extraKmPrice,
       },
       await getKmPlansConfig(),
+      input.pickupLocationId,
     );
     const plan = plans[clampPlan(input.kmPlan ?? 1) - 1]!;
     unitPrice = plan.dailyPrice;

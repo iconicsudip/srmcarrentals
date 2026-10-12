@@ -30,6 +30,8 @@ export interface BookingEngineProps {
   extraKmPrice?: number;
   /** The 3 KM plans for this car (admin-set prices, else calculated). */
   kmPlans: CarKmPlan[];
+  /** Plans for pickup locations with their own prices (locationId → plans). */
+  kmPlansByLocation?: Record<string, CarKmPlan[]>;
   phone: string;
   /** City-wise WhatsApp routing (from admin settings). */
   whatsappNumbers?: WhatsAppNumbers | null;
@@ -101,7 +103,8 @@ export function BookingEngine({
   fuelType,
   includedKmPerDay,
   extraKmPrice = 10,
-  kmPlans,
+  kmPlans: baseKmPlans,
+  kmPlansByLocation,
   phone,
   whatsappNumbers,
   advancePercent = ADVANCE_PERCENT,
@@ -170,6 +173,8 @@ export function BookingEngine({
 
   // KM plan (e.g. 120 / 240 / 350 km per 24h): each plan has its own daily and hourly price, set in admin
   const [kmPlan, setKmPlan] = React.useState<1 | 2 | 3>(() => clampPlan(Number(searchParams.get("kmPlan")) || 1));
+  // Same car, different price per pickup location
+  const kmPlans = (deliveryType === "BRANCH" && kmPlansByLocation?.[selectedLocationId]) || baseKmPlans;
   const activePlan = kmPlans.find((p) => p.plan === kmPlan) ?? kmPlans[0];
   const dailyPrice = activePlan?.dailyPrice ?? baseDailyPrice;
   const hourlyPrice = activePlan?.hourlyPrice ?? baseHourlyPrice;

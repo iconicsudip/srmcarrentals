@@ -44,6 +44,19 @@ export const homepageContentSchema = z.object({
     subtitle: z.string().default(""),
     ctaLabel: z.string().default("Partner With Us"),
     ctaHref: z.string().default("/contact-us"),
+    /** Label of the phone button (shown when a company phone number is set). */
+    phoneLabel: z.string().default("Talk to Our Team"),
+    /** Photo in the right-hand panel and the faint section background. Empty = built-in photos. */
+    imageUrl: z.string().default(""),
+    backgroundImageUrl: z.string().default(""),
+    /** The floating numbers on the photo, e.g. 500+ Corporate Clients. */
+    stats: z
+      .array(z.object({ value: z.string().default(""), label: z.string().default(""), highlight: z.boolean().default(false) }))
+      .default([
+        { value: "500+", label: "Corporate Clients", highlight: false },
+        { value: "24/7", label: "Fleet Support", highlight: false },
+        { value: "B2B", label: "Preferred Rates", highlight: true },
+      ]),
     items: z.array(iconCardSchema).default([]),
   }),
   videoShowcase: z.object({
@@ -252,6 +265,7 @@ export const siteTextSchema = z.object({
     .prefault({}),
   sections: z
     .object({
+      priceSorted: heading("Budget to premium", "Lowest to highest price.", "{count} cars · {low} → {high} per 24 hours"),
       categories: heading("SRM 3D CATEGORIES", "CHOOSE YOUR DRIVE."),
       fleet: heading("Self drive fleet", "Your car. Your journey.", "Pick a ride from the filmstrip — every car is cleaned, insured and ready for delivery."),
       brands: heading("AUTOMOTIVE SELECTION", "FIND YOUR FAVOURITE BRAND.", "From precision engineering to invincible off-roaders, select your preferred badge for the journey."),

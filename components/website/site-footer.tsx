@@ -4,7 +4,7 @@ import { ArrowUp, ArrowUpRight, Heart, Mail, MapPin, MessageCircle, Phone } from
 
 import { FacebookIcon, InstagramIcon, LinkedInIcon, TelegramIcon, XIcon, YouTubeIcon } from "@/components/website/social-icons";
 
-import type { CompanyContent, SiteText } from "@/modules/settings/site-content.schemas";
+import type { AvailableServicesConfig, CompanyContent, SiteText } from "@/modules/settings/site-content.schemas";
 
 export interface FooterBranch {
   city: string;
@@ -13,7 +13,27 @@ export interface FooterBranch {
   mapUrl?: string;
 }
 
-export function SiteFooter({ company, branches = [], text }: { company: CompanyContent; branches?: FooterBranch[]; text: SiteText["footer"] }) {
+/** A footer link belongs to a service (cars / chauffeur taxi / tours); hide it when that service is switched off. */
+function linkEnabled(href: string, services?: AvailableServicesConfig): boolean {
+  if (!services) return true;
+  const path = href.split(/[?#]/)[0] ?? "";
+  if (path === "/cars" || path.startsWith("/cars/") || path.startsWith("/car/")) return services.cars;
+  if (path === "/car-rental" || path.startsWith("/car-rental/")) return services.taxi;
+  if (path === "/tours" || path.startsWith("/tours/")) return services.tours;
+  return true;
+}
+
+export function SiteFooter({
+  company,
+  branches = [],
+  text,
+  services,
+}: {
+  company: CompanyContent;
+  branches?: FooterBranch[];
+  text: SiteText["footer"];
+  services?: AvailableServicesConfig;
+}) {
   const sl = company.socialLinks;
   const socials = [
     { icon: InstagramIcon, href: sl.instagram, label: "Instagram" },
@@ -28,7 +48,9 @@ export function SiteFooter({ company, branches = [], text }: { company: CompanyC
     { title: "Services", links: company.footerLinks.services },
     { title: "Cars & Brands", links: company.footerLinks.carsAndBrands },
     { title: "Company", links: company.footerLinks.company },
-  ].filter((col) => col.links.length > 0);
+  ]
+    .map((col) => ({ ...col, links: col.links.filter((l) => linkEnabled(l.href, services)) }))
+    .filter((col) => col.links.length > 0);
 
   const phoneDigits = company.phone?.replace(/[^0-9]/g, "") ?? "";
   const whatsappHref = company.socialLinks.whatsapp || (phoneDigits ? `https://wa.me/${phoneDigits}` : "");

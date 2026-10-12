@@ -514,6 +514,7 @@ export default async function CarDetailPage({ params }: CarDetailPageProps) {
               hourlyPrice={basePlan.hourlyPrice}
               includedKmPerDay={basePlan.km}
               kmPlans={kmPlans}
+              kmPlansByLocation={(car as unknown as { kmPlansByLocation?: Record<string, CarKmPlan[]> }).kmPlansByLocation}
               extraKmPrice={Number(car.pricing?.extraKmPrice ?? 10)}
               phone={company.phone}
               whatsappNumbers={whatsappNumbers}

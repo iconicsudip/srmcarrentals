@@ -101,7 +101,7 @@ export default async function HomePage() {
       {services.cars && (
         <>
           <CategoryCircles categories={circleCategories} />
-          <PriceSortedCars cars={sortedCars.cars} total={sortedCars.total} />
+          <PriceSortedCars cars={sortedCars.cars} total={sortedCars.total} text={siteText.sections.priceSorted} />
         </>
       )}
       <CategoryCardsSection counts={counts} services={services} cards={siteText.categoryCards} heading={siteText.sections.categories} />

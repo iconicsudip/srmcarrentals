@@ -45,6 +45,8 @@ export interface CarCardData {
   locations?: { locationId: string; location: { id: string; name: string; slug?: string; city?: string | null } }[];
   /** 3 KM plans (admin-set prices, else calculated) — see lib/pricing/km-plans.ts */
   kmPlans?: CarKmPlan[];
+  /** Plans for pickup locations that have their own prices (locationId → plans). */
+  kmPlansByLocation?: Record<string, CarKmPlan[]>;
 }
 
 export interface CarCardProps {
@@ -112,9 +114,11 @@ function CarCardInner({
   }, [locationId, pickupDate, dropDate, showBasePriceOnly]);
 
   const carHref = `/car/${car.slug}${queryParams}`;
+  // Same car, different price per pickup location (when the selected location has its own prices)
+  const kmPlansHere = (locationId && car.kmPlansByLocation?.[locationId]) || car.kmPlans;
   const image = car.images[0];
-  const dailyPrice = car.kmPlans?.[0]?.dailyPrice ?? (car.pricing ? Number(car.pricing.dailyPrice) : 2500);
-  const baseKm = car.kmPlans?.[0]?.km ?? Number(car.pricing?.includedKmPerDay ?? 250);
+  const dailyPrice = kmPlansHere?.[0]?.dailyPrice ?? (car.pricing ? Number(car.pricing.dailyPrice) : 2500);
+  const baseKm = kmPlansHere?.[0]?.km ?? Number(car.pricing?.includedKmPerDay ?? 250);
   const extraKmRate = Number(car.pricing?.extraKmPrice ?? 15);
 
   const categoryName = car.category?.name ?? car.brand.name;
@@ -147,7 +151,7 @@ function CarCardInner({
   // KM plans — the same numbers the car page and the pricing engine use (admin-set, else calculated)
   const packages = React.useMemo(() => {
     const plans =
-      car.kmPlans ??
+      kmPlansHere ??
       resolveCarKmPlans({ id: car.id, dailyPrice, hourlyPrice: null, includedKmPerDay: baseKm, extraKmPrice: extraKmRate });
     return plans.map((plan) => ({
       id: `plan-${plan.plan}`,
@@ -158,7 +162,7 @@ function CarCardInner({
       extraKmPrice: extraKmRate,
       isPopular: plan.isPopular,
     }));
-  }, [car.kmPlans, car.id, car.pricing?.extraHourPrice, dailyPrice, baseKm, extraKmRate, tripDays, tripExtraHours]);
+  }, [kmPlansHere, car.id, car.pricing?.extraHourPrice, dailyPrice, baseKm, extraKmRate, tripDays, tripExtraHours]);
 
   function getBookHref(kmLimit?: number, pkgPrice?: number, plan?: number) {
     const q = new URLSearchParams();

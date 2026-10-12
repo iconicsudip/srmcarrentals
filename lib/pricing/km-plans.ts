@@ -17,6 +17,8 @@ export interface KmPlansConfig {
   tiers: [number, number, number];
   /** carId → km → price overrides. */
   prices: Record<string, Record<string, KmPlanPrice>>;
+  /** carId → locationId → km → price overrides for that pickup location (wins over `prices`). */
+  locationPrices?: Record<string, Record<string, Record<string, KmPlanPrice>>>;
 }
 
 export const DEFAULT_KM_PLANS: KmPlansConfig = { tiers: [120, 240, 350], prices: {} };
@@ -60,13 +62,34 @@ export function normalizeKmPlans(raw: unknown): KmPlansConfig {
       }
     }
   }
-  return { tiers, prices };
+  const locationPrices: NonNullable<KmPlansConfig["locationPrices"]> = {};
+  const rawLoc = (r as Partial<KmPlansConfig>).locationPrices;
+  if (rawLoc && typeof rawLoc === "object") {
+    for (const [carId, byLoc] of Object.entries(rawLoc)) {
+      if (!byLoc || typeof byLoc !== "object") continue;
+      for (const [locId, byKm] of Object.entries(byLoc)) {
+        if (!byKm || typeof byKm !== "object") continue;
+        for (const [km, p] of Object.entries(byKm)) {
+          const daily = Number(p?.daily);
+          const hourly = Number(p?.hourly);
+          const entry: KmPlanPrice = {};
+          if (Number.isFinite(daily) && daily > 0) entry.daily = daily;
+          if (Number.isFinite(hourly) && hourly > 0) entry.hourly = hourly;
+          if (entry.daily != null || entry.hourly != null) ((locationPrices[carId] ??= {})[locId] ??= {})[km] = entry;
+        }
+      }
+    }
+  }
+  return { tiers, prices, locationPrices };
 }
 
 /** The 3 plans for a car: explicit admin prices first, otherwise calculated from the car's own rates. */
-export function resolveCarKmPlans(car: KmPlanCarInput, config: KmPlansConfig = DEFAULT_KM_PLANS): CarKmPlan[] {
+export function resolveCarKmPlans(car: KmPlanCarInput, config: KmPlansConfig = DEFAULT_KM_PLANS, locationId?: string | null): CarKmPlan[] {
   return config.tiers.map((km, i) => {
-    const override = config.prices[car.id]?.[String(km)];
+    const carOverride = config.prices[car.id]?.[String(km)];
+    const locOverride = locationId ? config.locationPrices?.[car.id]?.[locationId]?.[String(km)] : undefined;
+    // A price set for this pickup location wins over the car's general plan price.
+    const override: KmPlanPrice | undefined = carOverride || locOverride ? { ...carOverride, ...locOverride } : undefined;
     const calculated = Math.round(car.dailyPrice + Math.max(0, km - car.includedKmPerDay) * (car.extraKmPrice || 0));
     const hourlyBase = car.hourlyPrice && car.hourlyPrice > 0 ? car.hourlyPrice : null;
     return {
@@ -78,6 +101,13 @@ export function resolveCarKmPlans(car: KmPlanCarInput, config: KmPlansConfig = D
       custom: override?.daily != null || override?.hourly != null,
     };
   });
+}
+
+/** Plans per pickup location, only for locations that have their own prices (kept small for the page payload). */
+export function resolveCarKmPlansByLocation(car: KmPlanCarInput, config: KmPlansConfig): Record<string, CarKmPlan[]> {
+  const out: Record<string, CarKmPlan[]> = {};
+  for (const locId of Object.keys(config.locationPrices?.[car.id] ?? {})) out[locId] = resolveCarKmPlans(car, config, locId);
+  return out;
 }
 
 export const clampPlan = (n: number): 1 | 2 | 3 => (n >= 3 ? 3 : n >= 2 ? 2 : 1);

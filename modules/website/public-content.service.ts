@@ -3,7 +3,7 @@ import { unstable_cache } from "next/cache";
 import { makeT } from "@/lib/copy/translate";
 import { toSlug } from "@/lib/slug";
 import { getKmPlansConfig } from "@/lib/pricing/km-plans.server";
-import { resolveCarKmPlans } from "@/lib/pricing/km-plans";
+import { resolveCarKmPlans, resolveCarKmPlansByLocation } from "@/lib/pricing/km-plans";
 
 import { isRichHtml, sanitizeRichHtml } from "@/lib/rich-text";
 import { prisma } from "@/lib/prisma";
@@ -70,6 +70,14 @@ const FALLBACK_HOMEPAGE: HomepageContent = {
     subtitle: "Corporate travel, wedding fleets, and event logistics customized for your scale.",
     ctaLabel: "Partner With Us",
     ctaHref: "/contact-us",
+    phoneLabel: "Talk to Our Team",
+    imageUrl: "",
+    backgroundImageUrl: "",
+    stats: [
+      { value: "500+", label: "Corporate Clients", highlight: false },
+      { value: "24/7", label: "Fleet Support", highlight: false },
+      { value: "B2B", label: "Preferred Rates", highlight: true },
+    ],
     items: [
       { icon: "💼", title: "Corporate Accounts", description: "GST invoicing, monthly billing, and dedicated relationship manager." },
       { icon: "🎉", title: "Weddings & VIP Events", description: "Uniformed chauffeurs, luxury convoy management, and decorated cars." },
@@ -357,21 +365,17 @@ function cached<A extends unknown[], R>(name: string, fn: (...args: A) => Promis
 /** Adds each car's 3 KM plans (admin prices, else calculated) so cards and pages show identical numbers. */
 async function attachKmPlans<T extends { id: string; pricing?: any }>(cars: T[]) {
   const cfg = await getKmPlansConfig();
-  return cars.map((c) => ({
-    ...c,
-    kmPlans: c.pricing
-      ? resolveCarKmPlans(
-          {
-            id: c.id,
-            dailyPrice: Number(c.pricing.dailyPrice),
-            hourlyPrice: c.pricing.hourlyPrice != null ? Number(c.pricing.hourlyPrice) : null,
-            includedKmPerDay: Number(c.pricing.includedKmPerDay ?? 120),
-            extraKmPrice: Number(c.pricing.extraKmPrice ?? 10),
-          },
-          cfg,
-        )
-      : undefined,
-  }));
+  return cars.map((c) => {
+    if (!c.pricing) return { ...c, kmPlans: undefined, kmPlansByLocation: undefined };
+    const input = {
+      id: c.id,
+      dailyPrice: Number(c.pricing.dailyPrice),
+      hourlyPrice: c.pricing.hourlyPrice != null ? Number(c.pricing.hourlyPrice) : null,
+      includedKmPerDay: Number(c.pricing.includedKmPerDay ?? 120),
+      extraKmPrice: Number(c.pricing.extraKmPrice ?? 10),
+    };
+    return { ...c, kmPlans: resolveCarKmPlans(input, cfg), kmPlansByLocation: resolveCarKmPlansByLocation(input, cfg) };
+  });
 }
 
 function toPlain<T>(data: T): T {
