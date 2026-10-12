@@ -38,7 +38,7 @@ export default function CmsPagesPage() {
       fields={[
         { name: "title", label: "Title", placeholder: "e.g. About Us" },
         { name: "slug", label: "Slug", placeholder: "auto-generated from title if left blank" },
-        { name: "content", label: "Content", type: "textarea", description: "Plain text — separate paragraphs with a blank line." },
+        { name: "content", label: "Content", type: "richtext" },
         {
           name: "status",
           label: "Status",

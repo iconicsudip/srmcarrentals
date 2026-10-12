@@ -107,7 +107,7 @@ export const GET = withErrorHandling(async (req) => {
   });
 
   if (pageSetting && pageSetting.value) {
-    return ok(pageSetting.value);
+    return ok({ ...(pageSetting.value as object), _saved: true });
   }
 
   // Fallback: check if path matches a known SeoMetadata entity
@@ -141,6 +141,7 @@ export const GET = withErrorHandling(async (req) => {
 export const POST = withErrorHandling(async (req) => {
   await requirePermission("seo.manage");
   const body: DynamicPageSeoPayload = await req.json();
+  delete (body as unknown as Record<string, unknown>)._saved;
   if (body.ogType === "product") {
     body.ogType = "website";
   }

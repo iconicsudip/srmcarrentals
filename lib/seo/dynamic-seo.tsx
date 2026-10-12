@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { richTextToPlain } from "@/lib/rich-text";
 import { prisma } from "@/lib/prisma";
 
 export interface ResolvedSeo {
@@ -95,7 +96,7 @@ export async function getDynamicSeoForPath(path: string, fallback?: Metadata): P
               name: p.question,
               acceptedAnswer: {
                 "@type": "Answer",
-                text: p.answer,
+                text: richTextToPlain(String(p.answer ?? "")),
               },
             })),
           };

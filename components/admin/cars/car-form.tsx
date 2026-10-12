@@ -27,6 +27,9 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { CarKmPlansTab, type CarPricingDto } from "@/components/admin/cars/car-km-plans-tab";
+import { CarSeoTab } from "@/components/admin/cars/car-seo-tab";
+import { RichTextEditor } from "@/components/admin/rich-text-editor";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 
@@ -112,6 +115,7 @@ export interface CarDetailDto {
   features: { feature: { id: string; name: string } }[];
   safetyFeatures: { safetyFeature: { id: string; name: string } }[];
   locations?: { locationId: string; location: { id: string; name: string; city?: string } }[];
+  pricing?: CarPricingDto | null;
 }
 
 function toDefaultValues(car?: CarDetailDto): CarFormValues {
@@ -258,6 +262,8 @@ export function CarForm({ car }: { car?: CarDetailDto }) {
             <TabsTrigger value="safety">Safety Features</TabsTrigger>
             <TabsTrigger value="locations">Locations</TabsTrigger>
             {isEdit && <TabsTrigger value="images">Images</TabsTrigger>}
+            {isEdit && <TabsTrigger value="pricing">Pricing</TabsTrigger>}
+            {isEdit && <TabsTrigger value="seo">SEO</TabsTrigger>}
           </TabsList>
 
           <TabsContent value="basic">
@@ -309,7 +315,7 @@ export function CarForm({ car }: { car?: CarDetailDto }) {
                     <FormItem className="sm:col-span-2">
                       <FormLabel>Full Description</FormLabel>
                       <FormControl>
-                        <Textarea rows={5} placeholder="Full car description" {...field} />
+                        <RichTextEditor value={field.value ?? ""} onChange={field.onChange} placeholder="Full car description" minHeight={180} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -598,6 +604,18 @@ export function CarForm({ car }: { car?: CarDetailDto }) {
                   <CarImageManager carId={car.id} />
                 </CardContent>
               </Card>
+            </TabsContent>
+          )}
+
+          {isEdit && (
+            <TabsContent value="pricing">
+              <CarKmPlansTab carId={car.id} pricing={car.pricing} />
+            </TabsContent>
+          )}
+
+          {isEdit && (
+            <TabsContent value="seo">
+              <CarSeoTab carId={car.id} carName={car.name} slug={car.slug} />
             </TabsContent>
           )}
         </Tabs>

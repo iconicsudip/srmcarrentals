@@ -1,5 +1,6 @@
 "use client";
 
+import { isRichHtml } from "@/lib/rich-text-shared";
 import * as React from "react";
 import Image from "next/image";
 import { ChevronDown, MessageSquare, Phone, HelpCircle } from "lucide-react";
@@ -87,9 +88,12 @@ function FaqItem({
         }`}
       >
         <div className="overflow-hidden">
-          <p className="border-t border-neutral-150 px-5 pb-5 pt-3 text-xs leading-relaxed text-neutral-600">
-            {faq.answer}
-          </p>
+          {isRichHtml(faq.answer) ? (
+            // Sanitized on the server (getFaqPageContent)
+            <div className="rich-text border-t border-neutral-150 px-5 pb-5 pt-3 text-xs leading-relaxed text-neutral-600" dangerouslySetInnerHTML={{ __html: faq.answer }} />
+          ) : (
+            <p className="border-t border-neutral-150 px-5 pb-5 pt-3 text-xs leading-relaxed text-neutral-600">{faq.answer}</p>
+          )}
         </div>
       </div>
     </div>

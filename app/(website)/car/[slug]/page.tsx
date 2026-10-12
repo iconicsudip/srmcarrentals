@@ -23,6 +23,7 @@ import { Badge } from "@/components/ui/badge";
 import { getCarFallbackImage } from "@/lib/car-fallback-image";
 import { CarGallery } from "@/components/website/car-gallery";
 import { BookingEngine } from "@/components/website/booking-engine";
+import { RichText } from "@/components/website/rich-text";
 import { resolveCarKmPlans, type CarKmPlan } from "@/lib/pricing/km-plans";
 import { getWhatsAppNumbers } from "@/lib/whatsapp/numbers";
 import { getPaymentOptions } from "@/lib/payments/options";
@@ -341,9 +342,7 @@ export default async function CarDetailPage({ params }: CarDetailPageProps) {
             {car.description && (
               <div className="rounded-3xl border border-neutral-200/90 bg-white p-6 shadow-sm">
                 <h2 className="text-lg font-bold text-neutral-950">{t("carpage.about-the", { name: car.name })}</h2>
-                <div className="mt-3 text-sm leading-relaxed text-neutral-600 whitespace-pre-line">
-                  {car.description}
-                </div>
+                <RichText value={car.description} className="mt-3 text-sm leading-relaxed text-neutral-600" />
               </div>
             )}
 

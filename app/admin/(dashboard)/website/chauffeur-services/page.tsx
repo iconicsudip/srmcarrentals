@@ -39,7 +39,7 @@ export default function ChauffeurServicesPage() {
       fields={[
         { name: "name", label: "Name", placeholder: "e.g. Executive Sedan" },
         { name: "category", label: "Category", placeholder: "e.g. Sedan, SUV, Premium, Airport Transfer" },
-        { name: "imageUrl", label: "Image URL", type: "url" },
+        { name: "imageUrl", label: "Image", type: "image" },
         { name: "idealFor", label: "Ideal For", placeholder: "e.g. City tours, airport runs" },
         { name: "capacityLabel", label: "Capacity Label", placeholder: "e.g. Up to 4 Passengers · 2 Bags" },
         { name: "features", label: "Features", type: "tags", description: "Comma separated, e.g. AC Climate Control, Chauffeur in Uniform" },

@@ -5,6 +5,7 @@ import { toSlug } from "@/lib/slug";
 import { getKmPlansConfig } from "@/lib/pricing/km-plans.server";
 import { resolveCarKmPlans } from "@/lib/pricing/km-plans";
 
+import { isRichHtml, sanitizeRichHtml } from "@/lib/rich-text";
 import { prisma } from "@/lib/prisma";
 import { getSetting } from "@/modules/settings/settings.service";
 import { DEFAULT_SITE_TEXT, siteTextSchema, type SiteText } from "@/modules/settings/site-content.schemas";
@@ -394,7 +395,9 @@ async function getContactPageContent_uncached(): Promise<ContactPageContent> {
 }
 
 async function getFaqPageContent_uncached(): Promise<FaqPageContent> {
-  return (await getSetting<FaqPageContent>("pages.faq")) ?? FALLBACK_FAQ;
+  const faq = (await getSetting<FaqPageContent>("pages.faq")) ?? FALLBACK_FAQ;
+  // Answers written in the rich-text editor are HTML: sanitize once here, before they reach the page.
+  return { ...faq, faqs: faq.faqs.map((f) => (isRichHtml(f.answer) ? { ...f, answer: sanitizeRichHtml(f.answer) } : f)) };
 }
 
 async function getTermsPageContent_uncached(): Promise<TermsPageContent> {

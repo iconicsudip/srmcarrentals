@@ -58,7 +58,7 @@ export default function ToursPage() {
       fields={[
         { name: "name", label: "Tour Name", placeholder: "e.g. Royal Rajasthan Heritage Circuit" },
         { name: "categoryId", label: "Category", type: "select", selectOptions: categories.options },
-        { name: "imageUrl", label: "Image URL", type: "url" },
+        { name: "imageUrl", label: "Image", type: "image" },
         { name: "rating", label: "Rating (0-5)", type: "number" },
         { name: "durationDays", label: "Duration (Days)", type: "number" },
         { name: "durationNights", label: "Duration (Nights)", type: "number" },

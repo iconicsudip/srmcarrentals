@@ -36,6 +36,8 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { ImageUploadField } from "@/components/admin/image-upload-field";
+import { RichTextEditor } from "@/components/admin/rich-text-editor";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -516,13 +518,8 @@ export default function BlogPostsPage() {
 
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label htmlFor="postImg">Featured Image URL</Label>
-                <Input
-                  id="postImg"
-                  placeholder="/blog/roadtrip.jpg or CDN link"
-                  value={form.featuredImage}
-                  onChange={(e) => setForm({ ...form, featuredImage: e.target.value })}
-                />
+                <Label>Featured Image</Label>
+                <ImageUploadField value={form.featuredImage} onChange={(url) => setForm({ ...form, featuredImage: url })} folder="cms" />
               </div>
 
               <div className="space-y-1.5">
@@ -554,15 +551,8 @@ export default function BlogPostsPage() {
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="postContent">Article Body (Markdown / Text)</Label>
-              <Textarea
-                id="postContent"
-                rows={6}
-                placeholder="Write your article content here..."
-                value={form.content}
-                onChange={(e) => setForm({ ...form, content: e.target.value })}
-                required
-              />
+              <Label>Article Body</Label>
+              <RichTextEditor value={form.content} onChange={(html) => setForm({ ...form, content: html })} placeholder="Write your article…" minHeight={260} />
             </div>
 
             <DialogFooter className="pt-2">

@@ -13,6 +13,7 @@ import {
   faqPageContentSchema,
   type FaqPageContent,
 } from "@/modules/settings/site-content.schemas";
+import { RichTextEditor } from "@/components/admin/rich-text-editor";
 import { RepeatableList } from "@/components/admin/repeatable-list";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -129,7 +130,18 @@ export default function FaqContentPage() {
                   <div className="grid grid-cols-1 sm:grid-cols-4 gap-2">
                     <TextField control={form.control} name={`faqs.${i}.question`} label="Question" className="sm:col-span-3" small />
                     <TextField control={form.control} name={`faqs.${i}.category`} label="Category" small />
-                    <TextField control={form.control} name={`faqs.${i}.answer`} label="Answer" className="col-span-full" area small />
+                    <FormField
+                      control={form.control}
+                      name={`faqs.${i}.answer`}
+                      render={({ field }) => (
+                        <FormItem className="col-span-full">
+                          <FormControl>
+                            <RichTextEditor value={field.value ?? ""} onChange={field.onChange} placeholder="Answer" minHeight={90} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                   </div>
                 )}
               />

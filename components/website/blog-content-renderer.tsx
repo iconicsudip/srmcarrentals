@@ -2,11 +2,17 @@ import React from "react";
 import Link from "next/link";
 import { Info, Lightbulb } from "lucide-react";
 
+import { RichText } from "@/components/website/rich-text";
+import { isRichHtml } from "@/lib/rich-text";
+
 interface BlogContentRendererProps {
   content: string;
 }
 
 export function BlogContentRenderer({ content }: BlogContentRendererProps) {
+  // Articles written in the rich-text editor are HTML; older ones are Markdown-style text (handled below).
+  if (isRichHtml(content)) return <RichText value={content} className="text-base leading-relaxed text-neutral-700" />;
+
   // Normalize line breaks
   const rawLines = content.replace(/\r\n/g, "\n").split("\n");
 

@@ -28,7 +28,7 @@ export default function BrandsPage() {
       formSchema={formSchema}
       fields={[
         { name: "name", label: "Name", placeholder: "e.g. Toyota" },
-        { name: "logoUrl", label: "Logo URL", type: "url", placeholder: "https://..." },
+        { name: "logoUrl", label: "Logo", type: "image" },
       ]}
       columns={[
         { header: "Name", cell: (row) => <span className="font-medium">{row.name}</span> },

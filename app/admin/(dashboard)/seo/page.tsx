@@ -33,6 +33,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { ImageUploadField } from "@/components/admin/image-upload-field";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -762,13 +763,8 @@ export default function DynamicSeoCommandCenter() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
-                    <Label htmlFor="ogImage">Open Graph Image URL</Label>
-                    <Input
-                      id="ogImage"
-                      value={form.ogImage}
-                      onChange={(e) => setForm({ ...form, ogImage: e.target.value })}
-                      placeholder="/og-image.jpg or CDN link"
-                    />
+                    <Label>Open Graph Image</Label>
+                    <ImageUploadField value={form.ogImage} onChange={(url) => setForm({ ...form, ogImage: url })} folder="cms" />
                   </div>
 
                   <div className="space-y-1.5">

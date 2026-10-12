@@ -23,6 +23,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { RichTextEditor } from "@/components/admin/rich-text-editor";
+import { ImageUploadField } from "@/components/admin/image-upload-field";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -33,7 +35,7 @@ import { Textarea } from "@/components/ui/textarea";
 export interface LookupField {
   name: string;
   label: string;
-  type?: "text" | "number" | "textarea" | "url" | "select" | "tags" | "date" | "switch";
+  type?: "text" | "number" | "textarea" | "url" | "image" | "richtext" | "select" | "tags" | "date" | "switch";
   placeholder?: string;
   selectOptions?: { label: string; value: string }[];
   /** Shown under the field, e.g. hint text for "tags" fields. */
@@ -382,6 +384,10 @@ export function LookupManager<T extends LookupRow>({
                               ))}
                             </SelectContent>
                           </Select>
+                        ) : fieldConfig.type === "richtext" ? (
+                          <RichTextEditor value={(field.value as string) ?? ""} onChange={field.onChange} minHeight={220} />
+                        ) : fieldConfig.type === "image" ? (
+                          <ImageUploadField value={(field.value as string) ?? ""} onChange={field.onChange} />
                         ) : (
                           <Input
                             type={fieldConfig.type === "number" ? "number" : fieldConfig.type === "url" ? "url" : "text"}

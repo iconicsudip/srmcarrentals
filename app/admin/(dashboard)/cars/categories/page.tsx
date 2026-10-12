@@ -30,7 +30,7 @@ export default function CarCategoriesPage() {
       fields={[
         { name: "name", label: "Name", placeholder: "e.g. Luxury" },
         { name: "description", label: "Description", type: "textarea", placeholder: "Optional description" },
-        { name: "imageUrl", label: "Image URL", type: "url", placeholder: "https://..." },
+        { name: "imageUrl", label: "Image", type: "image" },
       ]}
       columns={[
         { header: "Name", cell: (row) => <span className="font-medium">{row.name}</span> },

@@ -15,6 +15,7 @@ import {
   type CompanyContent,
   type HomepageContent,
 } from "@/modules/settings/site-content.schemas";
+import { ImageUploadField } from "@/components/admin/image-upload-field";
 import { RepeatableList } from "@/components/admin/repeatable-list";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -121,27 +122,46 @@ function HomepageContentForm() {
             <TextField control={form.control} name="hero.primaryCtaHref" label="Primary Button Link" />
             <TextField control={form.control} name="hero.secondaryCtaLabel" label="Secondary Button Label" />
             <TextField control={form.control} name="hero.secondaryCtaHref" label="Secondary Button Link" />
-            <TextField control={form.control} name="hero.backgroundImageUrl" label="Background Image URL (slide 1)" />
+            <FormField
+              control={form.control}
+              name="hero.backgroundImageUrl"
+              render={({ field }) => (
+                <FormItem className="sm:col-span-2">
+                  <FormLabel>Hero background image (slide 1)</FormLabel>
+                  <FormControl>
+                    <ImageUploadField value={field.value ?? ""} onChange={field.onChange} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             <FormField
               control={form.control}
               name="hero.backgroundImages"
               render={({ field }) => (
                 <FormItem className="sm:col-span-2">
-                  <FormLabel>More carousel images (one URL per line)</FormLabel>
+                  <FormLabel>More carousel images</FormLabel>
                   <FormControl>
-                    <Textarea
-                      rows={3}
-                      placeholder={"https://…/slide-2.jpg\nhttps://…/slide-3.jpg"}
-                      defaultValue={(field.value ?? []).join("\n")}
-                      onChange={(e) =>
-                        field.onChange(
-                          e.target.value
-                            .split("\n")
-                            .map((l) => l.trim())
-                            .filter(Boolean),
-                        )
-                      }
-                    />
+                    <div className="space-y-3">
+                      {(field.value ?? []).map((url: string, i: number) => (
+                        <div key={i} className="flex items-start gap-2">
+                          <div className="flex-1">
+                            <ImageUploadField
+                              value={url}
+                              onChange={(u) => {
+                                const next = [...(field.value ?? [])];
+                                if (u) next[i] = u;
+                                else next.splice(i, 1);
+                                field.onChange(next);
+                              }}
+                            />
+                          </div>
+                        </div>
+                      ))}
+                      <Button type="button" variant="outline" size="sm" onClick={() => field.onChange([...(field.value ?? []), ""])}>
+                        + Add carousel image
+                      </Button>
+                    </div>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -179,7 +199,19 @@ function HomepageContentForm() {
             <div className="grid gap-4 sm:grid-cols-2">
               <TextField control={form.control} name="philosophy.badge" label="Badge Text" />
               <TextField control={form.control} name="philosophy.title" label="Title" />
-              <TextField control={form.control} name="philosophy.imageUrl" label="Image URL" />
+              <FormField
+              control={form.control}
+              name="philosophy.imageUrl"
+              render={({ field }) => (
+                <FormItem className="sm:col-span-2">
+                  <FormLabel>Image</FormLabel>
+                  <FormControl>
+                    <ImageUploadField value={field.value ?? ""} onChange={field.onChange} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             </div>
             <TextField control={form.control} name="philosophy.paragraph1" label="Paragraph 1" area />
             <TextField control={form.control} name="philosophy.paragraph2" label="Paragraph 2" area />

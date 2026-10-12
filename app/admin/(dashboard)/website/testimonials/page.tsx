@@ -126,7 +126,7 @@ export default function TestimonialsPage() {
       fields={[
         { name: "customerName", label: "Customer Name", placeholder: "e.g. Priya Sharma" },
         { name: "location", label: "Location", placeholder: "e.g. Mumbai, India" },
-        { name: "avatarUrl", label: "Avatar URL", type: "url", placeholder: "https://... (optional)" },
+        { name: "avatarUrl", label: "Avatar (optional)", type: "image" },
         { name: "rating", label: "Rating (1-5)", type: "number" },
         { name: "quote", label: "Quote", type: "textarea", placeholder: "What the customer said" },
         { name: "bookedItem", label: "Booked Item", placeholder: "e.g. BMW 3 Series Gran Limousine" },
