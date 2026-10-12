@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import Image from "next/image";
+import { BlogImage } from "@/components/website/blog-image";
+import { excerptFrom } from "@/lib/rich-text-shared";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, ArrowRight, Calendar, CheckCircle2, ChevronRight, Clock, Compass, Phone, Sparkles, Tag } from "lucide-react";
@@ -35,11 +36,7 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
     };
   }
 
-  const excerpt = blog.content
-    .replace(/<[^>]*>/g, "")
-    .replace(/#+\s+/g, "")
-    .slice(0, 160)
-    .trim();
+  const excerpt = excerptFrom(blog.content, 160);
 
   const fallback: Metadata = {
     title: `${blog.title} | SRM Car Rentals Blog`,
@@ -78,10 +75,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
     "@context": "https://schema.org",
     "@type": "BlogPosting",
     headline: blog.title,
-    description: blog.content
-      .replace(/<[^>]*>/g, "")
-      .replace(/#+\s+/g, "")
-      .slice(0, 160),
+    description: excerptFrom(blog.content, 160),
     image: blog.featuredImage ? [blog.featuredImage] : [],
     datePublished: (blog.publishDate || blog.createdAt)?.toISOString?.() || new Date().toISOString(),
     dateModified: blog.updatedAt?.toISOString?.() || new Date().toISOString(),
@@ -207,7 +201,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
       {blog.featuredImage && (
         <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 mb-12 sm:mb-16">
           <div className="relative aspect-[16/9] w-full overflow-hidden rounded-3xl border border-neutral-200/90 bg-neutral-100 shadow-xl">
-            <Image
+            <BlogImage
               src={blog.featuredImage}
               alt={blog.title}
               fill
@@ -375,7 +369,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
                   className="group flex flex-col overflow-hidden rounded-2xl border border-neutral-200/90 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-orange-500/40 hover:shadow-lg"
                 >
                   <Link href={`/blog/${item.slug}`} className="relative aspect-[16/10] w-full overflow-hidden bg-neutral-100">
-                    <Image
+                    <BlogImage
                       src={
                         item.featuredImage ||
                         "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=800&q=75&auto=format&fit=crop"
@@ -399,7 +393,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
                         <span>{item.readTimeMinutes} min read</span>
                       </div>
 
-                      <h3 className="mt-2 text-base font-black uppercase tracking-tight text-neutral-950 transition-colors group-hover:text-orange-600 line-clamp-2">
+                      <h3 className="mt-2 text-base font-black uppercase tracking-tight text-neutral-950 transition-colors group-hover:text-orange-600 line-clamp-3">
                         <Link href={`/blog/${item.slug}`}>{item.title}</Link>
                       </h3>
                     </div>

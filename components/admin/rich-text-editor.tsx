@@ -5,7 +5,9 @@ import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { Bold, Heading2, Heading3, Italic, Link2, List, ListOrdered, Quote, Redo2, Strikethrough, Underline as UnderlineIcon, Undo2 } from "lucide-react";
 
-import { isRichHtml, plainTextToHtml } from "@/lib/rich-text-shared";
+import { isRichHtml, looksLikeMarkdown, markdownToHtml, plainTextToHtml } from "@/lib/rich-text-shared";
+
+const toEditorHtml = (v: string) => (isRichHtml(v) ? v : looksLikeMarkdown(v) ? markdownToHtml(v) : plainTextToHtml(v));
 import { cn } from "@/lib/utils";
 
 function Btn({ active, disabled, label, onClick, children }: { active?: boolean; disabled?: boolean; label: string; onClick: () => void; children: React.ReactNode }) {
@@ -30,7 +32,7 @@ export function RichTextEditor({ value, onChange, placeholder, minHeight = 160 }
   const editor = useEditor({
     immediatelyRender: false,
     extensions: [StarterKit.configure({ heading: { levels: [2, 3] }, link: { openOnClick: false, autolink: true } })],
-    content: value ? (isRichHtml(value) ? value : plainTextToHtml(value)) : "",
+    content: value ? toEditorHtml(value) : "",
     editorProps: {
       attributes: {
         class: "rich-text text-sm focus:outline-none px-3 py-2",
@@ -46,7 +48,7 @@ export function RichTextEditor({ value, onChange, placeholder, minHeight = 160 }
     if (!editor) return;
     const current = editor.isEmpty ? "" : editor.getHTML();
     if ((value ?? "") !== current && !editor.isFocused) {
-      editor.commands.setContent(value ? (isRichHtml(value) ? value : plainTextToHtml(value)) : "", { emitUpdate: false });
+      editor.commands.setContent(value ? toEditorHtml(value) : "", { emitUpdate: false });
     }
   }, [value, editor]);
 

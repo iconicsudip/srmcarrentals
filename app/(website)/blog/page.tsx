@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import Image from "next/image";
+import { BlogImage } from "@/components/website/blog-image";
+import { excerptFrom } from "@/lib/rich-text-shared";
 import Link from "next/link";
 import { ArrowRight, BookOpen, Calendar, Clock, Compass, ShieldCheck, Sparkles, User } from "lucide-react";
 
@@ -109,7 +110,7 @@ export default async function BlogHubPage({ searchParams }: BlogHubPageProps) {
               <div className="grid grid-cols-1 gap-8 lg:grid-cols-12 lg:items-center">
                 {/* Featured Image */}
                 <div className="relative aspect-[16/10] w-full overflow-hidden rounded-2xl lg:col-span-7 bg-neutral-100">
-                  <Image
+                  <BlogImage
                     src={
                       featuredBlog.featuredImage ||
                       "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=1200&q=80&auto=format&fit=crop"
@@ -152,11 +153,7 @@ export default async function BlogHubPage({ searchParams }: BlogHubPageProps) {
                   </h2>
 
                   <p className="mt-4 line-clamp-3 text-sm sm:text-base text-neutral-600 leading-relaxed">
-                    {featuredBlog.content
-                      .replace(/<[^>]*>/g, "")
-                      .replace(/#+\s+/g, "")
-                      .slice(0, 220)}
-                    ...
+                    {excerptFrom(featuredBlog.content, 230)}
                   </p>
 
                   <div className="mt-8 flex items-center justify-between border-t border-neutral-200/80 pt-6">
@@ -212,7 +209,7 @@ export default async function BlogHubPage({ searchParams }: BlogHubPageProps) {
               >
                 {/* Card Image */}
                 <Link href={`/blog/${blog.slug}`} className="relative aspect-[16/10] w-full overflow-hidden bg-neutral-100">
-                  <Image
+                  <BlogImage
                     src={
                       blog.featuredImage ||
                       "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=800&q=75&auto=format&fit=crop"
@@ -250,16 +247,12 @@ export default async function BlogHubPage({ searchParams }: BlogHubPageProps) {
                       </span>
                     </div>
 
-                    <h3 className="mt-3 text-lg font-black uppercase tracking-tight text-neutral-950 transition-colors group-hover:text-orange-600 sm:text-xl line-clamp-2">
+                    <h3 className="mt-3 text-lg font-black uppercase tracking-tight text-neutral-950 transition-colors group-hover:text-orange-600 sm:text-xl line-clamp-3">
                       <Link href={`/blog/${blog.slug}`}>{blog.title}</Link>
                     </h3>
 
                     <p className="mt-3 text-sm text-neutral-600 leading-relaxed line-clamp-3">
-                      {blog.content
-                        .replace(/<[^>]*>/g, "")
-                        .replace(/#+\s+/g, "")
-                        .slice(0, 160)}
-                      ...
+                      {excerptFrom(blog.content, 170)}
                     </p>
                   </div>
 

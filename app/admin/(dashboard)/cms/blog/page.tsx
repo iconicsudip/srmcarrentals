@@ -469,7 +469,7 @@ export default function BlogPostsPage() {
 
       {/* Editor Modal */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-h-[92vh] w-[96vw] overflow-y-auto sm:max-w-5xl">
           <DialogHeader>
             <DialogTitle>{editingId ? "Edit Blog Article" : "Write New Article"}</DialogTitle>
           </DialogHeader>
@@ -552,7 +552,7 @@ export default function BlogPostsPage() {
 
             <div className="space-y-1.5">
               <Label>Article Body</Label>
-              <RichTextEditor value={form.content} onChange={(html) => setForm({ ...form, content: html })} placeholder="Write your article…" minHeight={260} />
+              <RichTextEditor value={form.content} onChange={(html) => setForm({ ...form, content: html })} placeholder="Write your article…" minHeight={360} />
             </div>
 
             <DialogFooter className="pt-2">
