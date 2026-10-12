@@ -476,46 +476,6 @@ export function BookingEngine({
         </div>
       </div>
 
-      {/* KM plan — per 24 hours */}
-      {kmPlans.length > 0 && (
-        <div className="mt-5">
-          <div className="flex items-center justify-between">
-            <Label className="text-xs font-medium text-neutral-700">{t("booking.km-plan")}</Label>
-            <span className="text-[11px] text-neutral-500">{t("booking.km-extra-rate", { rate: formatInr(extraKmPrice) })}</span>
-          </div>
-          <div className="mt-1.5 grid grid-cols-3 gap-2">
-            {kmPlans.map((tier) => {
-              const active = tier.plan === kmPlan;
-              // Price & KM for the selected trip: whole days at the 24h price + leftover hours at the hourly price
-              const tilePrice = tier.dailyPrice * tripDays + tripExtraHours * (tier.hourlyPrice ?? fallbackExtraHourPrice);
-              const tileKm = Math.round(tier.km * (tripDays + tripExtraHours / 24));
-              return (
-                <button
-                  key={tier.plan}
-                  type="button"
-                  onClick={() => setKmPlan(tier.plan)}
-                  aria-pressed={active}
-                  className={`relative flex flex-col items-center rounded-xl border px-1.5 py-2.5 text-center transition-all ${
-                    active
-                      ? "border-orange-500 bg-orange-50 shadow-md shadow-orange-500/15"
-                      : "border-neutral-200 bg-neutral-50 hover:border-orange-500/40"
-                  }`}
-                >
-                  {tier.isPopular && (
-                    <span className="absolute -top-2 rounded-full bg-orange-500 px-2 py-px text-[8px] font-black tracking-wider text-white uppercase">
-                      {t("booking.km-popular")}
-                    </span>
-                  )}
-                  <span className="text-sm leading-tight font-black text-neutral-950">{formatInr(tilePrice)}</span>
-                  <span className="mt-0.5 text-[11px] font-bold text-neutral-700">{tileKm} km</span>
-                  <span className="text-[9px] text-neutral-500">{tripDays > 1 || tripExtraHours > 0 ? tripLabel : t("booking.km-per-day")}</span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
       {/* TRIP & DELIVERY OPTIONS */}
       <div className="mt-5 flex flex-col gap-4">
         {/* ── UNIFIED TRIP SCHEDULE PICKER (Single Range & Time Picker) ── */}
@@ -558,6 +518,46 @@ export function BookingEngine({
                 <span className="ml-auto text-[10px] font-normal text-red-600">{t("booking.try-other-dates")}</span>
               </>
             )}
+          </div>
+        )}
+
+        {/* KM plan — per 24 hours */}
+        {kmPlans.length > 0 && (
+          <div>
+            <div className="flex items-center justify-between">
+              <Label className="text-xs font-medium text-neutral-700">{t("booking.km-plan")}</Label>
+              <span className="text-[11px] text-neutral-500">{t("booking.km-extra-rate", { rate: formatInr(extraKmPrice) })}</span>
+            </div>
+            <div className="mt-1.5 grid grid-cols-3 gap-2">
+              {kmPlans.map((tier) => {
+                const active = tier.plan === kmPlan;
+                // Price & KM for the selected trip: whole days at the 24h price + leftover hours at the hourly price
+                const tilePrice = tier.dailyPrice * tripDays + tripExtraHours * (tier.hourlyPrice ?? fallbackExtraHourPrice);
+                const tileKm = Math.round(tier.km * (tripDays + tripExtraHours / 24));
+                return (
+                  <button
+                    key={tier.plan}
+                    type="button"
+                    onClick={() => setKmPlan(tier.plan)}
+                    aria-pressed={active}
+                    className={`relative flex flex-col items-center rounded-xl border px-1.5 py-2.5 text-center transition-all ${
+                      active
+                        ? "border-orange-500 bg-orange-50 shadow-md shadow-orange-500/15"
+                        : "border-neutral-200 bg-neutral-50 hover:border-orange-500/40"
+                    }`}
+                  >
+                    {tier.isPopular && (
+                      <span className="absolute -top-2 rounded-full bg-orange-500 px-2 py-px text-[8px] font-black tracking-wider text-white uppercase">
+                        {t("booking.km-popular")}
+                      </span>
+                    )}
+                    <span className="text-sm leading-tight font-black text-neutral-950">{formatInr(tilePrice)}</span>
+                    <span className="mt-0.5 text-[11px] font-bold text-neutral-700">{tileKm} km</span>
+                    <span className="text-[9px] text-neutral-500">{tripDays > 1 || tripExtraHours > 0 ? tripLabel : t("booking.km-per-day")}</span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
         )}
 
