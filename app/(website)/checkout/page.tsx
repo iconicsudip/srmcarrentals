@@ -165,6 +165,8 @@ export default function CheckoutPage() {
       updateItem(primaryItem.id, {
         dropLocationId: undefined,
         locationDropCharge: 0,
+        // item.total includes the drop fee: keep it in step so the subtotal (total − fee) never moves
+        total: Math.max(0, primaryItem.total - (primaryItem.locationDropCharge ?? 0)),
       });
       setIsChangingLocation(false);
       toast.info("Drop location reset to Standard Branch.");
@@ -175,6 +177,7 @@ export default function CheckoutPage() {
     updateItem(primaryItem.id, {
       dropLocationId: loc.id,
       locationDropCharge: loc.dropCharge,
+      total: Math.max(0, primaryItem.total + loc.dropCharge - (primaryItem.locationDropCharge ?? 0)),
       locationName: primaryItem.locationName?.includes("→")
         ? `${primaryItem.locationName.split("→")[0]?.trim()} → ${loc.name}`
         : `${primaryItem.locationName || "Udaipur"} → ${loc.name}`,
