@@ -5,6 +5,8 @@ export interface KmPricingInput {
   includedKmPerDay: number;
   extraKmPrice: number;
   estimatedKm: number;
+  /** Leftover hours beyond whole days — they earn KM pro-rata (24h = one day's KM). */
+  extraHours?: number;
 }
 
 export interface KmPricingResult {
@@ -14,12 +16,12 @@ export interface KmPricingResult {
 }
 
 /**
- * Included KM = includedKmPerDay * fullDays
+ * Included KM = includedKmPerDay * (fullDays + extraHours / 24)
  * Extra KM    = max(0, estimatedKm - includedKm)
  * Extra Charge = extraKm * extraKmPrice
  */
 export function calculateKmPricing(input: KmPricingInput): KmPricingResult {
-  const includedKm = input.fullDays * input.includedKmPerDay;
+  const includedKm = Math.round(input.includedKmPerDay * (input.fullDays + (input.extraHours ?? 0) / 24));
   const extraKm = Math.max(0, input.estimatedKm - includedKm);
   const extraKmCharge = roundCurrency(extraKm * input.extraKmPrice);
 

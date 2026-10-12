@@ -244,6 +244,7 @@ export async function calculatePricing(input: PricingCalculateDto): Promise<Pric
   // ---- 3. KM pricing ----
   const km = calculateKmPricing({
     fullDays,
+    extraHours: !input.rentalPackageId ? extraHours : 0,
     includedKmPerDay: includedKmPerUnit,
     extraKmPrice,
     estimatedKm: input.estimatedKm,

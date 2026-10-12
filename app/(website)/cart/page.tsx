@@ -1,5 +1,6 @@
 "use client";
 
+import { includedKmLabel } from "@/lib/cart/trip-breakdown";
 import { CarThumb } from "@/components/website/car-thumb";
 import { useCopy } from "@/components/copy-provider";
 import * as React from "react";
@@ -99,10 +100,9 @@ export default function CartPage() {
   const deliveryCharge = Number(primaryItem?.locationDropCharge ?? selectedLocation?.dropCharge ?? 0);
 
   // Calculations matching customer's screenshot structure
-  const subtotal = items.reduce((sum, item) => sum + (item.basePrice || item.dailyPrice || item.total), 0);
+  const subtotal = items.reduce((sum, item) => sum + (item.basePrice || item.dailyPrice || item.total) + (item.extraHourCharge ?? 0), 0);
   const refundableDeposit = primaryItem?.securityDeposit ?? 5000;
-  const freeKmsTotal = primaryItem?.includedKm ?? (primaryItem ? (primaryItem.durationDays || 1) * 240 : 240);
-  const freeKmsPerDay = Math.round(freeKmsTotal / Math.max(primaryItem?.durationDays || 1, 1));
+  const freeKmsLabel = primaryItem ? includedKmLabel(primaryItem) : "240km";
   const extraKmRate = primaryItem?.extraKmPrice ?? 10;
   const fuelType = primaryItem?.fuelType ?? "Diesel";
 
@@ -310,6 +310,11 @@ export default function CartPage() {
                           <div className="sm:col-span-2 sm:text-center text-sm font-semibold text-neutral-800 sm:pt-2 flex justify-between sm:block">
                             <span className="sm:hidden text-neutral-500 text-xs font-normal">{t("cart.price-2")}</span>
                             <span>{formatInr(item.basePrice || item.dailyPrice)}</span>
+                            {(item.extraHours ?? 0) > 0 && (
+                              <span className="block text-[11px] font-normal text-neutral-500">
+                                + {item.extraHours} hr{item.extraHours === 1 ? "" : "s"} × {formatInr(item.extraHourPrice ?? 0)}
+                              </span>
+                            )}
                           </div>
 
                           {/* Col 3: Quantity / Duration */}
@@ -324,7 +329,7 @@ export default function CartPage() {
                           <div className="sm:col-span-2 sm:text-right text-base font-black text-neutral-950 sm:pt-2 flex justify-between sm:block border-t sm:border-0 border-neutral-100 pt-2">
                             <span className="sm:hidden text-neutral-500 text-xs font-normal">{t("cart.total-2")}</span>
                             <span className="text-orange-600 sm:text-neutral-950">
-                              {formatInr(item.basePrice || item.dailyPrice)}
+                              {formatInr((item.basePrice || item.dailyPrice) + (item.extraHourCharge ?? 0))}
                             </span>
                           </div>
 
@@ -414,7 +419,7 @@ export default function CartPage() {
                   <div className="flex items-center justify-between py-3 text-neutral-600">
                     <span className="font-semibold text-neutral-900">{t("cart.free-kms")}</span>
                     <span className="text-right font-medium text-neutral-800">
-                      {freeKmsTotal}km <span className="text-neutral-400 font-normal">({freeKmsPerDay}km x {primaryItem?.durationDays || 1} days)</span>
+                      {freeKmsLabel}
                     </span>
                   </div>
 

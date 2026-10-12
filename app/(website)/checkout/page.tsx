@@ -1,5 +1,6 @@
 "use client";
 
+import { includedKmLabel, tripSplitLabel } from "@/lib/cart/trip-breakdown";
 import { splitAdvance } from "@/lib/checkout/advance";
 import { DEFAULT_PAYMENT_OPTIONS, type PaymentOptions } from "@/lib/payments/types";
 import * as React from "react";
@@ -105,10 +106,7 @@ export default function CheckoutPage() {
       (deliveryLocationName.includes("Railway") ? 400 : 0)
   );
 
-  const durationDays = Math.max(primaryItem?.durationDays || 1, 1);
-  const freeKmsTotal = primaryItem?.includedKm ?? durationDays * 240;
-  const freeKmsPerDay = Math.round(freeKmsTotal / durationDays);
-  const freeKmsLabel = `${freeKmsTotal}km (${freeKmsPerDay}km x ${durationDays} days)`;
+  const freeKmsLabel = primaryItem ? includedKmLabel(primaryItem) : "240km";
 
   // Payment methods, advance % and deposit come from Admin → Settings → Payments.
   const [payOpts, setPayOpts] = React.useState<PaymentOptions>(DEFAULT_PAYMENT_OPTIONS);
@@ -925,6 +923,7 @@ export default function CheckoutPage() {
                           <dt className="font-semibold tracking-wider text-neutral-400 uppercase">{t("checkout.duration")}</dt>
                           <dd className="mt-0.5 flex items-center gap-1 font-medium text-neutral-800">
                             <Clock className="size-3 shrink-0 text-neutral-400" /> {item.durationText}
+                            {(item.extraHours ?? 0) > 0 && <span className="text-neutral-500">· {tripSplitLabel(item)}</span>}
                           </dd>
                         </div>
                         {item.includedKm != null && (

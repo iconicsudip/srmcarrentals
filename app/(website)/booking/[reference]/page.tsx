@@ -341,13 +341,13 @@ export default async function BookingConfirmationPage({ params, searchParams }: 
 
               <div className="mt-4 flex flex-col gap-3 text-sm">
                 <div className="flex justify-between text-neutral-700">
-                  <span>Base Vehicle Rental</span>
+                  <span>Base Vehicle Rental{pricing?.fullDays ? ` (${pricing.fullDays} ${pricing.fullDays === 1 ? "day" : "days"})` : ""}</span>
                   <span className="font-semibold text-neutral-950">{formatInr(pricing?.rentalPrice ?? 0)}</span>
                 </div>
 
                 {pricing?.extraHourCharge != null && Number(pricing.extraHourCharge) > 0 && (
                   <div className="flex justify-between text-neutral-700">
-                    <span>Extra Hours</span>
+                    <span>Extra Hours{pricing?.extraHours ? ` (${Number(pricing.extraHours)} hr${Number(pricing.extraHours) === 1 ? "" : "s"} × ${formatInr(pricing.extraHourPrice ?? 0)})` : ""}</span>
                     <span className="font-semibold text-neutral-950">{formatInr(pricing.extraHourCharge)}</span>
                   </div>
                 )}

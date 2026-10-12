@@ -16,6 +16,12 @@ export interface CartItem {
   durationText: string;
   durationHours: number;
   durationDays: number;
+  /** Whole 24h blocks billed at the daily price. */
+  fullDays?: number;
+  /** Leftover hours billed at the hourly price (e.g. 26h → 1 day + 2 hrs). */
+  extraHours?: number;
+  extraHourPrice?: number;
+  extraHourCharge?: number;
   deliveryType: "BRANCH" | "AIRPORT" | "DOORSTEP";
   locationName?: string;
   pickupLocationId?: string;

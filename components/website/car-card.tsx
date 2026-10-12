@@ -1,5 +1,7 @@
 "use client";
 
+import { calculateRentalDuration } from "@srm/utils";
+import { ExtraHourRoundingMode } from "@srm/types";
 import * as React from "react";
 
 import { resolveCarKmPlans, type CarKmPlan } from "@/lib/pricing/km-plans";
@@ -8,7 +10,7 @@ import { getCarFallbackImage } from "@/lib/car-fallback-image";
 import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { Briefcase, Check, Cog, Eye, Fuel, Loader2, Sparkles, Star, Users, Zap } from "lucide-react";
+import { Briefcase, Check, Cog, Eye, Fuel, Loader2, MapPin, Sparkles, Star, Users, Zap } from "lucide-react";
 
 // Unsplash fallback images — keyed by brand name (lowercase) or category (lowercase)
 export interface CarCardData {
@@ -34,10 +36,13 @@ export interface CarCardData {
   pricing: {
     dailyPrice: string | number;
     hourlyPrice?: string | number | null;
+    extraHourPrice?: string | number | null;
+    gracePeriodMinutes?: number | null;
+    extraHourRoundingMode?: string | null;
     includedKmPerDay?: number | null;
     extraKmPrice?: string | number | null;
   } | null;
-  locations?: { locationId: string; location: { id: string; name: string; slug?: string } }[];
+  locations?: { locationId: string; location: { id: string; name: string; slug?: string; city?: string | null } }[];
   /** 3 KM plans (admin-set prices, else calculated) — see lib/pricing/km-plans.ts */
   kmPlans?: CarKmPlan[];
 }
@@ -49,18 +54,27 @@ export interface CarCardProps {
   searchParams?: Record<string, string | undefined>;
 }
 
-function parseDurationDays(pickupStr?: string | null, dropStr?: string | null): number {
-  if (!pickupStr || !dropStr) return 1;
+/** Same rule as the pricing engine: whole 24h blocks (min 1) + leftover hours after the grace period, e.g. 26h → 1 day + 2 hrs. */
+function parseTripDuration(
+  pickupStr: string | null | undefined,
+  dropStr: string | null | undefined,
+  rules: { gracePeriodMinutes?: number | null; roundingMode?: string | null },
+): { days: number; extraHours: number } {
+  const ONE = { days: 1, extraHours: 0 };
+  if (!pickupStr || !dropStr) return ONE;
   try {
     const sNorm = pickupStr.includes("T") && pickupStr.split("T")[1]?.length === 5 ? `${pickupStr}:00` : pickupStr;
     const eNorm = dropStr.includes("T") && dropStr.split("T")[1]?.length === 5 ? `${dropStr}:00` : dropStr;
-    const start = new Date(sNorm).getTime();
-    const end = new Date(eNorm).getTime();
-    if (isNaN(start) || isNaN(end) || end <= start) return 1;
-    const hours = Math.ceil((end - start) / (1000 * 60 * 60));
-    return Math.max(1, Math.ceil(hours / 24));
+    if (isNaN(new Date(sNorm).getTime()) || isNaN(new Date(eNorm).getTime())) return ONE;
+    const d = calculateRentalDuration({
+      pickupDateTime: sNorm,
+      dropDateTime: eNorm,
+      gracePeriodMinutes: rules.gracePeriodMinutes ?? 0,
+      roundingMode: (rules.roundingMode as ExtraHourRoundingMode | undefined) ?? ExtraHourRoundingMode.ROUND_UP,
+    });
+    return { days: d.fullDays, extraHours: d.extraHours };
   } catch {
-    return 1;
+    return ONE;
   }
 }
 
@@ -80,10 +94,13 @@ function CarCardInner({
   const dropDate = serverParams?.dropDate ?? clientSearchParams.get("dropDate");
 
   // Calculate rental duration in days from active trip dates
-  const tripDays = React.useMemo(() => {
-    if (showBasePriceOnly) return 1;
-    return parseDurationDays(pickupDate, dropDate);
-  }, [pickupDate, dropDate, showBasePriceOnly]);
+  const { days: tripDays, extraHours: tripExtraHours } = React.useMemo(() => {
+    if (showBasePriceOnly) return { days: 1, extraHours: 0 };
+    return parseTripDuration(pickupDate, dropDate, {
+      gracePeriodMinutes: car.pricing?.gracePeriodMinutes,
+      roundingMode: car.pricing?.extraHourRoundingMode,
+    });
+  }, [pickupDate, dropDate, showBasePriceOnly, car.pricing?.gracePeriodMinutes, car.pricing?.extraHourRoundingMode]);
 
   const queryParams = React.useMemo(() => {
     const q = new URLSearchParams();
@@ -101,6 +118,16 @@ function CarCardInner({
   const extraKmRate = Number(car.pricing?.extraKmPrice ?? 15);
 
   const categoryName = car.category?.name ?? car.brand.name;
+  // Distinct cities (e.g. Udaipur · Jaipur) instead of a long list of every pickup point
+  const cities = React.useMemo(() => {
+    const seen = new Set<string>();
+    for (const l of car.locations ?? []) {
+      const c = (l.location.city ?? "").replace(/\s*\(.*\)\s*$/, "").trim();
+      if (c) seen.add(c);
+    }
+    return [...seen];
+  }, [car.locations]);
+  const pickupPointCount = car.locations?.length ?? 0;
   const fuelName = car.fuelType?.name ?? "Diesel";
   const transmissionName = car.transmissionType?.name ?? "Manual";
   const seatCount = car.seatOption?.count ?? 5;
@@ -125,12 +152,13 @@ function CarCardInner({
     return plans.map((plan) => ({
       id: `plan-${plan.plan}`,
       plan: plan.plan,
-      kmLimit: plan.km * tripDays,
-      price: plan.dailyPrice * tripDays,
+      kmLimit: Math.round(plan.km * (tripDays + tripExtraHours / 24)),
+      // whole days at the plan's 24h price + leftover hours at its hourly price (same rule as the booking engine)
+      price: plan.dailyPrice * tripDays + tripExtraHours * (plan.hourlyPrice ?? Number(car.pricing?.extraHourPrice ?? 0)),
       extraKmPrice: extraKmRate,
       isPopular: plan.isPopular,
     }));
-  }, [car.kmPlans, car.id, dailyPrice, baseKm, extraKmRate, tripDays]);
+  }, [car.kmPlans, car.id, car.pricing?.extraHourPrice, dailyPrice, baseKm, extraKmRate, tripDays, tripExtraHours]);
 
   function getBookHref(kmLimit?: number, pkgPrice?: number, plan?: number) {
     const q = new URLSearchParams();
@@ -320,14 +348,23 @@ function CarCardInner({
               <h3 className="text-xl md:text-2xl font-black text-neutral-950 tracking-tight uppercase group-hover:text-orange-600 transition-colors">
                 {car.name}
               </h3>
-              <p className="mt-0.5 text-xs text-neutral-500 font-medium flex flex-wrap items-center gap-1.5">
-                <span>Category : <span className="text-neutral-900 font-bold">{categoryName}</span></span>
-                {car.locations && car.locations.length > 0 && (
-                  <span className="inline-flex items-center gap-1 text-[11px] text-orange-700 font-semibold bg-orange-500/10 border border-orange-500/20 px-2 py-0.5 rounded-md">
-                    📍 {car.locations.map((l) => l.location.name).join(", ")}
-                  </span>
-                )}
+              <p className="mt-0.5 text-xs text-neutral-500 font-medium">
+                Category : <span className="text-neutral-900 font-bold">{categoryName}</span>
               </p>
+              {cities.length > 0 && (
+                <div className="mt-2 flex flex-wrap items-center gap-1.5" title={car.locations?.map((l) => l.location.name).join(" · ")}>
+                  <span className="text-[10px] font-bold tracking-widest text-neutral-400 uppercase">Available in</span>
+                  {cities.map((c) => (
+                    <span key={c} className="inline-flex items-center gap-1 rounded-full border border-neutral-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-neutral-800 shadow-xs">
+                      <MapPin className="size-3 text-orange-500" />
+                      {c}
+                    </span>
+                  ))}
+                  {pickupPointCount > cities.length && (
+                    <span className="text-[11px] font-medium text-neutral-400">{pickupPointCount} pickup points</span>
+                  )}
+                </div>
+              )}
             </div>
 
             <Link
@@ -356,9 +393,9 @@ function CarCardInner({
               <Briefcase className="size-3.5 text-orange-500" />
               {luggage}
             </span>
-            {tripDays > 1 && (
+            {(tripDays > 1 || tripExtraHours > 0) && (
               <span className="ml-auto text-[11px] font-semibold text-orange-700 bg-orange-500/10 border border-orange-500/20 px-2 py-0.5 rounded-full">
-                {tripDays} Days Trip Pricing
+                {tripDays} {tripDays === 1 ? "Day" : "Days"}{tripExtraHours > 0 ? ` + ${tripExtraHours} hr${tripExtraHours === 1 ? "" : "s"}` : ""} Trip Pricing
               </span>
             )}
           </div>
