@@ -7,9 +7,10 @@ import { flexRender, getCoreRowModel, useReactTable, type ColumnDef } from "@tan
 import { CarFront, Pencil, Plus, Search, Star, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
-import { ApiRequestError } from "@/lib/api-client";
+import { ApiRequestError, api } from "@/lib/api-client";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { useCarList, useDeleteCar } from "@/hooks/use-cars";
+import { DEFAULT_KM_PLANS, normalizeKmPlans, resolveCarKmPlans, type KmPlansConfig } from "@/lib/pricing/km-plans";
 import { useLookupOptions } from "@/hooks/use-lookup-options";
 import { ConfirmDialog } from "@/components/admin/confirm-dialog";
 import { Badge } from "@/components/ui/badge";
@@ -32,7 +33,7 @@ interface CarListItem {
   category: { name: string };
   carType: { name: string };
   images: { url: string; altText: string | null }[];
-  pricing: { dailyPrice: string } | null;
+  pricing: { dailyPrice: string; hourlyPrice?: string | null; includedKmPerDay?: number; extraKmPrice?: string } | null;
   locations?: { locationId: string; location: { id: string; name: string } }[];
 }
 
@@ -53,6 +54,10 @@ export default function CarsPage() {
   const [locationId, setLocationId] = React.useState<string>("ALL");
   const [deletingCar, setDeletingCar] = React.useState<CarListItem | null>(null);
 
+  const [kmConfig, setKmConfig] = React.useState<KmPlansConfig>(DEFAULT_KM_PLANS);
+  React.useEffect(() => {
+    api.get<KmPlansConfig>("/pricing/km-plans").then((c) => setKmConfig(normalizeKmPlans(c))).catch(() => {});
+  }, []);
   const brands = useLookupOptions<{ id: string; name: string }>("/cars/brands", "name");
   const categories = useLookupOptions<{ id: string; name: string }>("/cars/categories", "name");
   const locations = useLookupOptions<{ id: string; name: string }>("/locations", "name");
@@ -141,9 +146,32 @@ export default function CarsPage() {
     },
     {
       id: "price",
-      header: "24hr Price",
-      cell: ({ row }) =>
-        row.original.pricing ? `₹${Number(row.original.pricing.dailyPrice).toLocaleString("en-IN")}` : "—",
+      header: "Pricing (per 24h)",
+      cell: ({ row }) => {
+        const pr = row.original.pricing;
+        if (!pr) return <span className="text-muted-foreground text-xs">Not set</span>;
+        const plans = resolveCarKmPlans(
+          {
+            id: row.original.id,
+            dailyPrice: Number(pr.dailyPrice),
+            hourlyPrice: pr.hourlyPrice ? Number(pr.hourlyPrice) : null,
+            includedKmPerDay: pr.includedKmPerDay ?? 120,
+            extraKmPrice: Number(pr.extraKmPrice ?? 10),
+          },
+          kmConfig,
+        );
+        return (
+          <div className="flex flex-col gap-0.5 text-xs">
+            {plans.map((plan) => (
+              <div key={plan.plan} className="flex items-baseline gap-2 whitespace-nowrap">
+                <span className="text-muted-foreground w-14">{plan.km} km</span>
+                <span className="font-semibold">₹{plan.dailyPrice.toLocaleString("en-IN")}</span>
+                {plan.hourlyPrice ? <span className="text-muted-foreground">· ₹{plan.hourlyPrice.toLocaleString("en-IN")}/hr</span> : null}
+              </div>
+            ))}
+          </div>
+        );
+      },
     },
     {
       id: "status",
