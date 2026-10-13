@@ -117,7 +117,10 @@ function CarCardInner({
 
   const carHref = `/car/${car.slug}${queryParams}`;
   // Same car, different price per pickup location (when the selected location has its own prices)
-  const kmPlansHere = (locationId && car.kmPlansByLocation?.[locationId]) || car.kmPlans;
+  const kmPlansHere =
+    (locationId && car.kmPlansByLocation?.[locationId]) ||
+    (cityParam && car.kmPlansByLocation?.[`city:${cityParam.trim().toLowerCase()}`]) ||
+    car.kmPlans;
   const image = car.images[0];
   const dailyPrice = kmPlansHere?.[0]?.dailyPrice ?? (car.pricing ? Number(car.pricing.dailyPrice) : 2500);
   const baseKm = kmPlansHere?.[0]?.km ?? Number(car.pricing?.includedKmPerDay ?? 250);

@@ -29,6 +29,7 @@ export async function getKmPlansConfigForPickup(): Promise<KmPlansConfig> {
       const loc = locs.find((l) => l.id === locId);
       if (!loc || loc.kind !== "CITY") continue;
       const city = cityOf.get(locId);
+      out[`city:${city}`] = plans; // lets city-only searches (no pickup point yet) find the price
       for (const pt of locs) if (pt.kind !== "CITY" && cityOf.get(pt.id) === city && !out[pt.id]) out[pt.id] = plans;
     }
     expanded[carId] = out;

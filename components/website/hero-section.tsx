@@ -31,7 +31,10 @@ export function HeroSection({
   widgetText: SiteText["bookingWidget"];
 }) {
   const cleanTitle = stripTrailingPunctuation(content.title);
-  const titleParts = content.highlightWord ? cleanTitle.split(content.highlightWord) : [cleanTitle, ""];
+  // Highlight only a word that is really part of the title (case-insensitive), so a stale highlight never shows.
+  const highlightAt = content.highlightWord?.trim() ? cleanTitle.toLowerCase().indexOf(content.highlightWord.trim().toLowerCase()) : -1;
+  const highlightText = highlightAt >= 0 ? cleanTitle.slice(highlightAt, highlightAt + content.highlightWord!.trim().length) : "";
+  const titleParts = highlightAt >= 0 ? [cleanTitle.slice(0, highlightAt), cleanTitle.slice(highlightAt + highlightText.length)] : [cleanTitle, ""];
   const slides = Array.from(
     new Set([content.backgroundImageUrl || "/images/hero-car-bg.jpg", ...(content.backgroundImages ?? [])].filter(Boolean)),
   );
@@ -94,10 +97,10 @@ export function HeroSection({
 
           <h1 className="text-[2.75rem] leading-[0.95] font-black tracking-tight text-white uppercase drop-shadow-[0_2px_24px_rgba(0,0,0,0.5)] sm:text-6xl lg:text-7xl xl:text-[5.5rem]">
             {titleParts[0]}
-            {content.highlightWord && (
+            {highlightText && (
               <span className="relative inline-block">
                 <span className="bg-gradient-to-r from-amber-300 via-orange-400 to-amber-500 bg-clip-text text-transparent">
-                  {content.highlightWord}
+                  {highlightText}
                 </span>
                 {/* Hand-drawn underline stroke */}
                 <svg

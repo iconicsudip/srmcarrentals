@@ -121,6 +121,24 @@ export const aboutPageContentSchema = z.object({
     paragraph2: z.string().default("With our modern fleet of hatchbacks, executive sedans, rugged 4x4s, and family MPVs, we provide immaculate vehicles with complete freedom. Zero hidden charges, 24/7 roadside assistance, and transparent pricing."),
     imageUrl: z.string().optional().or(z.literal("")),
   }),
+  /** Mission / commitment cards beside the story. */
+  vision: z.object({
+    missionTitle: z.string().default("Our Mission"),
+    missionText: z.string().default("To provide seamless self-drive freedom across India with immaculate cars, transparent pricing, and uncompromising customer support at every touchpoint."),
+    commitmentTitle: z.string().default("Our Commitment"),
+    commitmentText: z.string().default("Spotless interiors. Timely handovers. Honest tariffs. Every single rental."),
+    ctaText: z.string().default("Ready to experience it?"),
+    ctaLabel: z.string().default("View Fleet"),
+    ctaHref: z.string().default("/cars"),
+  }).optional(),
+  /** Headings of the features and branches sections. */
+  sections: z.object({
+    featuresBadge: z.string().default("The SRM Advantage"),
+    featuresTitle: z.string().default("Why drive with SRM?"),
+    branchesBadge: z.string().default("Our Locations"),
+    branchesTitle: z.string().default("Branch offices."),
+    branchesSubtitle: z.string().default("Pick up at our branch or request doorstep delivery to your hotel, airport, or railway station."),
+  }).optional(),
   features: z.array(z.object({
     icon: z.string().default("CarFront"),
     title: z.string().min(1),

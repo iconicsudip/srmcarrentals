@@ -132,6 +132,7 @@ function HomepageContentForm() {
           <CardContent className="grid gap-4 sm:grid-cols-2">
             <TextField control={form.control} name="hero.badge" label="Top Badge Text" />
             <TextField control={form.control} name="hero.title" label="Headline" />
+            <TextField control={form.control} name="hero.highlightWord" label="Highlighted part of headline (optional)" />
             <TextField control={form.control} name="hero.subtitle" label="Subtitle" area className="sm:col-span-2" />
             <TextField control={form.control} name="hero.primaryCtaLabel" label="Primary Button Label" />
             <TextField control={form.control} name="hero.primaryCtaHref" label="Primary Button Link" />

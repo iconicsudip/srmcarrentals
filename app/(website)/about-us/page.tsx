@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Award, Car, MapPin, Phone, Shield, Target, Users } from "lucide-react";
+import { aboutPageContentSchema } from "@/modules/settings/site-content.schemas";
 import { getAboutPageContent } from "@/modules/website/public-content.service";
 import { getDynamicSeoForPath, DynamicJsonLd } from "@/lib/seo/dynamic-seo";
 
@@ -19,6 +20,10 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function AboutUsPage() {
   const content = await getAboutPageContent();
   const { hero, stats, story, features, branches } = content;
+  // Defaults for blocks older saved content doesn't have yet
+  const defaults = aboutPageContentSchema.parse({ hero: {}, story: {}, vision: {}, sections: {} });
+  const vision = { ...defaults.vision!, ...(content.vision ?? {}) };
+  const sections = { ...defaults.sections!, ...(content.sections ?? {}) };
 
   const FEATURE_ICONS = [Shield, Car, Users, Award];
 
@@ -82,7 +87,7 @@ export default async function AboutUsPage() {
           <div className="grid gap-12 lg:grid-cols-2">
             {/* Story */}
             <div className="flex flex-col justify-center">
-              <span className="text-xs font-bold tracking-widest text-orange-600 uppercase">Our Story</span>
+              <span className="text-xs font-bold tracking-widest text-orange-600 uppercase">{story.badge || "Our Story"}</span>
               <h2 className="mt-4 text-4xl font-black text-neutral-950">{story.title || "Driven by passion."}</h2>
               <div className="mt-6 space-y-4 text-base leading-relaxed text-neutral-600">
                 <p>{story.paragraph1}</p>
@@ -96,26 +101,26 @@ export default async function AboutUsPage() {
                 <div className="mb-4 flex size-10 items-center justify-center rounded-xl bg-orange-500/10">
                   <Target className="size-5 text-orange-500" />
                 </div>
-                <h3 className="text-xl font-bold text-neutral-950">Our Mission</h3>
+                <h3 className="text-xl font-bold text-neutral-950">{vision.missionTitle}</h3>
                 <p className="mt-3 text-sm leading-relaxed text-neutral-600">
-                  To provide seamless self-drive freedom across India with immaculate cars, transparent pricing, and uncompromising customer support at every touchpoint.
+                  {vision.missionText}
                 </p>
               </div>
               <div className="rounded-2xl border border-orange-500/20 bg-orange-500/5 p-8 shadow-sm">
                 <div className="mb-4 flex size-10 items-center justify-center rounded-xl bg-orange-500/20">
                   <Award className="size-5 text-orange-500" />
                 </div>
-                <h3 className="text-xl font-bold text-neutral-950">Our Commitment</h3>
+                <h3 className="text-xl font-bold text-neutral-950">{vision.commitmentTitle}</h3>
                 <p className="mt-3 text-sm leading-relaxed text-neutral-600">
-                  Spotless interiors. Timely handovers. Honest tariffs. Every single rental.
+                  {vision.commitmentText}
                 </p>
                 <div className="mt-8 border-t border-neutral-200/80 pt-6 flex items-center justify-between">
-                  <span className="text-sm text-neutral-500">Ready to experience it?</span>
+                  <span className="text-sm text-neutral-500">{vision.ctaText}</span>
                   <Link
-                    href="/cars"
+                    href={vision.ctaHref || "/cars"}
                     className="flex items-center gap-2 rounded-xl bg-orange-500 px-5 py-2.5 text-sm font-bold text-white shadow-md shadow-orange-500/20 transition hover:bg-orange-600"
                   >
-                    View Fleet <ArrowRight className="size-4" />
+                    {vision.ctaLabel} <ArrowRight className="size-4" />
                   </Link>
                 </div>
               </div>
@@ -129,8 +134,8 @@ export default async function AboutUsPage() {
         <section className="border-t border-neutral-200/60 bg-white/70 py-24">
           <div className="mx-auto max-w-[1520px] px-4 sm:px-6 lg:px-8">
             <div className="mb-16 text-center">
-              <span className="text-xs font-bold tracking-widest text-orange-600 uppercase">The SRM Advantage</span>
-              <h2 className="mt-4 text-4xl font-black text-neutral-950">Why drive with SRM?</h2>
+              <span className="text-xs font-bold tracking-widest text-orange-600 uppercase">{sections.featuresBadge}</span>
+              <h2 className="mt-4 text-4xl font-black text-neutral-950">{sections.featuresTitle}</h2>
             </div>
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
               {features.map((f, i) => {
@@ -158,10 +163,10 @@ export default async function AboutUsPage() {
         <section className="border-t border-neutral-200/60 py-24">
           <div className="mx-auto max-w-[1520px] px-4 sm:px-6 lg:px-8">
             <div className="mb-16 text-center">
-              <span className="text-xs font-bold tracking-widest text-orange-600 uppercase">Our Locations</span>
-              <h2 className="mt-4 text-4xl font-black text-neutral-950">Branch offices.</h2>
+              <span className="text-xs font-bold tracking-widest text-orange-600 uppercase">{sections.branchesBadge}</span>
+              <h2 className="mt-4 text-4xl font-black text-neutral-950">{sections.branchesTitle}</h2>
               <p className="mx-auto mt-4 max-w-2xl text-neutral-600">
-                Pick up at our branch or request doorstep delivery to your hotel, airport, or railway station.
+                {sections.branchesSubtitle}
               </p>
             </div>
             <div className="grid gap-6 sm:grid-cols-3">

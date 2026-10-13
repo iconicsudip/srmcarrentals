@@ -40,6 +40,8 @@ const DEFAULT_ABOUT: AboutPageContent = {
     paragraph2: "We deliver pristine, fully insured vehicles with complete freedom. Transparent terms, instant confirmation, and 24/7 support.",
     imageUrl: "",
   },
+  vision: aboutPageContentSchema.parse({ hero: {}, story: {}, vision: {} }).vision,
+  sections: aboutPageContentSchema.parse({ hero: {}, story: {}, sections: {} }).sections,
   features: [],
   branches: [],
 };
@@ -159,6 +161,36 @@ export default function AboutContentPage() {
               <TextField control={form.control} name="story.title" label="Story Title" />
               <TextField control={form.control} name="story.paragraph1" label="Paragraph 1" area />
               <TextField control={form.control} name="story.paragraph2" label="Paragraph 2" area />
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Mission & Commitment Cards</CardTitle>
+              <CardDescription>The two cards shown beside the story</CardDescription>
+            </CardHeader>
+            <CardContent className="grid gap-4 sm:grid-cols-2">
+              <TextField control={form.control} name="vision.missionTitle" label="Mission Title" />
+              <TextField control={form.control} name="vision.commitmentTitle" label="Commitment Title" />
+              <TextField control={form.control} name="vision.missionText" label="Mission Text" area />
+              <TextField control={form.control} name="vision.commitmentText" label="Commitment Text" area />
+              <TextField control={form.control} name="vision.ctaText" label="Call-to-action Text" />
+              <TextField control={form.control} name="vision.ctaLabel" label="Button Label" />
+              <TextField control={form.control} name="vision.ctaHref" label="Button Link" />
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Section Headings</CardTitle>
+              <CardDescription>Headings above the features and branch offices sections</CardDescription>
+            </CardHeader>
+            <CardContent className="grid gap-4 sm:grid-cols-2">
+              <TextField control={form.control} name="sections.featuresBadge" label="Features Badge" />
+              <TextField control={form.control} name="sections.featuresTitle" label="Features Title" />
+              <TextField control={form.control} name="sections.branchesBadge" label="Branches Badge" />
+              <TextField control={form.control} name="sections.branchesTitle" label="Branches Title" />
+              <TextField control={form.control} name="sections.branchesSubtitle" label="Branches Subtitle" area className="sm:col-span-2" />
             </CardContent>
           </Card>
 
