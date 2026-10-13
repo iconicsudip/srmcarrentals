@@ -10,7 +10,7 @@ import { CouponDiscountType, ExtraHourRoundingMode, PackageAssignmentScope, Seas
 import { roundCurrency } from "@srm/utils";
 
 import { prisma } from "@/lib/prisma";
-import { getKmPlansConfig } from "@/lib/pricing/km-plans.server";
+import { getKmPlansConfigForPickup } from "@/lib/pricing/km-plans.server";
 import { clampPlan, resolveCarKmPlans } from "@/lib/pricing/km-plans";
 import { getMapProvider } from "@/lib/map";
 import { BadRequestError, NotFoundError } from "@/lib/http/errors";
@@ -177,7 +177,7 @@ export async function calculatePricing(input: PricingCalculateDto): Promise<Pric
         includedKmPerDay: includedKmPerUnit,
         extraKmPrice,
       },
-      await getKmPlansConfig(),
+      await getKmPlansConfigForPickup(),
       input.pickupLocationId,
     );
     const plan = plans[clampPlan(input.kmPlan ?? 1) - 1]!;

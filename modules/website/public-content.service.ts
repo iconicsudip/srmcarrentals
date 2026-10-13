@@ -2,7 +2,7 @@ import { unstable_cache } from "next/cache";
 
 import { makeT } from "@/lib/copy/translate";
 import { toSlug } from "@/lib/slug";
-import { getKmPlansConfig } from "@/lib/pricing/km-plans.server";
+import { getKmPlansConfigForPickup } from "@/lib/pricing/km-plans.server";
 import { resolveCarKmPlans, resolveCarKmPlansByLocation } from "@/lib/pricing/km-plans";
 
 import { isRichHtml, sanitizeRichHtml } from "@/lib/rich-text";
@@ -364,7 +364,7 @@ function cached<A extends unknown[], R>(name: string, fn: (...args: A) => Promis
 
 /** Adds each car's 3 KM plans (admin prices, else calculated) so cards and pages show identical numbers. */
 async function attachKmPlans<T extends { id: string; pricing?: any }>(cars: T[]) {
-  const cfg = await getKmPlansConfig();
+  const cfg = await getKmPlansConfigForPickup();
   return cars.map((c) => {
     if (!c.pricing) return { ...c, kmPlans: undefined, kmPlansByLocation: undefined };
     const input = {

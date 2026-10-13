@@ -12,6 +12,30 @@ export async function getKmPlansConfig(): Promise<KmPlansConfig> {
   }
 }
 
+/**
+ * Admin sets location prices per CITY, but customers pick a pickup POINT inside it. This copies each city's
+ * prices onto that city's points (a price set on a point itself still wins), so lookups by pickup point match.
+ */
+export async function getKmPlansConfigForPickup(): Promise<KmPlansConfig> {
+  const cfg = await getKmPlansConfig();
+  const byCar = cfg.locationPrices;
+  if (!byCar || Object.keys(byCar).length === 0) return cfg;
+  const locs = await prisma.location.findMany({ select: { id: true, kind: true, city: true } });
+  const cityOf = new Map(locs.map((l) => [l.id, (l.city ?? "").trim().toLowerCase()]));
+  const expanded: NonNullable<KmPlansConfig["locationPrices"]> = {};
+  for (const [carId, byLoc] of Object.entries(byCar)) {
+    const out = { ...byLoc };
+    for (const [locId, plans] of Object.entries(byLoc)) {
+      const loc = locs.find((l) => l.id === locId);
+      if (!loc || loc.kind !== "CITY") continue;
+      const city = cityOf.get(locId);
+      for (const pt of locs) if (pt.kind !== "CITY" && cityOf.get(pt.id) === city && !out[pt.id]) out[pt.id] = plans;
+    }
+    expanded[carId] = out;
+  }
+  return { ...cfg, locationPrices: expanded };
+}
+
 export async function saveKmPlansConfig(raw: unknown): Promise<KmPlansConfig> {
   const cfg = normalizeKmPlans(raw);
   await setSetting(KM_PLANS_SETTING_KEY, cfg);

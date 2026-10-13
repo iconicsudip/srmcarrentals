@@ -86,7 +86,7 @@ export function CarKmPlansTab({ carId, pricing, locations = [] }: { carId: strin
       };
       const saved = await api.put<KmPlansConfig>("/pricing/km-plans", next);
       setConfig(normalizeKmPlans(saved));
-      toast.success("KM plans saved — live within a minute");
+      toast.success("KM plans saved — live on the website now");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Failed to save");
     } finally {
