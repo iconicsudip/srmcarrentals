@@ -1,5 +1,6 @@
 import type { z } from "zod";
 
+import { uniqueSlug } from "@/lib/slug";
 import { NotFoundError } from "@/lib/http/errors";
 import { buildPaginationMeta, parsePagination } from "@/lib/http/pagination";
 
@@ -73,8 +74,23 @@ export function createLookupCrud<TCreate, TUpdate>(options: LookupCrudOptions<TC
     return { data, meta: buildPaginationMeta(page, limit, total) };
   }
 
+  /** A slug that is already taken becomes slug-2, slug-3… instead of a "already exists" error. */
+  async function withUniqueSlug<T extends object>(body: T, selfId?: string): Promise<T> {
+    const slug = (body as { slug?: unknown }).slug;
+    if (typeof slug !== "string" || !slug.trim()) return body;
+    try {
+      const free = await uniqueSlug(slug, async (c) => {
+        const hit = await options.delegate.findUnique({ where: { slug: c } });
+        return !!hit && hit.id !== selfId;
+      });
+      return { ...body, slug: free };
+    } catch {
+      return body; // model without a unique slug column — leave as is
+    }
+  }
+
   async function create(req: Request) {
-    const body = options.createSchema.parse(await req.json());
+    const body = await withUniqueSlug(options.createSchema.parse(await req.json()) as object);
     return options.delegate.create({ data: body, include: options.include });
   }
 
@@ -86,7 +102,7 @@ export function createLookupCrud<TCreate, TUpdate>(options: LookupCrudOptions<TC
 
   async function update(req: Request, id: string) {
     await getOrThrow(id);
-    const body = options.updateSchema.parse(await req.json());
+    const body = await withUniqueSlug(options.updateSchema.parse(await req.json()) as object, id);
     return options.delegate.update({ where: { id }, data: body, include: options.include });
   }
 

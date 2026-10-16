@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { requirePermission } from "@/lib/auth/rbac";
 import { ok } from "@/lib/http/api-response";
+import { uniqueSlug } from "@/lib/slug";
 import { withErrorHandling } from "@/lib/http/with-error-handling";
 
 export const GET = withErrorHandling(async () => {
@@ -22,13 +23,7 @@ export const POST = withErrorHandling(async (req) => {
   await requirePermission("blog.manage");
   const body = await req.json();
 
-  const slug =
-    body.slug ||
-    body.name
-      .toLowerCase()
-      .trim()
-      .replace(/[^\w\s-]/g, "")
-      .replace(/[\s_-]+/g, "-");
+  const slug = await uniqueSlug(body.slug || body.name, async (c) => !!(await prisma.blogCategory.findUnique({ where: { slug: c }, select: { id: true } })));
 
   const category = await prisma.blogCategory.create({
     data: {
@@ -45,6 +40,15 @@ export const PUT = withErrorHandling(async (req) => {
   await requirePermission("blog.manage");
   const body = await req.json();
   const { id, ...data } = body;
+
+  if (typeof data.slug === "string" && data.slug.trim()) {
+    data.slug = await uniqueSlug(data.slug, async (c) => {
+      const hit = await prisma.blogCategory.findUnique({ where: { slug: c }, select: { id: true } });
+      return !!hit && hit.id !== id;
+    });
+  } else {
+    delete data.slug;
+  }
 
   const updated = await prisma.blogCategory.update({
     where: { id },

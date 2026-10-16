@@ -198,6 +198,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { title: "Contact Page", href: "/admin/website/contact", icon: PhoneCall, permission: "homepage.manage" },
       { title: "FAQs", href: "/admin/website/faq", icon: HelpCircle, permission: "homepage.manage" },
       { title: "Terms & Conditions", href: "/admin/website/terms", icon: ScrollText, permission: "homepage.manage" },
+      { title: "Privacy Policy", href: "/admin/website/privacy", icon: ShieldCheck, permission: "homepage.manage" },
       { title: "Taxi / Chauffeur Services", href: "/admin/website/chauffeur-services", icon: CarFront, permission: "chauffeur_services.manage" },
       { title: "Testimonials", href: "/admin/website/testimonials", icon: Star, permission: "testimonials.manage" },
       { title: "Gallery", href: "/admin/website/gallery", icon: ImageIcon, permission: "gallery.manage" },

@@ -226,6 +226,33 @@ export const termsPageContentSchema = z.object({
 });
 export type TermsPageContent = z.infer<typeof termsPageContentSchema>;
 
+/** Setting key: "pages.privacy" — Privacy Policy content. Section bodies are rich-text HTML. */
+export const privacySectionSchema = z.object({
+  id: z.string().min(1),
+  title: z.string().min(1),
+  body: z.string().default(""),
+});
+export type PrivacySection = z.infer<typeof privacySectionSchema>;
+
+export const privacyPageContentSchema = z.object({
+  hero: z.object({
+    badge: z.string().default("YOUR PRIVACY MATTERS"),
+    title: z.string().default("PRIVACY POLICY"),
+    subtitle: z.string().default("How we collect, use and protect your personal information."),
+  }),
+  lastUpdated: z.string().default(""),
+  intro: z.string().default(""),
+  sections: z.array(privacySectionSchema).default([]),
+  contact: z.object({
+    show: z.boolean().default(true),
+    title: z.string().default("Questions about your privacy?"),
+    text: z.string().default("Write to us and we will respond as soon as we can."),
+    buttonLabel: z.string().default("Contact Us"),
+    buttonHref: z.string().default("/contact-us"),
+  }).default({ show: true, title: "Questions about your privacy?", text: "Write to us and we will respond as soon as we can.", buttonLabel: "Contact Us", buttonHref: "/contact-us" }),
+});
+export type PrivacyPageContent = z.infer<typeof privacyPageContentSchema>;
+
 export const availableServicesSchema = z.object({
   cars: z.boolean().default(true),
   taxi: z.boolean().default(true),
@@ -376,6 +403,7 @@ export const SITE_CONTENT_SCHEMAS: Record<string, z.ZodType<unknown>> = {
   "pages.contact": contactPageContentSchema,
   "pages.faq": faqPageContentSchema,
   "pages.terms": termsPageContentSchema,
+  "pages.privacy": privacyPageContentSchema,
   "system.services": availableServicesSchema,
 };
 

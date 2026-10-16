@@ -3,6 +3,7 @@ import { requirePermission } from "@/lib/auth/rbac";
 import { ok, paginated } from "@/lib/http/api-response";
 import { buildPaginationMeta, parsePagination } from "@/lib/http/pagination";
 import { withErrorHandling } from "@/lib/http/with-error-handling";
+import { uniqueSlug } from "@/lib/slug";
 import { BlogStatus } from "@prisma/client";
 
 export const GET = withErrorHandling(async (req) => {
@@ -48,13 +49,8 @@ export const POST = withErrorHandling(async (req) => {
   const session = await requirePermission("blog.manage");
   const body = await req.json();
 
-  const slug =
-    body.slug ||
-    body.title
-      .toLowerCase()
-      .trim()
-      .replace(/[^\w\s-]/g, "")
-      .replace(/[\s_-]+/g, "-");
+  // A slug that is already used gets -2, -3… so adding never fails or overwrites
+  const slug = await uniqueSlug(body.slug || body.title, async (c) => !!(await prisma.blog.findUnique({ where: { slug: c }, select: { id: true } })));
 
   const authorId = body.authorId || session.sub;
 
@@ -83,6 +79,15 @@ export const PUT = withErrorHandling(async (req) => {
   await requirePermission("blog.manage");
   const body = await req.json();
   const { id, ...data } = body;
+
+  if (typeof data.slug === "string" && data.slug.trim()) {
+    data.slug = await uniqueSlug(data.slug, async (c) => {
+      const hit = await prisma.blog.findUnique({ where: { slug: c }, select: { id: true } });
+      return !!hit && hit.id !== id;
+    });
+  } else {
+    delete data.slug;
+  }
 
   if (data.status === "PUBLISHED" && !data.publishDate) {
     data.publishDate = new Date();

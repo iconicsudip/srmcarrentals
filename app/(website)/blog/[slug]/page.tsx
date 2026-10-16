@@ -161,7 +161,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
           </div>
 
           {/* Main Title */}
-          <h1 className="mt-6 text-3xl font-black uppercase tracking-tight text-neutral-950 sm:text-5xl sm:leading-tight lg:text-6xl">
+          <h1 className="mt-6 text-3xl font-black uppercase tracking-tight text-neutral-950 sm:text-4xl sm:leading-tight lg:text-5xl">
             {blog.title}
           </h1>
 
@@ -199,7 +199,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
 
       {/* ── Featured Cover Image ── */}
       {blog.featuredImage && (
-        <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 mb-12 sm:mb-16">
+        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 mb-12 sm:mb-16">
           <div className="relative aspect-[16/9] w-full overflow-hidden rounded-3xl border border-neutral-200/90 bg-neutral-100 shadow-xl">
             <BlogImage
               src={blog.featuredImage}

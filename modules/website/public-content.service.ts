@@ -16,7 +16,9 @@ import type {
   FaqPageContent,
   HomepageContent,
   TermsPageContent,
+  PrivacyPageContent,
 } from "@/modules/settings/site-content.schemas";
+import { DEFAULT_PRIVACY } from "@/modules/settings/privacy-defaults";
 import type { CarCardData } from "@/components/website/car-card";
 import type { ChauffeurServiceData } from "@/components/website/chauffeur-section";
 import type { TourData } from "@/components/website/tours-section";
@@ -402,6 +404,13 @@ async function getFaqPageContent_uncached(): Promise<FaqPageContent> {
   const faq = (await getSetting<FaqPageContent>("pages.faq")) ?? FALLBACK_FAQ;
   // Answers written in the rich-text editor are HTML: sanitize once here, before they reach the page.
   return { ...faq, faqs: faq.faqs.map((f) => (isRichHtml(f.answer) ? { ...f, answer: sanitizeRichHtml(f.answer) } : f)) };
+}
+
+async function getPrivacyPageContent_uncached(): Promise<PrivacyPageContent> {
+  const saved = await getSetting<Partial<PrivacyPageContent>>("pages.privacy");
+  if (!saved) return DEFAULT_PRIVACY;
+  const merged = { ...DEFAULT_PRIVACY, ...saved, hero: { ...DEFAULT_PRIVACY.hero, ...(saved.hero ?? {}) }, contact: { ...DEFAULT_PRIVACY.contact, ...(saved.contact ?? {}) } };
+  return { ...merged, intro: sanitizeRichHtml(merged.intro), sections: (merged.sections ?? []).map((x) => ({ ...x, body: sanitizeRichHtml(x.body) })) };
 }
 
 async function getTermsPageContent_uncached(): Promise<TermsPageContent> {
@@ -994,6 +1003,7 @@ export const getCompanyContent = cached("getCompanyContent", getCompanyContent_u
 export const getAboutPageContent = cached("getAboutPageContent", getAboutPageContent_uncached);
 export const getContactPageContent = cached("getContactPageContent", getContactPageContent_uncached);
 export const getFaqPageContent = cached("getFaqPageContent", getFaqPageContent_uncached);
+export const getPrivacyPageContent = cached("getPrivacyPageContent", getPrivacyPageContent_uncached);
 export const getTermsPageContent = cached("getTermsPageContent", getTermsPageContent_uncached);
 export const listActiveCars = cached("listActiveCars", listActiveCars_uncached);
 export const listActiveChauffeurServices = cached("listActiveChauffeurServices", listActiveChauffeurServices_uncached);

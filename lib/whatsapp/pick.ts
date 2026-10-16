@@ -21,3 +21,13 @@ export function pickWhatsAppNumber(numbers: WhatsAppNumbers | null | undefined, 
   const hit = numbers.cities.find((c) => norm(c.city) === norm(city) && digitsOnly(c.number));
   return toWaNumber(hit?.number || numbers.defaultNumber);
 }
+
+/** A working link from whatever was typed in admin: a full URL, "wa.me/…", or just a phone number. */
+export function toWaLink(v?: string | null): string {
+  const raw = (v ?? "").trim();
+  if (!raw) return "";
+  if (/^https?:\/\//i.test(raw)) return raw;
+  if (/^(wa\.me|api\.whatsapp\.com|chat\.whatsapp\.com|whatsapp\.com)/i.test(raw)) return `https://${raw}`;
+  const n = toWaNumber(raw);
+  return n ? `https://wa.me/${n}` : "";
+}

@@ -1,3 +1,4 @@
+import { toWaLink } from "@/lib/whatsapp/pick";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowUp, ArrowUpRight, Heart, Mail, MapPin, MessageCircle, Phone } from "lucide-react";
@@ -42,7 +43,9 @@ export function SiteFooter({
     { icon: LinkedInIcon, href: sl.linkedin, label: "LinkedIn" },
     { icon: XIcon, href: sl.twitter, label: "X" },
     { icon: TelegramIcon, href: sl.telegram, label: "Telegram" },
-  ].filter((s) => s.href);
+  ]
+    .map((s) => ({ ...s, href: /^https?:\/\//i.test(s.href ?? "") ? s.href : s.href ? `https://${s.href}` : "" }))
+    .filter((s) => s.href);
 
   const columns = [
     { title: "Services", links: company.footerLinks.services },
@@ -52,8 +55,7 @@ export function SiteFooter({
     .map((col) => ({ ...col, links: col.links.filter((l) => linkEnabled(l.href, services)) }))
     .filter((col) => col.links.length > 0);
 
-  const phoneDigits = company.phone?.replace(/[^0-9]/g, "") ?? "";
-  const whatsappHref = company.socialLinks.whatsapp || (phoneDigits ? `https://wa.me/${phoneDigits}` : "");
+  const whatsappHref = toWaLink(company.socialLinks.whatsapp) || toWaLink(company.phone);
   const brandWord = company.name.split(" ")[0]?.toUpperCase() ?? "SRM";
 
   return (
