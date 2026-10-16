@@ -20,6 +20,8 @@ function linkEnabled(href: string, services?: AvailableServicesConfig): boolean 
   const path = href.split(/[?#]/)[0] ?? "";
   if (path === "/cars" || path.startsWith("/cars/") || path.startsWith("/car/")) return services.cars;
   if (path === "/car-rental" || path.startsWith("/car-rental/")) return services.taxi;
+  // Airport transfers are not one of the three switchable services, so they stay hidden
+  if (path.startsWith("/airport")) return false;
   if (path === "/tours" || path.startsWith("/tours/")) return services.tours;
   return true;
 }

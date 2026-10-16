@@ -143,7 +143,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
 
       {/* ── Article Header ── */}
       <header className="relative pt-12 pb-10 sm:pt-16 sm:pb-14">
-        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-[1520px] px-4 sm:px-6 lg:px-8">
           {/* Category & Read Time */}
           <div className="flex flex-wrap items-center gap-3">
             {blog.category && (
@@ -199,8 +199,8 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
 
       {/* ── Featured Cover Image ── */}
       {blog.featuredImage && (
-        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 mb-12 sm:mb-16">
-          <div className="relative aspect-[16/9] w-full overflow-hidden rounded-3xl border border-neutral-200/90 bg-neutral-100 shadow-xl">
+        <div className="mx-auto max-w-[1520px] px-4 sm:px-6 lg:px-8 mb-12 sm:mb-16">
+          <div className="relative aspect-[16/9] lg:aspect-[2/1] w-full overflow-hidden rounded-3xl border border-neutral-200/90 bg-neutral-100 shadow-xl">
             <BlogImage
               src={blog.featuredImage}
               alt={blog.title}
