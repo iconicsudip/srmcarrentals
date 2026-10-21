@@ -66,6 +66,7 @@ export default function CarsSeoPage() {
     metaKeywords: "",
     canonicalUrl: "",
     robotsMeta: "INDEX_FOLLOW",
+    slug: "",
   });
 
   const fetchCars = React.useCallback(async () => {
@@ -101,6 +102,7 @@ export default function CarsSeoPage() {
       metaKeywords: existing?.metaKeywords || `${car.name.toLowerCase()} rental, hire ${car.name.toLowerCase()}, luxury car rental`,
       canonicalUrl: existing?.canonicalUrl || `https://srmcarrentals.in/car/${car.slug}`,
       robotsMeta: existing?.robotsMeta || "INDEX_FOLLOW",
+      slug: car.slug,
     });
   };
 
@@ -109,7 +111,22 @@ export default function CarsSeoPage() {
     if (!editingCar) return;
     setSubmitting(true);
     try {
-      const path = `/car/${editingCar.slug}`;
+      const oldSlug = editingCar.slug;
+      let slug = oldSlug;
+      let canonicalUrl = form.canonicalUrl;
+      const wanted = form.slug.trim();
+      if (wanted && wanted !== oldSlug) {
+        // Changing the slug changes the car's real page address; the server moves this car's saved SEO to the new address.
+        const carRes = await fetch(`/api/v1/cars/${editingCar.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ slug: wanted }),
+        });
+        if (!carRes.ok) throw new Error((await carRes.json().catch(() => null))?.message || "Failed to change the slug");
+        slug = (await carRes.json()).slug || wanted; // final slug (gets -2 if already taken)
+        canonicalUrl = canonicalUrl.split(`/car/${oldSlug}`).join(`/car/${slug}`);
+      }
+      const path = `/car/${slug}`;
       const res = await fetch("/api/v1/seo/dynamic-page", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -123,7 +140,11 @@ export default function CarsSeoPage() {
           path,
           entityType: "CAR",
           entityId: editingCar.id,
-          ...form,
+          metaTitle: form.metaTitle,
+          metaDescription: form.metaDescription,
+          metaKeywords: form.metaKeywords,
+          robotsMeta: form.robotsMeta,
+          canonicalUrl,
           ogTitle: form.metaTitle,
           ogDescription: form.metaDescription,
           ogType: "website",
@@ -263,6 +284,19 @@ export default function CarsSeoPage() {
             <DialogTitle>Edit SEO for {editingCar?.name}</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSaveSeo} className="space-y-4 py-2">
+            <div className="space-y-1.5">
+              <Label htmlFor="carSlug">URL slug</Label>
+              <Input
+                id="carSlug"
+                value={form.slug}
+                onChange={(e) => setForm({ ...form, slug: e.target.value })}
+                placeholder="mahindra-thar-rwd-white"
+              />
+              <p className="text-xs text-muted-foreground">
+                Page address: /car/{form.slug || editingCar?.slug}. Changing it renames the car&apos;s real page; this car&apos;s SEO moves with it.
+              </p>
+            </div>
+
             <div className="space-y-1.5">
               <div className="flex justify-between items-center">
                 <Label htmlFor="carTitle">Meta Title</Label>
