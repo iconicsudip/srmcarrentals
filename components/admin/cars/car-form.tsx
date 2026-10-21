@@ -196,8 +196,10 @@ export function CarForm({ car }: { car?: CarDetailDto }) {
   });
 
   const createMutation = useCreateCar<{ id: string }>();
-  const updateMutation = useUpdateCar<{ id: string }>(car?.id ?? "");
+  const updateMutation = useUpdateCar<{ id: string; slug?: string }>(car?.id ?? "");
   const saving = createMutation.isPending || updateMutation.isPending;
+  // The slug as saved in the database (it changes only after a successful save)
+  const [savedSlug, setSavedSlug] = React.useState(car?.slug ?? "");
 
   const brandId = form.watch("brandId");
 
@@ -225,7 +227,11 @@ export function CarForm({ car }: { car?: CarDetailDto }) {
     try {
       const payload = cleanPayload(values);
       if (isEdit) {
-        await updateMutation.mutateAsync(payload);
+        const updated = await updateMutation.mutateAsync(payload);
+        if (updated?.slug) {
+          setSavedSlug(updated.slug);
+          form.setValue("slug", updated.slug); // show the final slug (e.g. with -2 when the first choice was taken)
+        }
         toast.success("Car updated");
       } else {
         const created = await createMutation.mutateAsync(payload);
@@ -615,7 +621,7 @@ export function CarForm({ car }: { car?: CarDetailDto }) {
 
           {isEdit && (
             <TabsContent value="seo">
-              <CarSeoTab carId={car.id} carName={car.name} slug={car.slug} />
+              <CarSeoTab carId={car.id} carName={car.name} slug={savedSlug || car.slug} />
             </TabsContent>
           )}
         </Tabs>

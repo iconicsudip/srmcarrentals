@@ -97,7 +97,7 @@ export default function CarsSeoPage() {
         existing?.metaKeywords ||
         `${car.name.toLowerCase()} rental, hire ${car.name.toLowerCase()}, luxury car rental`,
       canonicalUrl:
-        existing?.canonicalUrl || `https://srmcarrentals.in/cars/${car.slug}`,
+        existing?.canonicalUrl || `https://srmcarrentals.in/car/${car.slug}`,
       robotsMeta: existing?.robotsMeta || "INDEX_FOLLOW",
     });
   };

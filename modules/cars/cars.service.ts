@@ -156,17 +156,38 @@ export async function createCar(input: CreateCarInput) {
   });
 }
 
+async function moveCarSeoToNewSlug(tx: Prisma.TransactionClient, oldSlug: string, newSlug: string) {
+  const oldPath = `/car/${oldSlug}`;
+  const newPath = `/car/${newSlug}`;
+  const oldKey = `seo.page.${encodeURIComponent(oldPath)}`;
+  const row = await tx.setting.findUnique({ where: { key: oldKey } });
+  if (!row) return;
+  const value: Record<string, unknown> = { ...(row.value as Record<string, unknown>), path: newPath };
+  if (typeof value.canonicalUrl === "string") value.canonicalUrl = value.canonicalUrl.split(oldPath).join(newPath);
+  await tx.setting.upsert({
+    where: { key: `seo.page.${encodeURIComponent(newPath)}` },
+    create: { key: `seo.page.${encodeURIComponent(newPath)}`, value: value as Prisma.InputJsonValue, group: "seo" },
+    update: { value: value as Prisma.InputJsonValue },
+  });
+  await tx.setting.delete({ where: { key: oldKey } });
+}
+
 export async function updateCar(id: string, input: UpdateCarInput) {
   const existing = await prisma.car.findUnique({ where: { id } });
   if (!existing) throw new NotFoundError("Car not found");
 
   const slug = input.name || input.slug ? await uniqueSlug(input.name ?? existing.name, input.slug, id) : undefined;
 
+  const slugChanged = !!slug && slug !== existing.slug;
+
   return prisma.$transaction(async (tx) => {
     await tx.car.update({
       where: { id },
       data: { ...updateScalarFields(input), ...(slug ? { slug } : {}) },
     });
+
+    // The car's page-wise SEO is stored under its URL — move it to the new URL so it isn't lost
+    if (slugChanged) await moveCarSeoToNewSlug(tx, existing.slug, slug!);
 
     if (input.featureIds) {
       await tx.carFeatureOnCar.deleteMany({ where: { carId: id } });
