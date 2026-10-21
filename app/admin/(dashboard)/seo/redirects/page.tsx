@@ -76,7 +76,7 @@ export default function RedirectsPage() {
       const res = await fetch(`/api/v1/seo/redirects?${params.toString()}`);
       if (!res.ok) throw new Error("Failed to load redirects");
       const json = await res.json();
-      setRedirects(json.data || []);
+      setRedirects(Array.isArray(json) ? json : json.data || []);
     } catch (err: any) {
       toast.error(err.message || "Failed to load redirects");
     } finally {

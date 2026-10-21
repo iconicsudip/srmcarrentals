@@ -164,7 +164,7 @@ export default function DynamicSeoCommandCenter() {
       const res = await fetch("/api/v1/seo/pages");
       if (!res.ok) throw new Error("Failed to load discoverable pages");
       const json = await res.json();
-      setPages(json.data?.pages || []);
+      setPages((json.data ?? json)?.pages || []);
     } catch (err: any) {
       toast.error(err.message || "Failed to load pages list");
     } finally {
@@ -186,7 +186,8 @@ export default function DynamicSeoCommandCenter() {
 
       const res = await fetch(`/api/v1/seo/dynamic-page?${params.toString()}`);
       if (!res.ok) throw new Error("Failed to load page SEO profile");
-      const json = await res.json();
+      const raw = await res.json();
+      const json = { data: raw?.data && typeof raw.data === "object" && !Array.isArray(raw.data) && "metaTitle" in raw.data ? raw.data : raw };
       if (json.data) {
         setForm({
           ...json.data,
@@ -309,7 +310,7 @@ export default function DynamicSeoCommandCenter() {
       const res = await fetch("/api/v1/seo/robots-config");
       if (res.ok) {
         const json = await res.json();
-        setRobotsConfig(json.data);
+        setRobotsConfig(json.data ?? json);
       }
     } catch {
       // fallback

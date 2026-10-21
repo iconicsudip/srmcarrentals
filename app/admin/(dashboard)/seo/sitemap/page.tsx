@@ -41,7 +41,7 @@ export default function SitemapManagementPage() {
       const res = await fetch("/api/v1/seo/sitemap");
       if (!res.ok) throw new Error("Failed to load sitemap stats");
       const json = await res.json();
-      setStats(json.data);
+      setStats(json.data ?? json);
     } catch (err: any) {
       toast.error(err.message || "Failed to load sitemap stats");
     } finally {
@@ -59,7 +59,7 @@ export default function SitemapManagementPage() {
       const res = await fetch("/api/v1/seo/sitemap", { method: "POST" });
       if (!res.ok) throw new Error("Failed to ping search engines");
       const json = await res.json();
-      toast.success(json.data?.message || "Search bots notified successfully");
+      toast.success((json.data ?? json)?.message || "Search bots notified successfully");
       fetchStats();
     } catch (err: any) {
       toast.error(err.message || "Failed to ping search engines");
