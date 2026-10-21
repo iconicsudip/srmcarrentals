@@ -76,7 +76,7 @@ export default function CarsSeoPage() {
       const json = await res.json();
       setCars(json.data || []);
       const seoRes = await fetch("/api/v1/seo/dynamic-page?prefix=/car/");
-      if (seoRes.ok) setProfiles((await seoRes.json()).data || {});
+      if (seoRes.ok) setProfiles((await seoRes.json()) || {});
     } catch (err: any) {
       toast.error(err.message || "Failed to load cars");
     } finally {
