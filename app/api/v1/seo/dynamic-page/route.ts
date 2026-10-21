@@ -98,6 +98,15 @@ const DEFAULT_SEO_CONFIG: DynamicPageSeoPayload = {
 export const GET = withErrorHandling(async (req) => {
   await requirePermission("seo.manage");
   const url = new URL(req.url);
+  // Bulk read: every saved page profile whose path starts with `prefix` (used by list screens such as Cars SEO)
+  const prefix = url.searchParams.get("prefix");
+  if (prefix) {
+    const rows = await prisma.setting.findMany({ where: { key: { startsWith: `seo.page.${encodeURIComponent(prefix)}` } } });
+    const profiles: Record<string, unknown> = {};
+    for (const r of rows) profiles[decodeURIComponent(r.key.slice("seo.page.".length))] = r.value;
+    return ok(profiles);
+  }
+
   const path = url.searchParams.get("path") || "/";
 
   // Check Setting for dynamic page profile

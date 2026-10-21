@@ -40,17 +40,20 @@ interface CarItem {
   name: string;
   slug: string;
   category?: { name: string };
-  seoMetadata?: {
-    metaTitle?: string;
-    metaDescription?: string;
-    metaKeywords?: string;
-    canonicalUrl?: string;
-    robotsMeta?: string;
-  } | null;
 }
+
+/** Saved page-wise SEO of one car page (same store the live website and the car's SEO tab use). */
+type SeoProfile = Record<string, unknown> & {
+  metaTitle?: string;
+  metaDescription?: string;
+  metaKeywords?: string;
+  canonicalUrl?: string;
+  robotsMeta?: string;
+};
 
 export default function CarsSeoPage() {
   const [cars, setCars] = React.useState<CarItem[]>([]);
+  const [profiles, setProfiles] = React.useState<Record<string, SeoProfile>>({});
   const [loading, setLoading] = React.useState(true);
   const [search, setSearch] = React.useState("");
 
@@ -72,6 +75,8 @@ export default function CarsSeoPage() {
       if (!res.ok) throw new Error("Failed to load cars");
       const json = await res.json();
       setCars(json.data || []);
+      const seoRes = await fetch("/api/v1/seo/dynamic-page?prefix=/car/");
+      if (seoRes.ok) setProfiles((await seoRes.json()).data || {});
     } catch (err: any) {
       toast.error(err.message || "Failed to load cars");
     } finally {
@@ -83,21 +88,18 @@ export default function CarsSeoPage() {
     fetchCars();
   }, [fetchCars]);
 
+  const profileOf = (car: CarItem): SeoProfile | undefined => profiles[`/car/${car.slug}`];
+
   const handleOpenEdit = (car: CarItem) => {
     setEditingCar(car);
-    const existing = car.seoMetadata;
+    const existing = profileOf(car);
     setForm({
-      metaTitle:
-        existing?.metaTitle ||
-        `Rent ${car.name} in India | SRM Luxury Car Rentals`,
+      metaTitle: existing?.metaTitle || `Rent ${car.name} in India | SRM Luxury Car Rentals`,
       metaDescription:
         existing?.metaDescription ||
         `Hire ${car.name} with best daily and weekly rates. Available for self-drive or chauffeur driven bookings across top cities.`,
-      metaKeywords:
-        existing?.metaKeywords ||
-        `${car.name.toLowerCase()} rental, hire ${car.name.toLowerCase()}, luxury car rental`,
-      canonicalUrl:
-        existing?.canonicalUrl || `https://srmcarrentals.in/car/${car.slug}`,
+      metaKeywords: existing?.metaKeywords || `${car.name.toLowerCase()} rental, hire ${car.name.toLowerCase()}, luxury car rental`,
+      canonicalUrl: existing?.canonicalUrl || `https://srmcarrentals.in/car/${car.slug}`,
       robotsMeta: existing?.robotsMeta || "INDEX_FOLLOW",
     });
   };
@@ -107,13 +109,25 @@ export default function CarsSeoPage() {
     if (!editingCar) return;
     setSubmitting(true);
     try {
-      const res = await fetch("/api/v1/seo/metadata", {
+      const path = `/car/${editingCar.slug}`;
+      const res = await fetch("/api/v1/seo/dynamic-page", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          enableStructuredData: false,
+          aeoEnabled: false,
+          inSitemap: true,
+          sitemapPriority: 0.8,
+          sitemapChangeFreq: "weekly",
+          ...(profileOf(editingCar) ?? {}),
+          path,
           entityType: "CAR",
           entityId: editingCar.id,
           ...form,
+          ogTitle: form.metaTitle,
+          ogDescription: form.metaDescription,
+          ogType: "website",
+          twitterCard: "summary_large_image",
         }),
       });
       if (!res.ok) throw new Error("Failed to update car SEO");
@@ -199,17 +213,18 @@ export default function CarsSeoPage() {
                   </TableRow>
                 ) : (
                   filteredCars.map((car) => {
-                    const hasCustomSeo = Boolean(car.seoMetadata?.metaTitle);
+                    const saved = profileOf(car);
+                    const hasCustomSeo = Boolean(saved?.metaTitle);
                     return (
                       <TableRow key={car.id}>
                         <TableCell className="font-semibold text-sm">
                           {car.name}
                         </TableCell>
                         <TableCell className="font-mono text-xs text-muted-foreground">
-                          /cars/{car.slug}
+                          /car/{car.slug}
                         </TableCell>
                         <TableCell className="text-xs max-w-[280px] truncate">
-                          {car.seoMetadata?.metaTitle || (
+                          {saved?.metaTitle || (
                             <span className="text-muted-foreground italic">
                               Default Template ({car.name})
                             </span>
@@ -217,7 +232,7 @@ export default function CarsSeoPage() {
                         </TableCell>
                         <TableCell>
                           <Badge variant={hasCustomSeo ? "success" : "outline"} className="text-xs">
-                            {car.seoMetadata?.robotsMeta || "INDEX_FOLLOW"}
+                            {saved?.robotsMeta || "INDEX_FOLLOW"}
                           </Badge>
                         </TableCell>
                         <TableCell className="text-right">
