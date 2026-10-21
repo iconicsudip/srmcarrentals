@@ -28,6 +28,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { SeoNav } from "@/components/admin/seo/seo-nav";
+import { SeoPagePicker } from "@/components/admin/seo/page-picker";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -455,24 +456,7 @@ export default function DynamicSeoCommandCenter() {
                 </Label>
               </div>
               <div className="flex items-center gap-2">
-                <Select
-                  value={selectedPath}
-                  onValueChange={(val) => setSelectedPath(val)}
-                  disabled={loadingPages}
-                >
-                  <SelectTrigger id="pagePicker" className="w-full md:w-[480px] bg-background font-medium">
-                    <SelectValue placeholder="Select a page to optimize..." />
-                  </SelectTrigger>
-                  <SelectContent className="max-h-[360px]">
-                    {pages.map((p) => (
-                      <SelectItem key={p.path} value={p.path}>
-                        <span className="text-xs font-semibold text-muted-foreground mr-2">[{p.group}]</span>
-                        <span className="font-medium">{p.title}</span>
-                        <span className="font-mono text-xs text-muted-foreground ml-2">({p.path})</span>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <SeoPagePicker pages={pages} value={selectedPath} onChange={setSelectedPath} disabled={loadingPages} loading={loadingPages} />
 
                 <Dialog open={isAddPageOpen} onOpenChange={setIsAddPageOpen}>
                   <DialogTrigger asChild>
