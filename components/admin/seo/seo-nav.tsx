@@ -9,6 +9,7 @@ import {
   Plane,
   Compass,
   Link2,
+  Bot,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -18,6 +19,7 @@ const SEO_TABS = [
   { label: "Locations SEO", href: "/admin/seo/locations", icon: MapPin },
   { label: "Airports SEO", href: "/admin/seo/airports", icon: Plane },
   { label: "Sitemap", href: "/admin/seo/sitemap", icon: Compass },
+  { label: "Robots.txt", href: "/admin/seo/robots", icon: Bot },
   { label: "Redirects", href: "/admin/seo/redirects", icon: Link2 },
 ];
 

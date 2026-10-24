@@ -1,5 +1,5 @@
 import { requirePermission } from "@/lib/auth/rbac";
-import { NotFoundError } from "@/lib/http/errors";
+import { ForbiddenError, NotFoundError } from "@/lib/http/errors";
 import { ok } from "@/lib/http/api-response";
 import { withErrorHandling } from "@/lib/http/with-error-handling";
 import { getSetting, setSetting } from "@/modules/settings/settings.service";
@@ -9,6 +9,11 @@ type Ctx = { params: Promise<{ key: string }> };
 
 /** "homepage.*" and "pages.*" settings (marketing copy and page content)
  * are safe to expose without auth — everything else stays admin-only. */
+/** Keys holding secrets (e.g. the Google service-account key) — only the dedicated integration routes may touch them. */
+function isSecretKey(key: string): boolean {
+  return decodeURIComponent(key).startsWith("integrations.google");
+}
+
 function isPublicKey(key: string): boolean {
   return (
     key.startsWith("homepage.") ||
@@ -35,6 +40,7 @@ function isPublicKey(key: string): boolean {
  */
 export const GET = withErrorHandling<Ctx>(async (_req, { params }) => {
   const { key } = await params;
+  if (isSecretKey(key)) throw new ForbiddenError("This setting is managed through its own integration page");
   if (!isPublicKey(key)) {
     await requirePermission("settings.manage");
   }
@@ -45,6 +51,7 @@ export const GET = withErrorHandling<Ctx>(async (_req, { params }) => {
 
 export const PUT = withErrorHandling<Ctx>(async (req, { params }) => {
   const { key } = await params;
+  if (isSecretKey(key)) throw new ForbiddenError("This setting is managed through its own integration page");
   const decodedKey = decodeURIComponent(key);
   const isContentKey = decodedKey.startsWith("homepage.") || decodedKey.startsWith("pages.");
   await requirePermission(isContentKey ? "homepage.manage" : "settings.manage");

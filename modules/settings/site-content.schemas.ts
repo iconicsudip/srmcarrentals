@@ -253,6 +253,29 @@ export const privacyPageContentSchema = z.object({
 });
 export type PrivacyPageContent = z.infer<typeof privacyPageContentSchema>;
 
+/** Setting key: "integrations.tracking" — marketing / analytics tags added to the public website (IDs only, no secrets). */
+export const trackingConfigSchema = z.object({
+  searchConsole: z.object({
+    /** The verification code (or the whole <meta> tag pasted from Google — the code is picked out of it). */
+    verification: z.string().default(""),
+  }).default({ verification: "" }),
+  googleAnalytics: z.object({
+    measurementId: z.string().default(""),
+  }).default({ measurementId: "" }),
+  metaPixel: z.object({
+    enabled: z.boolean().default(false),
+    pixelId: z.string().default(""),
+    events: z.object({
+      viewContent: z.boolean().default(true),
+      addToCart: z.boolean().default(true),
+      initiateCheckout: z.boolean().default(true),
+      purchase: z.boolean().default(true),
+      contact: z.boolean().default(true),
+    }).default({ viewContent: true, addToCart: true, initiateCheckout: true, purchase: true, contact: true }),
+  }).default({ enabled: false, pixelId: "", events: { viewContent: true, addToCart: true, initiateCheckout: true, purchase: true, contact: true } }),
+});
+export type TrackingConfig = z.infer<typeof trackingConfigSchema>;
+
 export const availableServicesSchema = z.object({
   cars: z.boolean().default(true),
   taxi: z.boolean().default(true),
@@ -405,5 +428,6 @@ export const SITE_CONTENT_SCHEMAS: Record<string, z.ZodType<unknown>> = {
   "pages.terms": termsPageContentSchema,
   "pages.privacy": privacyPageContentSchema,
   "system.services": availableServicesSchema,
+  "integrations.tracking": trackingConfigSchema,
 };
 

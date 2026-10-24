@@ -22,6 +22,7 @@ function DynamicFeatureIcon({ name, className }: { name?: string | null; classNa
 import { Badge } from "@/components/ui/badge";
 import { getCarFallbackImage } from "@/lib/car-fallback-image";
 import { CarGallery } from "@/components/website/car-gallery";
+import { TrackOnMount } from "@/components/website/track-on-mount";
 import { BookingEngine } from "@/components/website/booking-engine";
 import { getRouteCharges } from "@/lib/pricing/location-routes.server";
 import { pickupPointsOnly } from "@/lib/location-points";
@@ -523,6 +524,7 @@ export default async function CarDetailPage({ params }: CarDetailPageProps) {
 
           {/* RIGHT COLUMN: Interactive Booking Engine (Sticky) */}
           <div id="book" className="scroll-mt-24 lg:sticky lg:top-20 lg:h-fit">
+            <TrackOnMount event="ViewContent" once={`car-${car.id}`} params={{ contentId: car.id, contentName: car.name, value: basePlan.dailyPrice }} />
             <BookingEngine
               carId={car.id}
               carSlug={car.slug}

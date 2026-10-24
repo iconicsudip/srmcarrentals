@@ -9,6 +9,7 @@ import {
   ClipboardList,
   CreditCard,
   Layers,
+  Plug,
   Mail,
   MessageCircle,
   MessageSquare,
@@ -29,6 +30,7 @@ const SETTINGS_TABS = [
   { label: "SMS", href: "/admin/settings/sms", icon: MessageSquare },
   { label: "WhatsApp", href: "/admin/settings/whatsapp", icon: MessageCircle },
   { label: "Notifications", href: "/admin/settings/notifications", icon: BellRing },
+  { label: "Integrations", href: "/admin/settings/integrations", icon: Plug },
 ];
 
 export function SettingsNav() {

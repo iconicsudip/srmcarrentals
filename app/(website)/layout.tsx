@@ -3,6 +3,7 @@ import { CartDrawer } from "@/components/website/cart-drawer";
 import { SiteFooter } from "@/components/website/site-footer";
 import { SiteHeader } from "@/components/website/site-header";
 import { CopyProvider } from "@/components/copy-provider";
+import { TrackingScripts } from "@/components/website/tracking-scripts";
 import { WhatsAppFloat } from "@/components/website/whatsapp-float";
 import { getAboutPageContent, getCompanyContent, getCopyOverrides, getSiteText, getAvailableServices, listActiveLocations } from "@/modules/website/public-content.service";
 
@@ -20,6 +21,7 @@ export default async function WebsiteLayout({ children }: { children: React.Reac
   return (
     <CopyProvider overrides={copy}>
     <div className="relative min-h-svh bg-[#FAFAFC] text-neutral-900 selection:bg-orange-500 selection:text-white">
+      <TrackingScripts />
       <AmbientBackground />
       <SiteHeader companyName={company.name} phone={company.phone} services={services} text={siteText.header} />
       <main className="relative z-0">{children}</main>

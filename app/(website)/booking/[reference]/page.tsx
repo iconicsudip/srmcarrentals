@@ -1,3 +1,4 @@
+import { TrackOnMount } from "@/components/website/track-on-mount";
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
@@ -127,6 +128,13 @@ export default async function BookingConfirmationPage({ params, searchParams }: 
 
   return (
     <div className="min-h-screen bg-[#FAFAFC] text-neutral-900">
+      {hasPaid && (
+        <TrackOnMount
+          event="Purchase"
+          once={booking.bookingReference}
+          params={{ value: Number(pricing?.grandTotal ?? 0), transactionId: booking.bookingReference, contentName: car?.name }}
+        />
+      )}
       {/* Header Banner */}
       <div className="border-b border-neutral-200/90 bg-white/80 backdrop-blur-md">
         <div className="mx-auto max-w-[1520px] px-4 py-8 sm:px-6 lg:px-8">

@@ -9,6 +9,7 @@ import {
   DoorOpen,
   Sparkles,
   ShieldCheck,
+  Plug,
   LayoutGrid,
   CarFront,
   Boxes,
@@ -246,6 +247,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { title: "SMS Settings", href: "/admin/settings/sms", icon: MessageSquare, permission: "settings.manage" },
       { title: "WhatsApp Settings", href: "/admin/settings/whatsapp", icon: MessageCircle, permission: "settings.manage" },
       { title: "Notification Settings", href: "/admin/settings/notifications", icon: BellRing, permission: "settings.manage" },
+      { title: "Integrations", href: "/admin/settings/integrations", icon: Plug, permission: "settings.manage" },
     ],
   },
 ];

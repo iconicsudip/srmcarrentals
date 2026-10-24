@@ -1,5 +1,7 @@
 "use client";
 
+import { trackEvent } from "@/lib/tracking/events";
+
 import * as React from "react";
 
 export interface CartItem {
@@ -96,6 +98,7 @@ export function addToCart(item: Omit<CartItem, "id" | "createdAt">): CartItem {
     (c) => !(c.carId === item.carId && c.pickup === item.pickup && c.drop === item.drop),
   );
   saveCartItems([...filtered, newItem]);
+  trackEvent("AddToCart", { value: safeTotal, contentId: item.carId, contentName: item.carName });
   openCartDrawer();
   return newItem;
 }

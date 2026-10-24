@@ -28,6 +28,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { SeoNav } from "@/components/admin/seo/seo-nav";
+import { SiteFileLinks } from "@/components/admin/seo/site-file-links";
 import { SeoPagePicker } from "@/components/admin/seo/page-picker";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -121,10 +122,6 @@ export default function DynamicSeoCommandCenter() {
   const [newPagePath, setNewPagePath] = React.useState("");
   const [newPageTitle, setNewPageTitle] = React.useState("");
 
-  // Robots config dialog
-  const [isRobotsOpen, setIsRobotsOpen] = React.useState(false);
-  const [robotsConfig, setRobotsConfig] = React.useState<any>(null);
-  const [savingRobots, setSavingRobots] = React.useState(false);
 
   // Form State
   const [form, setForm] = React.useState<SeoFormData>({
@@ -305,39 +302,6 @@ export default function DynamicSeoCommandCenter() {
     });
   };
 
-  // Fetch robots.txt configuration
-  const handleOpenRobots = async () => {
-    try {
-      const res = await fetch("/api/v1/seo/robots-config");
-      if (res.ok) {
-        const json = await res.json();
-        setRobotsConfig(json.data ?? json);
-      }
-    } catch {
-      // fallback
-    }
-    setIsRobotsOpen(true);
-  };
-
-  const handleSaveRobots = async () => {
-    if (!robotsConfig) return;
-    setSavingRobots(true);
-    try {
-      const res = await fetch("/api/v1/seo/robots-config", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(robotsConfig),
-      });
-      if (!res.ok) throw new Error("Failed to save robots configuration");
-      toast.success("Robots.txt directives & AI bot rules updated");
-      setIsRobotsOpen(false);
-    } catch (err: any) {
-      toast.error(err.message || "Failed to save robots config");
-    } finally {
-      setSavingRobots(false);
-    }
-  };
-
   const selectedPageObj = pages.find((p) => p.path === selectedPath);
 
   // Computed JSON-LD preview
@@ -420,14 +384,11 @@ export default function DynamicSeoCommandCenter() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleOpenRobots}
-            className="gap-1.5"
-          >
-            <Bot className="size-3.5 text-sky-500" />
-            Robots.txt & AI Bots
+          <Button variant="outline" size="sm" asChild>
+            <Link href="/admin/seo/robots" className="gap-1.5">
+              <Bot className="size-3.5 text-sky-500" />
+              Robots.txt
+            </Link>
           </Button>
           <Button
             variant="outline"
@@ -443,6 +404,8 @@ export default function DynamicSeoCommandCenter() {
       </div>
 
       <SeoNav />
+
+      <SiteFileLinks />
 
       {/* DYNAMIC PAGE SELECTOR BAR */}
       <Card className="border-border/80 bg-gradient-to-r from-card via-card to-muted/20 shadow-sm">
@@ -1087,70 +1050,6 @@ export default function DynamicSeoCommandCenter() {
         </div>
       </form>
 
-      {/* ROBOTS.TXT & AI BOT CONFIGURATION MODAL */}
-      <Dialog open={isRobotsOpen} onOpenChange={setIsRobotsOpen}>
-        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Bot className="size-5 text-sky-500" />
-              Robots.txt & AI Crawler Management
-            </DialogTitle>
-          </DialogHeader>
-          {robotsConfig && (
-            <div className="space-y-4 py-2 text-xs">
-              <div className="rounded-lg border border-border p-3 space-y-2 bg-muted/20">
-                <Label className="font-semibold text-xs">Default Disallowed URL Paths</Label>
-                <Input
-                  value={robotsConfig.defaultDisallow?.join(", ") || ""}
-                  onChange={(e) =>
-                    setRobotsConfig({
-                      ...robotsConfig,
-                      defaultDisallow: e.target.value.split(",").map((s: string) => s.trim()).filter(Boolean),
-                    })
-                  }
-                  placeholder="/admin, /api, /checkout"
-                />
-                <p className="text-[11px] text-muted-foreground">
-                  Paths blocked for all standard search crawlers.
-                </p>
-              </div>
-
-              <div className="space-y-2">
-                <Label className="font-semibold text-xs">AI & LLM Search Engine Crawlers</Label>
-                <div className="divide-y divide-border rounded-lg border border-border">
-                  {robotsConfig.aiBots?.map((bot: any, idx: number) => (
-                    <div key={bot.userAgent} className="flex items-center justify-between p-3">
-                      <div>
-                        <div className="font-semibold text-xs">{bot.name}</div>
-                        <div className="text-[11px] text-muted-foreground">
-                          {bot.description} ({bot.userAgent})
-                        </div>
-                      </div>
-                      <Switch
-                        checked={bot.allowed}
-                        onCheckedChange={(checked) => {
-                          const updated = [...robotsConfig.aiBots];
-                          updated[idx].allowed = checked;
-                          setRobotsConfig({ ...robotsConfig, aiBots: updated });
-                        }}
-                      />
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <DialogFooter className="pt-2">
-                <Button variant="outline" onClick={() => setIsRobotsOpen(false)}>
-                  Close
-                </Button>
-                <Button onClick={handleSaveRobots} disabled={savingRobots}>
-                  {savingRobots ? "Saving..." : "Apply Robots.txt Rules"}
-                </Button>
-              </DialogFooter>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

@@ -11,8 +11,8 @@ const envSchema = z.object({
   JWT_REFRESH_TTL: z.string().default("30d"),
   BOOKING_HOLD_MINUTES: z.coerce.number().int().positive().default(15),
 
-  NEXT_PUBLIC_APP_URL: z.string().default("http://localhost:3000"),
-  NEXT_PUBLIC_API_URL: z.string().default("http://localhost:3000/api/v1"),
+  NEXT_PUBLIC_APP_URL: z.string().default("https://srmcarrentals.com"),
+  NEXT_PUBLIC_API_URL: z.string().default("https://srmcarrentals.com/api/v1"),
 
   MAP_PROVIDER: z.enum(["google", "mock"]).default("mock"),
   GOOGLE_MAPS_API_KEY: z.string().optional(),

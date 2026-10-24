@@ -8,7 +8,7 @@ import { resolveCarKmPlans, resolveCarKmPlansByLocation } from "@/lib/pricing/km
 import { isRichHtml, sanitizeRichHtml } from "@/lib/rich-text";
 import { prisma } from "@/lib/prisma";
 import { getSetting } from "@/modules/settings/settings.service";
-import { DEFAULT_SITE_TEXT, siteTextSchema, type SiteText } from "@/modules/settings/site-content.schemas";
+import { DEFAULT_SITE_TEXT, siteTextSchema, trackingConfigSchema, type SiteText } from "@/modules/settings/site-content.schemas";
 import type {
   AboutPageContent,
   CompanyContent,
@@ -17,6 +17,7 @@ import type {
   HomepageContent,
   TermsPageContent,
   PrivacyPageContent,
+  TrackingConfig,
 } from "@/modules/settings/site-content.schemas";
 import { DEFAULT_PRIVACY } from "@/modules/settings/privacy-defaults";
 import type { CarCardData } from "@/components/website/car-card";
@@ -411,6 +412,12 @@ async function getPrivacyPageContent_uncached(): Promise<PrivacyPageContent> {
   if (!saved) return DEFAULT_PRIVACY;
   const merged = { ...DEFAULT_PRIVACY, ...saved, hero: { ...DEFAULT_PRIVACY.hero, ...(saved.hero ?? {}) }, contact: { ...DEFAULT_PRIVACY.contact, ...(saved.contact ?? {}) } };
   return { ...merged, intro: sanitizeRichHtml(merged.intro), sections: (merged.sections ?? []).map((x) => ({ ...x, body: sanitizeRichHtml(x.body) })) };
+}
+
+async function getTrackingConfig_uncached(): Promise<TrackingConfig> {
+  const saved = await getSetting<unknown>("integrations.tracking");
+  const parsed = trackingConfigSchema.safeParse(saved ?? {});
+  return parsed.success ? parsed.data : trackingConfigSchema.parse({});
 }
 
 async function getTermsPageContent_uncached(): Promise<TermsPageContent> {
@@ -1004,6 +1011,7 @@ export const getAboutPageContent = cached("getAboutPageContent", getAboutPageCon
 export const getContactPageContent = cached("getContactPageContent", getContactPageContent_uncached);
 export const getFaqPageContent = cached("getFaqPageContent", getFaqPageContent_uncached);
 export const getPrivacyPageContent = cached("getPrivacyPageContent", getPrivacyPageContent_uncached);
+export const getTrackingConfig = cached("getTrackingConfig", getTrackingConfig_uncached);
 export const getTermsPageContent = cached("getTermsPageContent", getTermsPageContent_uncached);
 export const listActiveCars = cached("listActiveCars", listActiveCars_uncached);
 export const listActiveChauffeurServices = cached("listActiveChauffeurServices", listActiveChauffeurServices_uncached);

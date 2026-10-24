@@ -1,5 +1,6 @@
 "use client";
 
+import { trackEvent } from "@/lib/tracking/events";
 import { pickupPointsOnly } from "@/lib/location-points";
 import { normalizeRouteCharges, resolveDropCharge, type RouteCharges } from "@/lib/pricing/location-routes";
 import { includedKmLabel, tripSplitLabel } from "@/lib/cart/trip-breakdown";
@@ -59,6 +60,12 @@ export default function CheckoutPage() {
   const t = useCopy();
   const router = useRouter();
   const { items, clear, updateItem } = useCart();
+  const checkoutTracked = React.useRef(false);
+  React.useEffect(() => {
+    if (checkoutTracked.current || items.length === 0) return;
+    checkoutTracked.current = true;
+    trackEvent("InitiateCheckout", { value: items.reduce((sum, i) => sum + (Number(i.total) || 0), 0) });
+  }, [items]);
 
   // Locations for delivery drop charges
   interface LocationOption {

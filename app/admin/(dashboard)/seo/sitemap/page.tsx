@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { SeoNav } from "@/components/admin/seo/seo-nav";
+import { SiteFileLinks } from "@/components/admin/seo/site-file-links";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -78,6 +79,8 @@ export default function SitemapManagementPage() {
       </div>
 
       <SeoNav />
+
+      <SiteFileLinks />
 
       {/* Overview Cards */}
       <div className="grid gap-4 md:grid-cols-4">
