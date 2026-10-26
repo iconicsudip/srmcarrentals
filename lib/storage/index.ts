@@ -11,13 +11,9 @@ export * from "./db-storage.provider";
 export * from "./image-compressor";
 
 export function getStorageProvider(): StorageProvider {
-  if (
-    process.env.STORAGE_PROVIDER === "s3" ||
-    (process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY && process.env.AWS_S3_BUCKET)
-  ) {
-    return s3StorageProvider;
-  }
-  return localStorageProvider;
+  if (process.env.STORAGE_PROVIDER === "s3") return s3StorageProvider;
+  // Default: database storage (works on serverless/ephemeral hosts, no AWS needed).
+  return dbStorageProvider;
 }
 
 export const activeStorageProvider = getStorageProvider();
@@ -43,12 +39,7 @@ export async function saveImageWithFallback(input: {
   const compressed = await compressImageToUnder1Mb(input.buffer, input.originalName);
 
   // 2. Try S3 upload if configured
-  const hasS3Config =
-    Boolean(process.env.AWS_ACCESS_KEY_ID?.trim()) &&
-    Boolean(process.env.AWS_SECRET_ACCESS_KEY?.trim()) &&
-    Boolean(process.env.AWS_S3_BUCKET?.trim());
-
-  if ((hasS3Config || process.env.STORAGE_PROVIDER === "s3") && Date.now() >= s3DisabledUntil) {
+  if (process.env.STORAGE_PROVIDER === "s3" && Date.now() >= s3DisabledUntil) {
     try {
       const s3Result = await s3StorageProvider.save({
         buffer: compressed.buffer,
