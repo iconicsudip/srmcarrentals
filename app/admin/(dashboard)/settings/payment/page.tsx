@@ -84,6 +84,50 @@ export default function PaymentSettingsPage() {
         </div>
       ) : (
         <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Deposit & advance apply to every booking, whether or not Pay on Pickup is on */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base font-semibold">Security Deposit &amp; Advance</CardTitle>
+              <CardDescription>Applies to all bookings: the deposit shown to customers, the advance charged online, and when the deposit is released.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="deposit">Default Security Deposit (₹)</Label>
+                  <Input
+                    id="deposit"
+                    type="number"
+                    value={form.defaultSecurityDeposit}
+                    onChange={(e) => setForm({ ...form, defaultSecurityDeposit: Number(e.target.value) || 0 })}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="advancePercent">Online advance (% of rental)</Label>
+                  <Input
+                    id="advancePercent"
+                    type="number"
+                    min={1}
+                    max={100}
+                    value={form.advancePercent}
+                    onChange={(e) => setForm({ ...form, advancePercent: Math.min(100, Math.max(1, Number(e.target.value) || 1)) })}
+                  />
+                  <p className="text-xs text-muted-foreground">Charged when a customer pays online; the rest is collected at handover. Shown at checkout.</p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="refundWindow">Deposit Release Window (Hours after trip)</Label>
+                  <Input
+                    id="refundWindow"
+                    type="number"
+                    value={form.depositRefundWindowHours}
+                    onChange={(e) => setForm({ ...form, depositRefundWindowHours: Number(e.target.value) || 24 })}
+                  />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
@@ -123,40 +167,6 @@ export default function PaymentSettingsPage() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="deposit">Default Security Deposit (₹)</Label>
-                    <Input
-                      id="deposit"
-                      type="number"
-                      value={form.defaultSecurityDeposit}
-                      onChange={(e) => setForm({ ...form, defaultSecurityDeposit: Number(e.target.value) || 0 })}
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="advancePercent">Online advance (% of rental)</Label>
-                    <Input
-                      id="advancePercent"
-                      type="number"
-                      min={1}
-                      max={100}
-                      value={form.advancePercent}
-                      onChange={(e) => setForm({ ...form, advancePercent: Math.min(100, Math.max(1, Number(e.target.value) || 1)) })}
-                    />
-                    <p className="text-xs text-muted-foreground">Charged when a customer pays online; the rest is collected at handover. Shown at checkout.</p>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="refundWindow">Deposit Release Window (Hours after trip)</Label>
-                    <Input
-                      id="refundWindow"
-                      type="number"
-                      value={form.depositRefundWindowHours}
-                      onChange={(e) => setForm({ ...form, depositRefundWindowHours: Number(e.target.value) || 24 })}
-                    />
-                  </div>
-                </div>
               </CardContent>
             )}
           </Card>
