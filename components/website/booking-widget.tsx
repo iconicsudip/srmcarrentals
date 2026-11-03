@@ -30,7 +30,7 @@ const DEFAULT_WIDGET_TEXT: SiteText["bookingWidget"] = {
   hint: "Instant delivery to Airport, Railway Station or Hotel",
   searchCarsLabel: "SEARCH CARS",
   findTaxiLabel: "FIND TAXI",
-  selfDriveNotice: "Pickup and return time must be at least 24 hours apart and maximum 30 days.",
+  selfDriveNotice: "Pickup and return time must be at least 24 hours apart.",
   taxiNotice: "Flexible hourly packages and outstation taxi routes available across Rajasthan & Gujarat.",
   trust1Title: "Verified Cars",
   trust1Detail: "(100% Insured & Cleaned)",
@@ -294,14 +294,13 @@ export function BookingWidget({
               Trip Schedule &amp; Dates
             </label>
             <TripSchedulePicker
+              minHours={mode === "chauffeur" ? 1 : 24}
               pickup={pickupDateTime}
               drop={dropDateTime}
               onChange={({ pickup, drop }) => {
                 setPickupDateTime(pickup);
                 setDropDateTime(drop);
               }}
-              minHours={mode === "chauffeur" ? 1 : 24}
-              maxDays={30}
               rentalMode={mode === "chauffeur" ? "HOURLY" : "DAILY"}
               compact
             />

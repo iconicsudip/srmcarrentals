@@ -396,7 +396,7 @@ export const siteTextSchema = z.object({
       hint: s("Instant delivery to Airport, Railway Station or Hotel"),
       searchCarsLabel: s("SEARCH CARS"),
       findTaxiLabel: s("FIND TAXI"),
-      selfDriveNotice: s("Pickup and return time must be at least 24 hours apart and maximum 30 days."),
+      selfDriveNotice: s("Pickup and return time must be at least 24 hours apart."),
       taxiNotice: s("Flexible hourly packages and outstation taxi routes available across Rajasthan & Gujarat."),
       trust1Title: s("Verified Cars"),
       trust1Detail: s("(100% Insured & Cleaned)"),

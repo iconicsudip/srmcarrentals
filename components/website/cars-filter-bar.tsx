@@ -419,10 +419,9 @@ export function CarsFilterBar({
             Trip Dates & Times
           </span>
           <TripSchedulePicker
+            minHours={24}
             pickup={pickupValue}
             drop={dropValue}
-            minHours={24}
-            maxDays={10}
             compact
             onChange={({ pickup, drop }) => {
               setPickupValue(pickup);

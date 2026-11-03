@@ -203,11 +203,10 @@ export function CarWhatsAppBook({
               </Field>
               <Field label="Trip dates & times" required className="sm:col-span-2">
                 <TripSchedulePicker
+                  minHours={24}
                   pickup={v.pickupAt}
                   drop={v.dropAt}
                   onChange={({ pickup, drop }) => setV((p) => ({ ...p, pickupAt: pickup, dropAt: drop }))}
-                  minHours={24}
-                  maxDays={30}
                   rentalMode="DAILY"
                   compact
                 />

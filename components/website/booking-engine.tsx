@@ -525,7 +525,6 @@ export function BookingEngine({
           }}
           minDateTime={nowMin}
           minHours={rentalMode === "HOURLY" ? 1 : 24}
-          maxDays={10}
           rentalMode={rentalMode}
         />
 

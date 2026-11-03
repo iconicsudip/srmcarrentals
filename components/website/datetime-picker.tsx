@@ -432,8 +432,8 @@ export function TripSchedulePicker({
   drop,
   onChange,
   minDateTime,
-  minHours = 24,
-  maxDays = 10,
+  minHours = 1,
+  maxDays,
   rentalMode = "DAILY",
   label,
   compact = false,
@@ -495,7 +495,7 @@ export function TripSchedulePicker({
 
   // Maximum allowed date relative to draftFrom (pickup + maxDays)
   const maxDropDate = React.useMemo<Date | undefined>(() => {
-    if (!draftFrom) return undefined;
+    if (!draftFrom || !maxDays) return undefined; // no maximum unless a caller asks for one
     return addDays(draftFrom, maxDays);
   }, [draftFrom, maxDays]);
 
@@ -557,7 +557,7 @@ export function TripSchedulePicker({
   }, [totalHours, totalDays, remHours]);
 
   const isTooShort = totalHours < minHours;
-  const isTooLong = totalHours > maxDays * 24;
+  const isTooLong = Boolean(maxDays) && totalHours > maxDays! * 24;
   const isValidSchedule = !isTooShort && !isTooLong && totalHours > 0;
 
   // Handle Date Range Selection
@@ -566,8 +566,8 @@ export function TripSchedulePicker({
     if (range.from) {
       setDraftFrom(range.from);
       if (range.to) {
-        const maxLimit = addDays(range.from, maxDays);
-        setDraftTo(range.to > maxLimit ? maxLimit : range.to);
+        const maxLimit = maxDays ? addDays(range.from, maxDays) : undefined;
+        setDraftTo(maxLimit && range.to > maxLimit ? maxLimit : range.to);
       } else {
         // If single day clicked, default drop to + 1 day
         setDraftTo(addDays(range.from, rentalMode === "HOURLY" ? 0 : 1));
@@ -578,7 +578,7 @@ export function TripSchedulePicker({
   // Quick Preset Handlers
   const applyPresetDays = (days: number) => {
     if (!draftFrom) return;
-    const clamped = Math.min(days, maxDays);
+    const clamped = maxDays ? Math.min(days, maxDays) : days;
     setDraftTo(addDays(draftFrom, clamped));
     setDraftDropH24(draftPickupH24);
     setDraftDropMin(draftPickupMin);
