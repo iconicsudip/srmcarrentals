@@ -17,6 +17,7 @@ export default function TaxSettingsPage() {
   const [saving, setSaving] = React.useState(false);
 
   const [form, setForm] = React.useState({
+    gstEnabled: true,
     gstPercentage: 18,
     cgstPercentage: 9,
     sgstPercentage: 9,
@@ -76,6 +77,21 @@ export default function TaxSettingsPage() {
         </div>
       ) : (
         <form onSubmit={handleSubmit} className="space-y-6">
+          <Card className={form.gstEnabled ? "" : "border-amber-300 bg-amber-50/40"}>
+            <CardContent className="flex items-center justify-between gap-4 p-5">
+              <div>
+                <Label htmlFor="gstEnabled" className="text-base font-semibold">Charge GST</Label>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  {form.gstEnabled
+                    ? "GST is added to prices on the website, cart, checkout and new bookings."
+                    : "GST is OFF — no tax line is shown or added anywhere. Existing bookings keep the tax they were made with."}
+                </p>
+                <p className="mt-1 text-xs text-muted-foreground">The rate used is the default tax under Finance → Taxes.</p>
+              </div>
+              <Switch id="gstEnabled" checked={form.gstEnabled} onCheckedChange={(v) => setForm({ ...form, gstEnabled: v })} />
+            </CardContent>
+          </Card>
+
           <Card>
             <CardHeader>
               <CardTitle className="text-base font-semibold">Goods & Services Tax (GST) Slabs</CardTitle>

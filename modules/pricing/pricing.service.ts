@@ -25,7 +25,7 @@ import {
   calculateSeasonalAdjustment,
   findApplicableSeasonalPricing,
 } from "@/modules/pricing/services/seasonal-pricing.service";
-import { calculateTax, findDefaultTax } from "@/modules/pricing/services/tax-pricing.service";
+import { calculateTax, findDefaultTax, isGstEnabled } from "@/modules/pricing/services/tax-pricing.service";
 
 async function resolveRentalPackage(packageId: string, car: { id: string; categoryId: string; carTypeId: string }) {
   const pkg = await prisma.rentalPackage.findUnique({ where: { id: packageId }, include: { cars: true } });
@@ -314,10 +314,10 @@ export async function calculatePricing(input: PricingCalculateDto): Promise<Pric
   const subtotal = roundCurrency(preDiscountSubtotal - couponResult.discount);
 
   // ---- 9. Tax ----
-  const defaultTax = await findDefaultTax();
+  const [defaultTax, gstOn] = await Promise.all([findDefaultTax(), isGstEnabled()]);
   const tax = calculateTax(
     subtotal,
-    defaultTax
+    defaultTax && gstOn
       ? { name: defaultTax.name, type: defaultTax.type as TaxType, percentage: Number(defaultTax.percentage) }
       : null,
   );

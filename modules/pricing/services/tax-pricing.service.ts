@@ -2,6 +2,7 @@ import { TaxType } from "@srm/types";
 import { roundCurrency } from "@srm/utils";
 
 import { prisma } from "@/lib/prisma";
+import { getSetting } from "@/modules/settings/settings.service";
 
 export interface TaxInput {
   name: string;
@@ -29,4 +30,13 @@ export function calculateTax(subtotal: number, tax: TaxInput | null): TaxResult 
  * `isDefault` flag on the active Tax row — see taxes.crud for the CRUD API). */
 export function findDefaultTax() {
   return prisma.tax.findFirst({ where: { status: "ACTIVE", isDefault: true } });
+}
+
+/**
+ * Master GST switch (Admin → Settings → Tax Settings → "Charge GST"). When off, no tax is added anywhere:
+ * live prices, cart, checkout and new bookings. Bookings already made keep the tax they were made with.
+ */
+export async function isGstEnabled(): Promise<boolean> {
+  const s = await getSetting<{ gstEnabled?: boolean }>("system.tax");
+  return s?.gstEnabled !== false;
 }
