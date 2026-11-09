@@ -93,6 +93,7 @@ export default function InvoicePage({ params }: { params: Promise<{ id: string }
               Drop: {dt(model.drop.when)} — {model.drop.place}
             </div>
             {model.duration && <div className="text-muted-foreground">Duration: {model.duration}</div>}
+            {model.airportService && <div className="text-muted-foreground">Airport service: {model.airportService}</div>}
           </div>
         </div>
 

@@ -103,6 +103,7 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
                 label="Drop Location"
                 value={booking.dropIsAirport ? `${booking.dropAirport?.name} (${booking.dropAirport?.code})` : (booking.dropLocation?.name ?? "—")}
               />
+              {invoice.airportService && <Detail label="Airport Service" value={invoice.airportService} />}
               <Detail label="Estimated KM" value={booking.estimatedKm ? `${booking.estimatedKm} km` : "—"} />
               {booking.actualPickupAt && <Detail label="Actual Pickup" value={new Date(booking.actualPickupAt).toLocaleString()} />}
               {booking.actualDropAt && <Detail label="Actual Drop" value={new Date(booking.actualDropAt).toLocaleString()} />}

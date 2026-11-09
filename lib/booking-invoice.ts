@@ -31,6 +31,8 @@ export interface InvoiceModel {
   pickup: { when: string; place: string };
   drop: { when: string; place: string };
   duration: string;
+  /** "Pickup only" / "Drop-off only" / "Pickup & drop-off" when the trip uses the airport */
+  airportService: string | null;
   lines: BreakdownLine[];
   grandTotal: number;
   payments: PaymentLine[];
@@ -131,6 +133,7 @@ export function buildInvoiceModel(b: any): InvoiceModel {
     car: [b.car?.brand?.name, b.car?.model?.name].filter(Boolean).join(" ") || b.car?.name || "",
     pickup: { when: b.pickupDateTime, place: pickupPlace },
     drop: { when: b.dropDateTime, place: dropPlace },
+    airportService: b.pickupIsAirport && b.dropIsAirport ? "Pickup & drop-off at the airport" : b.pickupIsAirport ? "Pickup only (airport)" : b.dropIsAirport ? "Drop-off only (airport)" : null,
     duration: hours ? `${Math.floor(hours / 24)}d ${Math.round(hours % 24)}h (${hours} hrs)` : "",
     lines,
     grandTotal,
