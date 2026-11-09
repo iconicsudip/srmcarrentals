@@ -1,5 +1,6 @@
 "use client";
 
+import { airportLegs, airportLines } from "@/lib/cart/airport-lines";
 import { trackEvent } from "@/lib/tracking/events";
 import { pickupPointsOnly } from "@/lib/location-points";
 import { normalizeRouteCharges, resolveDropCharge, type RouteCharges } from "@/lib/pricing/location-routes";
@@ -146,10 +147,15 @@ export default function CheckoutPage() {
   const extraKmRate = primaryItem?.extraKmPrice ?? 10;
 
   // Subtotal & Grand Total calculations
+  // Airport pickup / drop fees are shown on their own lines, so they are kept out of the subtotal
+  const airportPickupFee = items.reduce((sum, item) => sum + (item.airportPickupCharge ?? 0), 0);
+  const airportDropFee = items.reduce((sum, item) => sum + (item.airportDropCharge ?? 0), 0);
   const calculatedSubtotal = Math.max(
     0,
     items.reduce(
-      (sum, item) => sum + Math.max(0, (item.total ?? 0) - (item.locationDropCharge ?? 0)),
+      (sum, item) =>
+        sum +
+        Math.max(0, (item.total ?? 0) - (item.locationDropCharge ?? 0) - (item.airportPickupCharge ?? 0) - (item.airportDropCharge ?? 0)),
       0
     )
   );
@@ -161,7 +167,7 @@ export default function CheckoutPage() {
   const totalDiscount = items.reduce((sum, item) => sum + (item.discount || 0), 0);
   const grandTotal = Math.max(
     0,
-    effectiveSubtotal + deliveryCharge + refundableDeposit - totalDiscount
+    effectiveSubtotal + airportPickupFee + airportDropFee + deliveryCharge + refundableDeposit - totalDiscount
   );
 
   // Payment method selection: "PICKUP" (Cash / UPI at handover) or "ONLINE" (30% advance)
@@ -361,10 +367,10 @@ export default function CheckoutPage() {
         },
         pickupDateTime: new Date(primaryItem.pickup).toISOString(),
         dropDateTime: new Date(primaryItem.drop).toISOString(),
-        pickupLocationId: primaryItem.deliveryType === "BRANCH" ? primaryItem.pickupLocationId : undefined,
-        dropLocationId: primaryItem.deliveryType === "BRANCH" ? primaryItem.dropLocationId : undefined,
-        pickupIsAirport: primaryItem.deliveryType === "AIRPORT",
-        dropIsAirport: primaryItem.deliveryType === "AIRPORT",
+        pickupLocationId: primaryItem.pickupLocationId,
+        dropLocationId: primaryItem.dropLocationId,
+        pickupIsAirport: primaryItem.deliveryType === "AIRPORT" && airportLegs(primaryItem.airportMode).pickup,
+        dropIsAirport: primaryItem.deliveryType === "AIRPORT" && airportLegs(primaryItem.airportMode).drop,
         pickupAirportId: primaryItem.deliveryType === "AIRPORT" ? primaryItem.pickupAirportId : undefined,
         dropAirportId: primaryItem.deliveryType === "AIRPORT" ? primaryItem.dropAirportId : undefined,
         insuranceId: primaryItem.insurance?.id,
@@ -978,6 +984,13 @@ export default function CheckoutPage() {
                     <span className="font-bold text-neutral-700">{t("checkout.subtotal")}</span>
                     <span className="font-bold text-neutral-950">{formatInr(effectiveSubtotal)}</span>
                   </div>
+
+                  {airportLines(items).map((l) => (
+                    <div key={l.label} className="flex items-center justify-between">
+                      <span className="font-bold text-neutral-700">{l.label}</span>
+                      <span className="font-semibold text-neutral-950">{l.amount > 0 ? formatInr(l.amount) : "Free"}</span>
+                    </div>
+                  ))}
 
                   {/* Free Kms */}
                   <div className="flex items-center justify-between">

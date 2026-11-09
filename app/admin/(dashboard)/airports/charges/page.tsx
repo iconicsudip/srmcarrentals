@@ -23,7 +23,7 @@ const formSchema = z.object({
 
 export default function AirportChargesPage() {
   const airports = useLookupOptions<{ id: string; name: string; code: string }>("/airports", "name");
-  const locations = useLookupOptions<{ id: string; name: string }>("/locations", "name");
+  const locations = useLookupOptions<{ id: string; name: string }>("/locations", "name", { kind: "POINT" });
 
   return (
     <LookupManager<AirportChargeRow>
@@ -45,9 +45,9 @@ export default function AirportChargesPage() {
       fields={[
         { name: "airportId", label: "Airport", type: "select", selectOptions: airports.options },
         { name: "locationId", label: "Location", type: "select", selectOptions: locations.options },
-        { name: "pickupCharge", label: "Pickup Charge (₹)", type: "number" },
-        { name: "dropCharge", label: "Drop Charge (₹)", type: "number" },
-        { name: "roundTripCharge", label: "Round Trip Charge (₹)", type: "number", placeholder: "Optional" },
+        { name: "pickupCharge", label: "Pickup only (₹)", type: "number" },
+        { name: "dropCharge", label: "Drop-off only (₹)", type: "number" },
+        { name: "roundTripCharge", label: "Pickup + drop-off together (₹)", type: "number", placeholder: "Bundle price — leave empty to add the two" },
       ]}
       columns={[
         {
@@ -58,8 +58,9 @@ export default function AirportChargesPage() {
             </span>
           ),
         },
-        { header: "Pickup", cell: (row) => `₹${Number(row.pickupCharge).toLocaleString("en-IN")}` },
-        { header: "Drop", cell: (row) => `₹${Number(row.dropCharge).toLocaleString("en-IN")}` },
+        { header: "Pickup only", cell: (row) => `₹${Number(row.pickupCharge).toLocaleString("en-IN")}` },
+        { header: "Drop-off only", cell: (row) => `₹${Number(row.dropCharge).toLocaleString("en-IN")}` },
+        { header: "Pickup + drop-off", cell: (row) => (row.roundTripCharge ? `₹${Number(row.roundTripCharge).toLocaleString("en-IN")}` : `₹${(Number(row.pickupCharge) + Number(row.dropCharge)).toLocaleString("en-IN")}`) },
       ]}
     />
   );

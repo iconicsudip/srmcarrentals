@@ -13,6 +13,7 @@ import type { PricingCalculateResponse } from "@srm/types";
 
 import { ApiRequestError, apiFetch } from "@/lib/api-client";
 import { addToCart } from "@/lib/cart/cart-store";
+import { AIRPORT_MODE_LABEL, airportLegs, type AirportMode } from "@/lib/cart/airport-lines";
 import { useCouponsEnabled } from "@/lib/discounts/use-coupons-enabled";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -208,6 +209,16 @@ export function BookingEngine({
   });
   const effectiveDropLocationId = differentDropLocation ? selectedDropLocationId : selectedLocationId;
   const [selectedAirportId, setSelectedAirportId] = React.useState<string>(airports[0]?.id ?? "");
+  // Pickup + drop fee for each airport, shown with the terminal picker
+  const [airportFees, setAirportFees] = React.useState<Record<string, { pickup: number; drop: number; both: number; total: number; configured: boolean }>>({});
+  const [airportMode, setAirportMode] = React.useState<AirportMode>("BOTH");
+  const pickupAtAirport = deliveryType === "AIRPORT" && airportLegs(airportMode).pickup;
+  const dropAtAirport = deliveryType === "AIRPORT" && airportLegs(airportMode).drop;
+  React.useEffect(() => {
+    apiFetch<typeof airportFees>("/pricing/airport-fees", { skipAuthRedirect: true })
+      .then(setAirportFees)
+      .catch(() => {});
+  }, []);
 
   // KM plan (e.g. 120 / 240 / 350 km per 24h): each plan has its own daily and hourly price, set in admin
   const [kmPlan, setKmPlan] = React.useState<1 | 2 | 3>(() => clampPlan(Number(searchParams.get("kmPlan")) || 1));
@@ -300,12 +311,13 @@ export function BookingEngine({
           carId,
           pickupDateTime: new Date(pickup).toISOString(),
           dropDateTime: new Date(drop).toISOString(),
-          pickupLocationId: deliveryType === "BRANCH" ? selectedLocationId : undefined,
-          dropLocationId: deliveryType === "BRANCH" ? effectiveDropLocationId : undefined,
-          pickupIsAirport: deliveryType === "AIRPORT",
-          dropIsAirport: deliveryType === "AIRPORT",
-          pickupAirportId: deliveryType === "AIRPORT" ? selectedAirportId : undefined,
-          dropAirportId: deliveryType === "AIRPORT" ? selectedAirportId : undefined,
+          // the leg that is not at the airport starts / ends at the branch in the chosen city
+          pickupLocationId: deliveryType === "BRANCH" ? selectedLocationId : deliveryType === "AIRPORT" && !pickupAtAirport ? selectedLocationId : undefined,
+          dropLocationId: deliveryType === "BRANCH" ? effectiveDropLocationId : deliveryType === "AIRPORT" && !dropAtAirport ? selectedLocationId : undefined,
+          pickupIsAirport: pickupAtAirport,
+          dropIsAirport: dropAtAirport,
+          pickupAirportId: pickupAtAirport ? selectedAirportId : undefined,
+          dropAirportId: dropAtAirport ? selectedAirportId : undefined,
           kmPlan,
           insuranceId: selectedInsuranceId,
           extraServiceIds: selectedExtraIds,
@@ -327,6 +339,8 @@ export function BookingEngine({
     selectedLocationId,
     effectiveDropLocationId,
     selectedAirportId,
+    pickupAtAirport,
+    dropAtAirport,
     kmPlan,
     selectedInsuranceId,
     selectedExtraIds,
@@ -455,11 +469,12 @@ export function BookingEngine({
       extraHourCharge: pricingResult?.rental?.extraHourCharge ?? 0,
       deliveryType,
       locationName: locDisplayName,
-      pickupLocationId: deliveryType === "BRANCH" ? selectedLocationId : undefined,
-      dropLocationId: deliveryType === "BRANCH" ? effectiveDropLocationId : undefined,
+      pickupLocationId: deliveryType === "BRANCH" ? selectedLocationId : deliveryType === "AIRPORT" && !pickupAtAirport ? selectedLocationId : undefined,
+      dropLocationId: deliveryType === "BRANCH" ? effectiveDropLocationId : deliveryType === "AIRPORT" && !dropAtAirport ? selectedLocationId : undefined,
       locationDropCharge: pricingResult?.locationDropCharge ?? 0,
-      pickupAirportId: deliveryType === "AIRPORT" ? selectedAirportId : undefined,
-      dropAirportId: deliveryType === "AIRPORT" ? selectedAirportId : undefined,
+      airportMode: deliveryType === "AIRPORT" ? airportMode : undefined,
+      pickupAirportId: pickupAtAirport ? selectedAirportId : undefined,
+      dropAirportId: dropAtAirport ? selectedAirportId : undefined,
       insurance: selectedInsurance
         ? {
             id: selectedInsurance.id,
@@ -478,6 +493,8 @@ export function BookingEngine({
         pricingResult?.rental?.basePrice ??
         (rentalMode === "HOURLY" ? Number(hourlyPrice || 500) : dailyPrice),
       tax: pricingResult?.totalTax ?? 0,
+      airportPickupCharge: pricingResult?.airport?.pickupCharge ?? 0,
+      airportDropCharge: pricingResult?.airport?.dropCharge ?? 0,
       total: finalTotal,
       fuelType: fuelType || "Diesel",
       includedKm: pricingResult?.rental?.includedKm ?? (duration.days || 1) * (activePlan?.km ?? includedKmPerDay),
@@ -773,6 +790,43 @@ export function BookingEngine({
             <p className="mt-1 text-[11px] text-neutral-500">
               {t("booking.vehicle-will-be-waiting")}
             </p>
+            {(() => {
+              const fee = airportFees[selectedAirportId];
+              if (!fee) return null;
+              const options: { mode: AirportMode; title: string; sub: string; price: number }[] = [
+                { mode: "PICKUP", title: "Pickup only", sub: "Car waits for you at the airport; you return it at the branch", price: fee.pickup },
+                { mode: "DROP", title: "Drop-off only", sub: "Collect at the branch; return the car at the airport", price: fee.drop },
+                { mode: "BOTH", title: "Pickup & drop-off", sub: "Collect and return at the airport", price: fee.both },
+              ];
+              const saving = fee.pickup + fee.drop - fee.both;
+              return (
+                <div className="mt-2.5 flex flex-col gap-1.5">
+                  <div className="text-[11px] font-bold tracking-wide text-neutral-500 uppercase">Airport service</div>
+                  {options.map((o) => {
+                    const active = airportMode === o.mode;
+                    return (
+                      <button
+                        key={o.mode}
+                        type="button"
+                        onClick={() => setAirportMode(o.mode)}
+                        className={`flex items-center justify-between gap-3 rounded-xl border px-3 py-2 text-left transition ${
+                          active ? "border-orange-500 bg-orange-50 ring-1 ring-orange-500/30" : "border-neutral-200 bg-white hover:border-orange-300"
+                        }`}
+                      >
+                        <span className="min-w-0">
+                          <span className="block text-xs font-bold text-neutral-900">{o.title}</span>
+                          <span className="block text-[11px] text-neutral-500">{o.sub}</span>
+                        </span>
+                        <span className="shrink-0 text-xs font-black text-neutral-950">
+                          {fee.configured && o.price > 0 ? formatInr(o.price) : "Free"}
+                          {o.mode === "BOTH" && saving > 0 && <span className="block text-[10px] font-semibold text-emerald-600">Save {formatInr(saving)}</span>}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              );
+            })()}
           </div>
         )}
 
@@ -908,10 +962,17 @@ export function BookingEngine({
                 </div>
               )}
 
-              {pricingResult.airport.pickupCharge + pricingResult.airport.dropCharge > 0 && (
+              {deliveryType === "AIRPORT" && (
                 <div className="flex justify-between text-neutral-600">
-                  <span>{t("booking.airport-delivery-fee")}</span>
-                  <span>{formatInr(pricingResult.airport.pickupCharge + pricingResult.airport.dropCharge)}</span>
+                  <span>
+                    {AIRPORT_MODE_LABEL[airportMode]}
+                    {airports.find((a) => a.id === selectedAirportId) ? ` · ${airports.find((a) => a.id === selectedAirportId)!.code}` : ""}
+                  </span>
+                  <span>
+                    {pricingResult.airport.pickupCharge + pricingResult.airport.dropCharge > 0
+                      ? formatInr(pricingResult.airport.pickupCharge + pricingResult.airport.dropCharge)
+                      : "Free"}
+                  </span>
                 </div>
               )}
 

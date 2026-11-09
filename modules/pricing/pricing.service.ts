@@ -25,6 +25,7 @@ import {
   calculateSeasonalAdjustment,
   findApplicableSeasonalPricing,
 } from "@/modules/pricing/services/seasonal-pricing.service";
+import { findAirportCharge } from "@/modules/pricing/services/airport-fees.service";
 import { calculateTax, findDefaultTax, isGstEnabled } from "@/modules/pricing/services/tax-pricing.service";
 
 async function resolveRentalPackage(packageId: string, car: { id: string; categoryId: string; carTypeId: string }) {
@@ -39,25 +40,6 @@ async function resolveRentalPackage(packageId: string, car: { id: string; catego
 
   if (!applies) throw new BadRequestError("This rental package is not available for the selected car");
   return pkg;
-}
-
-async function findAirportCharge(airportId: string, locationId: string | undefined) {
-  if (locationId) {
-    const exact = await prisma.airportLocationCharge.findUnique({ where: { airportId_locationId: { airportId, locationId } } });
-    if (exact) return exact;
-  }
-  const [location, airport] = await Promise.all([
-    locationId ? prisma.location.findUnique({ where: { id: locationId }, select: { city: true } }) : null,
-    prisma.airport.findUnique({ where: { id: airportId }, select: { city: true } }),
-  ]);
-  const city = (location?.city ?? airport?.city ?? "").trim().toLowerCase();
-  if (!city) return null;
-  const rows = await prisma.airportLocationCharge.findMany({
-    where: { airportId },
-    include: { location: { select: { city: true } } },
-    orderBy: { createdAt: "asc" },
-  });
-  return rows.find((r) => (r.location.city ?? "").trim().toLowerCase() === city) ?? null;
 }
 
 async function resolveOneAirportLegCharge(
@@ -104,19 +86,26 @@ async function resolveOneAirportLegCharge(
 }
 
 async function resolveAirportBreakdown(input: PricingCalculateDto): Promise<PricingAirportBreakdown> {
-  // The two legs are resolved independently — a booking can be airport-only
-  // on pickup, drop, or (round trip / fly-in-fly-out) both at once, per the
-  // spec's price breakdown example which shows a nonzero charge on each side
-  // simultaneously (Airport Pickup ₹700 + Airport Drop ₹500).
+  // Airport service has three prices, set per airport in admin:
+  //   pickup only · drop-off only · pickup AND drop-off (its own bundle price, not the sum of the two).
+  const pickupAirportId = input.pickupIsAirport ? input.pickupAirportId : undefined;
+  const dropAirportId = input.dropIsAirport ? input.dropAirportId : undefined;
+
+  if (pickupAirportId && dropAirportId && pickupAirportId === dropAirportId) {
+    const row = await findAirportCharge(pickupAirportId, input.pickupLocationId ?? input.dropLocationId);
+    if (row) {
+      const bundle = Number(row.roundTripCharge ?? 0) > 0 ? Number(row.roundTripCharge) : Number(row.pickupCharge) + Number(row.dropCharge);
+      // Stored as two halves so the snapshot's pickup + drop still add up to the bundle; screens show it as one line.
+      const pickupCharge = roundCurrency(bundle / 2);
+      return { pickupCharge, dropCharge: roundCurrency(bundle - pickupCharge) };
+    }
+  }
+
+  // The legs are resolved independently (also covers different airports, or only one airport leg).
   let pickupCharge = 0;
   let dropCharge = 0;
-
-  if (input.pickupIsAirport && input.pickupAirportId) {
-    pickupCharge = await resolveOneAirportLegCharge(input.pickupAirportId, input.dropLocationId, "pickup");
-  }
-  if (input.dropIsAirport && input.dropAirportId) {
-    dropCharge = await resolveOneAirportLegCharge(input.dropAirportId, input.pickupLocationId, "drop");
-  }
+  if (pickupAirportId) pickupCharge = await resolveOneAirportLegCharge(pickupAirportId, input.dropLocationId, "pickup");
+  if (dropAirportId) dropCharge = await resolveOneAirportLegCharge(dropAirportId, input.pickupLocationId, "drop");
 
   return { pickupCharge, dropCharge };
 }
@@ -175,7 +164,8 @@ export async function calculatePricing(input: PricingCalculateDto): Promise<Pric
   if (!car.pricing) throw new BadRequestError("This car does not have pricing configured yet");
 
   const { dropCharge: locationDropChargeRaw } = await resolveLocations(input.pickupLocationId, input.dropLocationId);
-  const locationDropCharge = input.dropIsAirport ? 0 : locationDropChargeRaw;
+  // A trip that starts or ends at the airport is priced by the airport fee; the branch end carries no extra delivery fee
+  const locationDropCharge = input.dropIsAirport || input.pickupIsAirport ? 0 : locationDropChargeRaw;
 
   // ---- 1. Resolve which rate card applies: Rental Package > Hourly > Daily ----
   let unitPrice = Number(car.pricing.dailyPrice);

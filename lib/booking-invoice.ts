@@ -73,18 +73,26 @@ export function buildInvoiceModel(b: any): InvoiceModel {
   if (n(s.extraKmCharge) > 0) lines.push({ label: "Extra KM", detail: `${inr(n(s.extraKmPrice))} per km beyond the included limit`, amount: n(s.extraKmCharge) });
 
   lines.push({ label: "Pickup & drop", amount: 0, kind: "section" });
-  lines.push({
-    label: "Pickup charge",
-    detail: pickupPlace,
-    amount: n(s.airportPickupCharge),
-    freeWhenZero: true,
-  });
-  lines.push({
-    label: "Drop charge",
-    detail: `${dropPlace}${n(s.airportDropCharge) > 0 && n(s.locationDropCharge) > 0 ? " (airport + location fee)" : ""}`,
-    amount: n(s.airportDropCharge) + n(s.locationDropCharge),
-    freeWhenZero: true,
-  });
+  const bothAirport = Boolean(b.pickupIsAirport && b.dropIsAirport);
+  const airportTotal = n(s.airportPickupCharge) + n(s.airportDropCharge);
+  if (bothAirport) {
+    // pickup + drop-off at the airport is one bundle price — show it as one line
+    lines.push({ label: "Airport pickup & drop-off", detail: pickupPlace, amount: airportTotal, freeWhenZero: true });
+    if (n(s.locationDropCharge) > 0) lines.push({ label: "Drop location charge", detail: dropPlace, amount: n(s.locationDropCharge) });
+  } else {
+    lines.push({
+      label: b.pickupIsAirport ? "Airport pickup" : "Pickup",
+      detail: pickupPlace,
+      amount: b.pickupIsAirport ? n(s.airportPickupCharge) : 0,
+      freeWhenZero: true,
+    });
+    lines.push({
+      label: b.dropIsAirport ? "Airport drop-off" : "Drop-off",
+      detail: dropPlace,
+      amount: (b.dropIsAirport ? n(s.airportDropCharge) : 0) + n(s.locationDropCharge),
+      freeWhenZero: true,
+    });
+  }
 
   if (n(s.seasonalAdjustment) !== 0) lines.push({ label: "Seasonal adjustment", amount: n(s.seasonalAdjustment) });
   if (n(s.servicesTotal) > 0) lines.push({ label: "Extra services", detail: serviceNames.join(", ") || undefined, amount: n(s.servicesTotal) });

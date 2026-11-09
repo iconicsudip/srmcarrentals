@@ -60,7 +60,7 @@ export default function CarsPage() {
   }, []);
   const brands = useLookupOptions<{ id: string; name: string }>("/cars/brands", "name");
   const categories = useLookupOptions<{ id: string; name: string }>("/cars/categories", "name");
-  const locations = useLookupOptions<{ id: string; name: string }>("/locations", "name");
+  const locations = useLookupOptions<{ id: string; name: string }>("/locations", "name", { kind: "CITY" });
 
   const { data, isLoading, isFetching } = useCarList<CarListItem>({
     page,
@@ -287,10 +287,10 @@ export default function CarsPage() {
             }}
           >
             <SelectTrigger className="w-40">
-              <SelectValue placeholder="Location" />
+              <SelectValue placeholder="City" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="ALL">All locations</SelectItem>
+              <SelectItem value="ALL">All cities</SelectItem>
               {locations.options.map((opt) => (
                 <SelectItem key={opt.value} value={opt.value}>
                   {opt.label}

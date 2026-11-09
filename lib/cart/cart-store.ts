@@ -29,6 +29,9 @@ export interface CartItem {
   pickupLocationId?: string;
   dropLocationId?: string;
   locationDropCharge?: number;
+  airportMode?: "PICKUP" | "DROP" | "BOTH";
+  airportPickupCharge?: number;
+  airportDropCharge?: number;
   pickupAirportId?: string;
   dropAirportId?: string;
   insurance?: { id: string; name: string; price: number } | null;

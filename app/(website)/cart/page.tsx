@@ -1,5 +1,6 @@
 "use client";
 
+import { airportLines } from "@/lib/cart/airport-lines";
 import { useCouponsEnabled } from "@/lib/discounts/use-coupons-enabled";
 import { pickupPointsOnly } from "@/lib/location-points";
 import { normalizeRouteCharges, resolveDropCharge, type RouteCharges } from "@/lib/pricing/location-routes";
@@ -118,8 +119,12 @@ export default function CartPage() {
   const extraKmRate = primaryItem?.extraKmPrice ?? 10;
   const fuelType = primaryItem?.fuelType ?? "Diesel";
 
-  // Total payable: subtotal + delivery + refundable deposit
-  const grandTotal = subtotal + deliveryCharge + refundableDeposit;
+  // Airport pickup / drop fees (priced by the server for each car, shown as their own lines)
+  const airportPickupFee = items.reduce((sum, item) => sum + (item.airportPickupCharge ?? 0), 0);
+  const airportDropFee = items.reduce((sum, item) => sum + (item.airportDropCharge ?? 0), 0);
+
+  // Total payable: subtotal + airport fees + delivery + refundable deposit
+  const grandTotal = subtotal + airportPickupFee + airportDropFee + deliveryCharge + refundableDeposit;
 
   // Handle dropdown change for drop location
   const handleLocationChange = (locationId: string) => {
@@ -430,6 +435,13 @@ export default function CartPage() {
                     <span className="font-semibold text-neutral-900">{t("cart.subtotal")}</span>
                     <span className="font-bold text-neutral-950 text-sm">{formatInr(subtotal)}</span>
                   </div>
+
+                  {airportLines(items).map((l) => (
+                    <div key={l.label} className="flex items-center justify-between py-3 text-neutral-600">
+                      <span className="font-semibold text-neutral-900">{l.label}</span>
+                      <span className="font-bold text-neutral-950">{l.amount > 0 ? formatInr(l.amount) : "Free"}</span>
+                    </div>
+                  ))}
 
                   {/* Free Kms */}
                   <div className="flex items-center justify-between py-3 text-neutral-600">

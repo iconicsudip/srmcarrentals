@@ -397,8 +397,19 @@ export default async function BookingConfirmationPage({ params, searchParams }: 
 
                 <div className="flex justify-between border-t border-neutral-200 pt-2 text-neutral-500">
                   <span>Subtotal</span>
-                  <span className="font-medium text-neutral-700">{formatInr(Math.max(0, Number(pricing?.subtotal ?? 0) - Number(pricing?.locationDropCharge ?? 0)))}</span>
+                  <span className="font-medium text-neutral-700">{formatInr(Math.max(0, Number(pricing?.subtotal ?? 0) - Number(pricing?.locationDropCharge ?? 0) - Number(pricing?.airportPickupCharge ?? 0) - Number(pricing?.airportDropCharge ?? 0)))}</span>
                 </div>
+
+                {(booking.pickupIsAirport || booking.dropIsAirport) && (
+                  <div className="flex justify-between text-neutral-700">
+                    <span>{booking.pickupIsAirport && booking.dropIsAirport ? "Airport Pickup & Drop-off" : booking.pickupIsAirport ? "Airport Pickup" : "Airport Drop-off"}</span>
+                    <span className="font-semibold text-neutral-950">
+                      {Number(pricing?.airportPickupCharge ?? 0) + Number(pricing?.airportDropCharge ?? 0) > 0
+                        ? formatInr(Number(pricing?.airportPickupCharge ?? 0) + Number(pricing?.airportDropCharge ?? 0))
+                        : "Free"}
+                    </span>
+                  </div>
+                )}
 
                 {pricing?.locationDropCharge != null && Number(pricing.locationDropCharge) > 0 && (
                   <div className="flex justify-between text-neutral-700">

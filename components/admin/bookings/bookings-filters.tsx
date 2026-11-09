@@ -101,7 +101,7 @@ export function BookingsFilters({ value, onChange, fixedStatus }: { value: Booki
   }, [debounced]);
 
   const cars = useLookupOptions<{ id: string; name: string }>("/cars", "name");
-  const locations = useLookupOptions<{ id: string; name: string }>("/locations", "name");
+  const locations = useLookupOptions<{ id: string; name: string }>("/locations", "name", { kind: "POINT" });
 
   const set = (patch: Partial<BookingFilterValues>) => onChange({ ...value, ...patch });
   const activeCount = [value.search, value.status !== "ALL" && !fixedStatus, value.dateFrom, value.carId !== "ALL", value.locationId !== "ALL", value.paymentStatus !== "ALL"].filter(Boolean).length;
