@@ -1,5 +1,7 @@
 "use client";
 
+import { airportLines } from "@/lib/cart/airport-lines";
+import { cartTotals } from "@/lib/cart/cart-totals";
 import { useCopy } from "@/components/copy-provider";
 import * as React from "react";
 import Link from "next/link";
@@ -37,8 +39,8 @@ export function CartDrawer({ phone = "+91 9414551250" }: { phone?: string }) {
   const t = useCopy();
   const router = useRouter();
   const { items, count, total, isDrawerOpen, closeCart, removeItem, clear } = useCart();
-  // The subtotal excludes drop-location fees; they are added on top of it
-  const dropFees = items.reduce((sum, item) => sum + (item.locationDropCharge ?? 0), 0);
+  // Same calculation as the cart and checkout pages (deposit is collected at pickup, so it is not part of this total)
+  const totals = cartTotals(items, 0);
   const [isCheckingOut, setIsCheckingOut] = React.useState(false);
   const [deletingId, setDeletingId] = React.useState<string | null>(null);
 
@@ -247,19 +249,37 @@ export function CartDrawer({ phone = "+91 9414551250" }: { phone?: string }) {
         {items.length > 0 && (
           <div className="border-t border-neutral-150 pt-4 space-y-3">
             <div className="flex items-center justify-between text-xs text-neutral-600">
-              <span>Vehicles ({count})</span>
-              <span className="font-semibold text-neutral-900">{formatInr(Math.max(0, total - dropFees))}</span>
+              <span>Vehicles ({count}) · rental</span>
+              <span className="font-semibold text-neutral-900">{formatInr(totals.subtotal)}</span>
             </div>
-            {dropFees > 0 && (
+            {airportLines(items).map((l) => (
+              <div key={l.label} className="flex items-center justify-between text-xs text-neutral-600">
+                <span>{l.label}</span>
+                <span className="font-semibold text-neutral-900">{l.amount > 0 ? formatInr(l.amount) : "Free"}</span>
+              </div>
+            ))}
+            {totals.dropFee > 0 && (
               <div className="flex items-center justify-between text-xs text-neutral-600">
                 <span>Drop location fee</span>
-                <span className="font-semibold text-orange-600">+{formatInr(dropFees)}</span>
+                <span className="font-semibold text-orange-600">+{formatInr(totals.dropFee)}</span>
+              </div>
+            )}
+            {totals.discount > 0 && (
+              <div className="flex items-center justify-between text-xs text-emerald-600">
+                <span>Discount</span>
+                <span className="font-semibold">-{formatInr(totals.discount)}</span>
+              </div>
+            )}
+            {totals.tax > 0 && (
+              <div className="flex items-center justify-between text-xs text-neutral-600">
+                <span>GST (Taxes)</span>
+                <span className="font-semibold text-neutral-900">{formatInr(totals.tax)}</span>
               </div>
             )}
 
             <div className="flex items-center justify-between text-base font-black text-neutral-950">
               <span>{t("cartdrawer.total-payable")}</span>
-              <span className="text-lg text-orange-600">{formatInr(total)}</span>
+              <span className="text-lg text-orange-600">{formatInr(totals.rentalPayable)}</span>
             </div>
 
             <div className="text-[11px] text-emerald-700 font-semibold">

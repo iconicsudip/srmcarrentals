@@ -31,6 +31,9 @@ export interface CartItem {
   locationDropCharge?: number;
   airportMode?: "PICKUP" | "DROP" | "BOTH";
   airportPickupCharge?: number;
+  /** Exact amounts the server charged for the protection plan and the add-ons (per-day rates already applied) */
+  insuranceCharge?: number;
+  servicesTotal?: number;
   airportDropCharge?: number;
   pickupAirportId?: string;
   dropAirportId?: string;

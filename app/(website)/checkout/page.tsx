@@ -1,5 +1,6 @@
 "use client";
 
+import { cartTotals } from "@/lib/cart/cart-totals";
 import { airportLegs, airportLines } from "@/lib/cart/airport-lines";
 import { trackEvent } from "@/lib/tracking/events";
 import { pickupPointsOnly } from "@/lib/location-points";
@@ -147,28 +148,11 @@ export default function CheckoutPage() {
   const extraKmRate = primaryItem?.extraKmPrice ?? 10;
 
   // Subtotal & Grand Total calculations
-  // Airport pickup / drop fees are shown on their own lines, so they are kept out of the subtotal
-  const airportPickupFee = items.reduce((sum, item) => sum + (item.airportPickupCharge ?? 0), 0);
-  const airportDropFee = items.reduce((sum, item) => sum + (item.airportDropCharge ?? 0), 0);
-  const calculatedSubtotal = Math.max(
-    0,
-    items.reduce(
-      (sum, item) =>
-        sum +
-        Math.max(0, (item.total ?? 0) - (item.locationDropCharge ?? 0) - (item.airportPickupCharge ?? 0) - (item.airportDropCharge ?? 0)),
-      0
-    )
-  );
-  const effectiveSubtotal =
-    calculatedSubtotal > 0
-      ? calculatedSubtotal
-      : items.reduce((sum, item) => sum + (item.basePrice || item.dailyPrice || 6840), 0);
-
-  const totalDiscount = items.reduce((sum, item) => sum + (item.discount || 0), 0);
-  const grandTotal = Math.max(
-    0,
-    effectiveSubtotal + airportPickupFee + airportDropFee + deliveryCharge + refundableDeposit - totalDiscount
-  );
+  // One shared calculation (same as the cart): every car's server-priced total + the refundable deposit
+  const totals = cartTotals(items, refundableDeposit);
+  const effectiveSubtotal = totals.subtotal;
+  const totalDiscount = totals.discount;
+  const grandTotal = totals.grand;
 
   // Payment method selection: "PICKUP" (Cash / UPI at handover) or "ONLINE" (30% advance)
   const [paymentMethod, setPaymentMethod] = React.useState<"PICKUP" | "ONLINE">("PICKUP");
@@ -979,6 +963,15 @@ export default function CheckoutPage() {
 
                 {/* ── Exact Order Summary Breakdown ── */}
                 <div className="border-t border-neutral-200 pt-3 space-y-3 text-xs sm:text-sm">
+                  {totals.parts.map((part) => (
+                    <div key={part.key} className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <div className="font-bold text-neutral-700">{part.label}</div>
+                        {part.detail && <div className="text-[11px] text-neutral-500 break-words">{part.detail}</div>}
+                      </div>
+                      <span className="shrink-0 font-semibold text-neutral-950">{formatInr(part.amount)}</span>
+                    </div>
+                  ))}
                   {/* Subtotal */}
                   <div className="flex items-center justify-between">
                     <span className="font-bold text-neutral-700">{t("checkout.subtotal")}</span>
@@ -986,9 +979,12 @@ export default function CheckoutPage() {
                   </div>
 
                   {airportLines(items).map((l) => (
-                    <div key={l.label} className="flex items-center justify-between">
-                      <span className="font-bold text-neutral-700">{l.label}</span>
-                      <span className="font-semibold text-neutral-950">{l.amount > 0 ? formatInr(l.amount) : "Free"}</span>
+                    <div key={l.label} className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <div className="font-bold text-neutral-700">{l.label}</div>
+                        {l.detail && <div className="text-[11px] text-neutral-500 break-words">{l.detail}</div>}
+                      </div>
+                      <span className="shrink-0 font-semibold text-neutral-950">{l.amount > 0 ? formatInr(l.amount) : "Free"}</span>
                     </div>
                   ))}
 
@@ -1049,6 +1045,13 @@ export default function CheckoutPage() {
                     <span className="font-bold text-neutral-950">{formatInr(refundableDeposit)}</span>
                   </div>
 
+                  {totals.tax > 0 && (
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-neutral-700">GST (Taxes)</span>
+                      <span className="font-bold text-neutral-950">{formatInr(totals.tax)}</span>
+                    </div>
+                  )}
+
                   {/* Coupon Discount (if applied) */}
                   {totalDiscount > 0 && (
                     <div className="flex items-center justify-between text-emerald-600 font-bold">
@@ -1100,7 +1103,7 @@ export default function CheckoutPage() {
                   </div>
                   <p className="px-1 text-[11px] text-neutral-500">
                     {paymentMethod === "ONLINE"
-                      ? "The balance is collected at vehicle handover."
+                      ? `The balance is collected at vehicle handover: ${formatInr(Math.max(0, totals.rentalPayable - advance.now))} remaining rental + ${formatInr(refundableDeposit)} refundable deposit.`
                       : "Everything is payable at vehicle handover. Choose online to lock in your booking with a 30% advance."}
                   </p>
 

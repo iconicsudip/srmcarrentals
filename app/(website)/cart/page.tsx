@@ -1,5 +1,6 @@
 "use client";
 
+import { cartTotals } from "@/lib/cart/cart-totals";
 import { airportLines } from "@/lib/cart/airport-lines";
 import { useCouponsEnabled } from "@/lib/discounts/use-coupons-enabled";
 import { pickupPointsOnly } from "@/lib/location-points";
@@ -119,12 +120,9 @@ export default function CartPage() {
   const extraKmRate = primaryItem?.extraKmPrice ?? 10;
   const fuelType = primaryItem?.fuelType ?? "Diesel";
 
-  // Airport pickup / drop fees (priced by the server for each car, shown as their own lines)
-  const airportPickupFee = items.reduce((sum, item) => sum + (item.airportPickupCharge ?? 0), 0);
-  const airportDropFee = items.reduce((sum, item) => sum + (item.airportDropCharge ?? 0), 0);
-
-  // Total payable: subtotal + airport fees + delivery + refundable deposit
-  const grandTotal = subtotal + airportPickupFee + airportDropFee + deliveryCharge + refundableDeposit;
+  // One shared calculation (same as the checkout): every car's server-priced total + the refundable deposit
+  const totals = cartTotals(items, refundableDeposit);
+  const grandTotal = totals.grand;
 
   // Handle dropdown change for drop location
   const handleLocationChange = (locationId: string) => {
@@ -430,16 +428,29 @@ export default function CartPage() {
                 {/* Breakdown Rows */}
                 <div className="divide-y divide-neutral-100 text-xs">
                   
+                  {totals.parts.map((part) => (
+                    <div key={part.key} className="flex items-start justify-between gap-3 py-2.5 text-neutral-600">
+                      <div className="min-w-0">
+                        <div className="font-semibold text-neutral-900">{part.label}</div>
+                        {part.detail && <div className="text-[11px] text-neutral-500 break-words">{part.detail}</div>}
+                      </div>
+                      <span className="shrink-0 font-bold text-neutral-950">{formatInr(part.amount)}</span>
+                    </div>
+                  ))}
+
                   {/* Subtotal */}
                   <div className="flex items-center justify-between py-3 text-neutral-600">
                     <span className="font-semibold text-neutral-900">{t("cart.subtotal")}</span>
-                    <span className="font-bold text-neutral-950 text-sm">{formatInr(subtotal)}</span>
+                    <span className="font-bold text-neutral-950 text-sm">{formatInr(totals.subtotal)}</span>
                   </div>
 
                   {airportLines(items).map((l) => (
-                    <div key={l.label} className="flex items-center justify-between py-3 text-neutral-600">
-                      <span className="font-semibold text-neutral-900">{l.label}</span>
-                      <span className="font-bold text-neutral-950">{l.amount > 0 ? formatInr(l.amount) : "Free"}</span>
+                    <div key={l.label} className="flex items-start justify-between gap-3 py-2.5 text-neutral-600">
+                      <div className="min-w-0">
+                        <div className="font-semibold text-neutral-900">{l.label}</div>
+                        {l.detail && <div className="text-[11px] text-neutral-500 break-words">{l.detail}</div>}
+                      </div>
+                      <span className="shrink-0 font-bold text-neutral-950">{l.amount > 0 ? formatInr(l.amount) : "Free"}</span>
                     </div>
                   ))}
 
@@ -484,6 +495,20 @@ export default function CartPage() {
                       </div>
                     </div>
                   </div>
+
+                  {totals.discount > 0 && (
+                    <div className="flex items-center justify-between py-3 text-emerald-600">
+                      <span className="font-semibold">Discount</span>
+                      <span className="font-bold">-{formatInr(totals.discount)}</span>
+                    </div>
+                  )}
+
+                  {totals.tax > 0 && (
+                    <div className="flex items-center justify-between py-3 text-neutral-600">
+                      <span className="font-semibold text-neutral-900">GST (Taxes)</span>
+                      <span className="font-bold text-neutral-950">{formatInr(totals.tax)}</span>
+                    </div>
+                  )}
 
                   {/* Refundable Deposit */}
                   <div className="flex items-center justify-between py-3 text-neutral-600">

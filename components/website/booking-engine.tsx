@@ -493,6 +493,8 @@ export function BookingEngine({
         pricingResult?.rental?.basePrice ??
         (rentalMode === "HOURLY" ? Number(hourlyPrice || 500) : dailyPrice),
       tax: pricingResult?.totalTax ?? 0,
+      insuranceCharge: pricingResult?.insurance?.price ?? 0,
+      servicesTotal: (pricingResult?.services ?? []).reduce((sum, x) => sum + (x.price || 0), 0),
       airportPickupCharge: pricingResult?.airport?.pickupCharge ?? 0,
       airportDropCharge: pricingResult?.airport?.dropCharge ?? 0,
       total: finalTotal,

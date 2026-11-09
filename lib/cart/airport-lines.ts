@@ -18,15 +18,18 @@ interface HasAirport {
   airportMode?: AirportMode;
   airportPickupCharge?: number;
   airportDropCharge?: number;
+  locationName?: string;
 }
 
 /** The airport line(s) to show for a set of cart items — one line per mode in use, never split into halves. */
-export function airportLines(items: HasAirport[]): { label: string; amount: number }[] {
+export function airportLines(items: HasAirport[]): { label: string; amount: number; detail?: string }[] {
   const totals: Partial<Record<AirportMode, number>> = {};
+  const where: Partial<Record<AirportMode, string[]>> = {};
   for (const it of items) {
     if (it.deliveryType !== "AIRPORT") continue;
     const mode = it.airportMode ?? "BOTH";
     totals[mode] = (totals[mode] ?? 0) + (it.airportPickupCharge ?? 0) + (it.airportDropCharge ?? 0);
+    if (it.locationName) (where[mode] ??= []).push(it.locationName);
   }
-  return (["PICKUP", "DROP", "BOTH"] as AirportMode[]).filter((m) => totals[m] != null).map((m) => ({ label: AIRPORT_MODE_LABEL[m], amount: totals[m]! }));
+  return (["PICKUP", "DROP", "BOTH"] as AirportMode[]).filter((m) => totals[m] != null).map((m) => ({ label: AIRPORT_MODE_LABEL[m], amount: totals[m]!, detail: Array.from(new Set(where[m] ?? [])).join(", ") || undefined }));
 }

@@ -234,7 +234,7 @@ export const COPY: Record<string, CopyEntry> = {
   "checkout.extra-kms-charge": { group: "checkout", default: "Extra kms charge:" },
   "checkout.grand-total": { group: "checkout", default: "Grand Total:" },
   "checkout.total-includes": { group: "checkout", default: "Total includes:" },
-  "checkout.subtotal-delivery-refundable-deposit": { group: "checkout", default: "Subtotal + Delivery + Refundable Deposit. Deposit will be refunded upon vehicle return." },
+  "checkout.subtotal-delivery-refundable-deposit": { group: "checkout", default: "Subtotal + airport / delivery fees + GST − discount + Refundable Deposit. The deposit is refunded on vehicle return." },
   "checkout.email-address": { group: "checkout", default: "Email Address" },
   "checkout.password": { group: "checkout", default: "Password" },
   "checkout.full-name": { group: "checkout", default: "Full name" },
