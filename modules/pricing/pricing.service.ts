@@ -16,7 +16,7 @@ import { getMapProvider } from "@/lib/map";
 import { BadRequestError, NotFoundError } from "@/lib/http/errors";
 import type { PricingCalculateDto } from "@/modules/pricing/dto/pricing-calculate.dto";
 import { calculateAirportLegCharge } from "@/modules/pricing/services/airport-pricing.service";
-import { validateAndCalculateCoupon, findCouponByCode } from "@/modules/pricing/services/coupon-pricing.service";
+import { validateAndCalculateCoupon, findCouponByCode, areCouponsEnabled } from "@/modules/pricing/services/coupon-pricing.service";
 import { calculateHourlyPrice, shouldUseHourlyPricing } from "@/modules/pricing/services/hourly-pricing.service";
 import { calculateKmPricing } from "@/modules/pricing/services/km-pricing.service";
 import { resolveLocations } from "@/modules/pricing/services/location-pricing.service";
@@ -41,22 +41,41 @@ async function resolveRentalPackage(packageId: string, car: { id: string; catego
   return pkg;
 }
 
+async function findAirportCharge(airportId: string, locationId: string | undefined) {
+  if (locationId) {
+    const exact = await prisma.airportLocationCharge.findUnique({ where: { airportId_locationId: { airportId, locationId } } });
+    if (exact) return exact;
+  }
+  const [location, airport] = await Promise.all([
+    locationId ? prisma.location.findUnique({ where: { id: locationId }, select: { city: true } }) : null,
+    prisma.airport.findUnique({ where: { id: airportId }, select: { city: true } }),
+  ]);
+  const city = (location?.city ?? airport?.city ?? "").trim().toLowerCase();
+  if (!city) return null;
+  const rows = await prisma.airportLocationCharge.findMany({
+    where: { airportId },
+    include: { location: { select: { city: true } } },
+    orderBy: { createdAt: "asc" },
+  });
+  return rows.find((r) => (r.location.city ?? "").trim().toLowerCase() === city) ?? null;
+}
+
 async function resolveOneAirportLegCharge(
   airportId: string,
   locationId: string | undefined,
   leg: "pickup" | "drop",
 ): Promise<number> {
-  if (locationId) {
-    const explicit = await prisma.airportLocationCharge.findUnique({
-      where: { airportId_locationId: { airportId, locationId } },
+  // Airport fees are set per airport ↔ pickup point (e.g. Udaipur HQ ↔ UDR airport). Customers now choose a CITY and an
+  // airport, so when no exact point is known, use the fee set for a point in that city (or the airport's own city).
+  const explicit = await findAirportCharge(airportId, locationId);
+  if (explicit) {
+    return calculateAirportLegCharge({
+      isAirport: true,
+      explicitCharge: Number(leg === "pickup" ? explicit.pickupCharge : explicit.dropCharge),
     });
-    if (explicit) {
-      return calculateAirportLegCharge({
-        isAirport: true,
-        explicitCharge: Number(leg === "pickup" ? explicit.pickupCharge : explicit.dropCharge),
-      });
-    }
+  }
 
+  if (locationId) {
     const [airport, location, distancePricing] = await Promise.all([
       prisma.airport.findUnique({ where: { id: airportId } }),
       prisma.location.findUnique({ where: { id: locationId } }),
@@ -289,7 +308,9 @@ export async function calculatePricing(input: PricingCalculateDto): Promise<Pric
 
   // ---- 8. Coupon ----
   let couponResult: PricingCouponBreakdown = { code: null, discount: 0, valid: false };
-  if (input.couponCode) {
+  if (input.couponCode && !(await areCouponsEnabled())) {
+    couponResult = { code: null, discount: 0, valid: false, reason: "Discount codes are turned off" };
+  } else if (input.couponCode) {
     const couponRow = await findCouponByCode(input.couponCode);
     const validated = validateAndCalculateCoupon(
       couponRow

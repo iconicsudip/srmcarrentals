@@ -1,4 +1,6 @@
 import { CouponDiscountType } from "@srm/types";
+
+import { getSetting } from "@/modules/settings/settings.service";
 import { roundCurrency } from "@srm/utils";
 
 import { prisma } from "@/lib/prisma";
@@ -57,4 +59,13 @@ export function validateAndCalculateCoupon(
 
 export function findCouponByCode(code: string) {
   return prisma.coupon.findUnique({ where: { code: code.trim().toUpperCase() } });
+}
+
+/**
+ * Master switch for discounts (Admin → Settings → General → "Discount codes"). When off, nothing reduces a booking's
+ * price: codes typed by customers are ignored.
+ */
+export async function areCouponsEnabled(): Promise<boolean> {
+  const s = await getSetting<{ couponsEnabled?: boolean }>("system.discounts");
+  return s?.couponsEnabled !== false;
 }

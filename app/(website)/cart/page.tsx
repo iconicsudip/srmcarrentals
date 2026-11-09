@@ -1,5 +1,6 @@
 "use client";
 
+import { useCouponsEnabled } from "@/lib/discounts/use-coupons-enabled";
 import { pickupPointsOnly } from "@/lib/location-points";
 import { normalizeRouteCharges, resolveDropCharge, type RouteCharges } from "@/lib/pricing/location-routes";
 import { includedKmLabel } from "@/lib/cart/trip-breakdown";
@@ -62,6 +63,7 @@ export default function CartPage() {
       .then((r) => setRoutes(normalizeRouteCharges(r)))
       .catch(() => {});
   }, []);
+  const couponsEnabled = useCouponsEnabled();
   const [couponCode, setCouponCode] = React.useState("");
   const [, setAppliedCoupon] = React.useState<string | null>(null);
 
@@ -352,6 +354,8 @@ export default function CartPage() {
                 {/* Coupon Code & Update Action Footer */}
                 <div className="border-t border-neutral-200 bg-neutral-50/80 p-4 sm:p-5">
                   <form onSubmit={handleApplyCoupon} className="flex flex-wrap items-center gap-3">
+                    {couponsEnabled && (
+                    <>
                     <div className="min-w-[220px] flex-1">
                       <div className="relative">
                         <Tag className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 size-3.5 text-neutral-400" />
@@ -370,6 +374,8 @@ export default function CartPage() {
                     >
                       {t("cart.apply-coupon")}
                     </Button>
+                    </>
+                    )}
                     <Button
                       type="button"
                       onClick={handleUpdateCart}

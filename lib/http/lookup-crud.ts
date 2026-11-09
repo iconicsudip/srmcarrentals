@@ -32,6 +32,8 @@ interface LookupCrudOptions<TCreate, TUpdate> {
   include?: Record<string, unknown>;
   /** Extra `where` clauses derived from query params, e.g. `?brandId=` on Models. */
   buildWhere?: (url: URL) => Record<string, unknown>;
+  /** Translate the generic `?status=ACTIVE|INACTIVE` filter for entities whose status enum differs. */
+  mapStatusFilter?: (status: "ACTIVE" | "INACTIVE") => unknown;
   notFoundMessage?: string;
 }
 
@@ -57,7 +59,8 @@ export function createLookupCrud<TCreate, TUpdate>(options: LookupCrudOptions<TC
       }));
     }
     if (status === "ACTIVE" || status === "INACTIVE") {
-      where.status = status;
+      // Some lists (e.g. drivers) have their own status names — let them translate the generic ACTIVE / INACTIVE filter
+      where.status = options.mapStatusFilter ? options.mapStatusFilter(status) : status;
     }
 
     const [data, total] = await Promise.all([

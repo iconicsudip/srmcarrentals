@@ -17,6 +17,7 @@ export default function GeneralSettingsPage() {
   const [loading, setLoading] = React.useState(true);
   const [saving, setSaving] = React.useState(false);
 
+  const [couponsEnabled, setCouponsEnabled] = React.useState(true);
   const [services, setServices] = React.useState({
     cars: true,
     taxi: true,
@@ -43,9 +44,11 @@ export default function GeneralSettingsPage() {
     Promise.all([
       apiFetch<Record<string, any>>("/settings/system.general", { skipAuthRedirect: true }).catch(() => null),
       apiFetch<Record<string, any>>("/settings/system.services", { skipAuthRedirect: true }).catch(() => null),
+      apiFetch<Record<string, any>>("/settings/system.discounts", { skipAuthRedirect: true }).catch(() => null),
     ])
-      .then(([generalData, servicesData]) => {
+      .then(([generalData, servicesData, discountsData]) => {
         if (!cancelled) {
+          if (discountsData && typeof discountsData === "object") setCouponsEnabled(discountsData.couponsEnabled !== false);
           if (generalData && typeof generalData === "object") {
             setForm((prev) => ({ ...prev, ...generalData }));
           }
@@ -74,6 +77,7 @@ export default function GeneralSettingsPage() {
         method: "PUT",
         body: form,
       });
+      await apiFetch("/settings/system.discounts", { method: "PUT", body: { couponsEnabled } });
       toast.success("General settings updated successfully");
     } catch (err: any) {
       toast.error(err?.message || "Failed to update settings");
@@ -97,6 +101,20 @@ export default function GeneralSettingsPage() {
         </div>
       ) : (
         <form onSubmit={handleSubmit} className="space-y-6">
+          <Card className={couponsEnabled ? "" : "border-amber-300 bg-amber-50/40"}>
+            <CardContent className="flex items-center justify-between gap-4 p-5">
+              <div>
+                <Label htmlFor="couponsEnabled" className="text-base font-semibold">Discount codes</Label>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  {couponsEnabled
+                    ? "Customers can enter a discount code on the booking panel and cart."
+                    : "Discount codes are OFF — the code box is hidden and no booking gets any discount."}
+                </p>
+              </div>
+              <Switch id="couponsEnabled" checked={couponsEnabled} onCheckedChange={setCouponsEnabled} />
+            </CardContent>
+          </Card>
+
           <Card>
             <CardHeader>
               <CardTitle className="text-base font-semibold">Branding & Platform Identity</CardTitle>

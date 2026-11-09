@@ -13,6 +13,7 @@ import type { PricingCalculateResponse } from "@srm/types";
 
 import { ApiRequestError, apiFetch } from "@/lib/api-client";
 import { addToCart } from "@/lib/cart/cart-store";
+import { useCouponsEnabled } from "@/lib/discounts/use-coupons-enabled";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -224,6 +225,7 @@ export function BookingEngine({
 
   // Coupon
   const [couponInput, setCouponInput] = React.useState("");
+  const couponsEnabled = useCouponsEnabled();
   const [appliedCoupon, setAppliedCoupon] = React.useState<string | undefined>(undefined);
   const [isApplyingCoupon, setIsApplyingCoupon] = React.useState(false);
   const [isAdding, setIsAdding] = React.useState(false);
@@ -307,7 +309,7 @@ export function BookingEngine({
           kmPlan,
           insuranceId: selectedInsuranceId,
           extraServiceIds: selectedExtraIds,
-          couponCode: appliedCoupon,
+          couponCode: couponsEnabled ? appliedCoupon : undefined,
         },
         skipAuthRedirect: true,
       });
@@ -470,7 +472,7 @@ export function BookingEngine({
         name: e.name,
         price: Number(e.price ?? 0),
       })),
-      couponCode: appliedCoupon,
+      couponCode: couponsEnabled ? appliedCoupon : undefined,
       discount: pricingResult?.discount ?? 0,
       basePrice:
         pricingResult?.rental?.basePrice ??
@@ -855,6 +857,7 @@ export function BookingEngine({
         )}
 
         {/* Coupon Code Accordion */}
+        {couponsEnabled && (
         <div className="rounded-xl border border-neutral-200 bg-neutral-50/70 p-2.5">
           {appliedCoupon ? (
             <div className="flex items-center justify-between text-xs text-emerald-600">
@@ -883,6 +886,7 @@ export function BookingEngine({
             </form>
           )}
         </div>
+        )}
 
         {/* Pricing Breakdown Summary */}
         {calcLoading ? (

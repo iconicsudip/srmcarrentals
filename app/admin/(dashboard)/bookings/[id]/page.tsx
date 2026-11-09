@@ -3,7 +3,7 @@
 import * as React from "react";
 import { use } from "react";
 import Link from "next/link";
-import { CarFront, Loader2, MapPin, Phone } from "lucide-react";
+import { CarFront, FileDown, Loader2, MapPin, Phone } from "lucide-react";
 import { toast } from "sonner";
 
 import { ApiRequestError } from "@/lib/api-client";
@@ -16,6 +16,8 @@ import {
   useConfirmBooking,
   useStartTrip,
 } from "@/hooks/use-bookings";
+import { BreakdownTable, PaymentSummary } from "@/components/admin/bookings/price-breakdown";
+import { buildInvoiceModel } from "@/lib/booking-invoice";
 import { ConfirmDialog } from "@/components/admin/confirm-dialog";
 import { BookingPaymentsCard, type PaymentRow } from "@/components/admin/bookings/booking-payments-card";
 import { Badge } from "@/components/ui/badge";
@@ -36,7 +38,7 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
   const assignDriverMutation = useAssignDriverToBooking();
   const startTripMutation = useStartTrip();
   const completeTripMutation = useCompleteTrip();
-  const drivers = useLookupOptions<{ id: string; firstName: string; lastName: string }>("/drivers", "firstName");
+  const drivers = useLookupOptions<{ id: string; firstName: string; lastName: string }>("/drivers", "firstName", { status: "AVAILABLE" });
 
   const [driverId, setDriverId] = React.useState("");
   const [cancelOpen, setCancelOpen] = React.useState(false);
@@ -60,6 +62,7 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
   }
 
   const s = booking.pricingSnapshot;
+  const invoice = buildInvoiceModel(booking);
 
   return (
     <div className="flex flex-col gap-6">
@@ -70,7 +73,14 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
             Created {new Date(booking.createdAt).toLocaleString()}
           </p>
         </div>
-        <Badge className="text-sm">{booking.status.replace(/_/g, " ")}</Badge>
+        <div className="flex items-center gap-2">
+          <Button asChild variant="outline" size="sm">
+            <Link href={`/admin/invoice/${booking.id}`} target="_blank">
+              <FileDown className="mr-1.5 size-4" /> Invoice
+            </Link>
+          </Button>
+          <Badge className="text-sm">{booking.status.replace(/_/g, " ")}</Badge>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
@@ -125,35 +135,33 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
 
           {s && (
             <Card>
-              <CardHeader>
-                <CardTitle className="text-base">Price Breakdown (Immutable Snapshot)</CardTitle>
+              <CardHeader className="flex flex-row items-center justify-between gap-3">
+                <CardTitle className="text-base">Invoice Breakdown</CardTitle>
+                <Button asChild size="sm" variant="outline" className="shrink-0">
+                  <Link href={`/admin/invoice/${booking.id}`} target="_blank">
+                    <FileDown className="mr-1.5 size-4" /> Download invoice
+                  </Link>
+                </Button>
               </CardHeader>
-              <CardContent className="flex flex-col gap-2 text-sm">
-                <Row label="Rental Price" value={s.rentalPrice} />
-                {Number(s.extraHourCharge) > 0 && <Row label="Extra Hour Charge" value={s.extraHourCharge} />}
-                {Number(s.extraKmCharge) > 0 && <Row label="Extra KM Charge" value={s.extraKmCharge} />}
-                {Number(s.airportPickupCharge) > 0 && <Row label="Airport Pickup Charge" value={s.airportPickupCharge} />}
-                {Number(s.airportDropCharge) > 0 && <Row label="Airport Drop Charge" value={s.airportDropCharge} />}
-                {Number((s as any).locationDropCharge) > 0 && <Row label="Drop Location Charge" value={(s as any).locationDropCharge} />}
-                {Number(s.seasonalAdjustment) !== 0 && <Row label="Seasonal Adjustment" value={s.seasonalAdjustment} />}
-                {Number(s.servicesTotal) > 0 && <Row label="Extra Services" value={s.servicesTotal} />}
-                {Number(s.insuranceCharge) > 0 && <Row label="Insurance" value={s.insuranceCharge} />}
-                {Number(s.discount) > 0 && <Row label={`Discount${s.couponCode ? ` (${s.couponCode})` : ""}`} value={`-${formatInr(s.discount)}`} raw />}
-                <div className="flex justify-between border-t pt-2">
-                  <span className="text-muted-foreground">Subtotal</span>
-                  <span>{formatInr(s.subtotal)}</span>
-                </div>
-                <Row label={`Tax (${s.taxPercentage}%)`} value={s.taxAmount} />
-                <div className="flex justify-between border-t pt-2 text-base font-bold">
-                  <span>Grand Total</span>
-                  <span>{formatInr(s.grandTotal)}</span>
-                </div>
+              <CardContent>
+                <BreakdownTable lines={invoice.lines} />
+              </CardContent>
+            </Card>
+          )}
+
+          {s && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Payment Breakdown</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <PaymentSummary model={invoice} />
               </CardContent>
             </Card>
           )}
         </div>
 
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-4 lg:sticky lg:top-20 lg:self-start">
           <Card>
             <CardHeader>
               <CardTitle className="text-base">Actions</CardTitle>
