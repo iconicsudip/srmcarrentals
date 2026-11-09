@@ -516,7 +516,7 @@ export async function seedAllBlogs() {
       metaTitle: b.metaTitle,
       metaDescription: b.metaDescription,
       metaKeywords: b.metaKeywords,
-      canonicalUrl: `https://srmcarrentals.in${blogPath}`,
+      canonicalUrl: `https://srmcarrentals.com${blogPath}`,
       ogTitle: b.metaTitle,
       ogDescription: b.metaDescription,
       ogImage: b.featuredImage,
@@ -542,7 +542,7 @@ export async function seedAllBlogs() {
     // Save to SeoMetadata
     const existingSeo = await prisma.seoMetadata.findFirst({
       where: {
-        OR: [{ blogId: blog.id }, { canonicalUrl: `https://srmcarrentals.in${blogPath}` }],
+        OR: [{ blogId: blog.id }, { canonicalUrl: `https://srmcarrentals.com${blogPath}` }],
       },
     });
 
@@ -552,7 +552,7 @@ export async function seedAllBlogs() {
       metaTitle: b.metaTitle,
       metaDescription: b.metaDescription,
       metaKeywords: b.metaKeywords,
-      canonicalUrl: `https://srmcarrentals.in${blogPath}`,
+      canonicalUrl: `https://srmcarrentals.com${blogPath}`,
       robotsMeta: "INDEX_FOLLOW" as const,
       ogTitle: b.metaTitle,
       ogDescription: b.metaDescription,
@@ -580,7 +580,7 @@ export async function seedAllBlogs() {
     metaTitle: "Travel Blog & Car Rental Insights | SRM Car Rentals",
     metaDescription: "Read the latest self-drive travel guides, Udaipur road trip itineraries, SUV comparisons, and rental advice from Rajasthan's trusted fleet experts.",
     metaKeywords: "car rental blog, udaipur travel guide, rajasthan road trips, self drive tips, srm car rentals insights",
-    canonicalUrl: `https://srmcarrentals.in${blogHubPath}`,
+    canonicalUrl: `https://srmcarrentals.com${blogHubPath}`,
     ogTitle: "SRM Car Rentals Blog — Road Trip Stories & Travel Insights",
     ogDescription: "Guides, itineraries, and expert car rental advice for exploring Udaipur and Rajasthan by road.",
     ogImage: "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=1200&q=80&auto=format&fit=crop",

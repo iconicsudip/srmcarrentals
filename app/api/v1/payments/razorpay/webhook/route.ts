@@ -1,3 +1,4 @@
+import type { Prisma } from "@prisma/client";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import {
@@ -6,6 +7,23 @@ import {
   saveSmartLinks,
   verifyWebhookSignature,
 } from "@/lib/razorpay/razorpay-service";
+
+/**
+ * Razorpay sends "payment_link.paid" and "payment.captured" for the same payment within a second of each other.
+ * Checking-then-creating was racing, so one payment was saved twice. This serialises them per payment id: the first
+ * event records the payment, the second finds it and does nothing.
+ */
+async function recordPaymentOnce(
+  bookingId: string,
+  providerPaymentId: string,
+  create: (tx: Prisma.TransactionClient) => Promise<void>,
+): Promise<void> {
+  await prisma.$transaction(async (tx) => {
+    await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${providerPaymentId}))`;
+    const existing = await tx.payment.findFirst({ where: { bookingId, providerPaymentId } });
+    if (!existing) await create(tx);
+  });
+}
 
 export async function POST(req: Request) {
   try {
@@ -54,34 +72,31 @@ export async function POST(req: Request) {
               });
 
               const rzpPaymentId = payload?.payment?.entity?.id || plink.id;
-              const alreadyRecorded = await prisma.payment.findFirst({
-                where: { bookingId: booking.id, providerPaymentId: rzpPaymentId },
-              });
-              if (!alreadyRecorded) {
-              const payment = await prisma.payment.create({
-                data: {
-                  bookingId: booking.id,
-                  provider: "RAZORPAY",
-                  paymentType:
-                    Number(booking.pricingSnapshot?.grandTotal ?? 0) > target.amount ? "ADVANCE" : "FULL",
-                  amount: target.amount,
-                  status: "PAID",
-                  providerPaymentId: payload?.payment?.entity?.id || plink.id,
-                  paidAt: new Date(),
-                },
-              });
+              await recordPaymentOnce(booking.id, rzpPaymentId, async (tx) => {
+                const payment = await tx.payment.create({
+                  data: {
+                    bookingId: booking.id,
+                    provider: "RAZORPAY",
+                    paymentType:
+                      Number(booking.pricingSnapshot?.grandTotal ?? 0) > target.amount ? "ADVANCE" : "FULL",
+                    amount: target.amount,
+                    status: "PAID",
+                    providerPaymentId: rzpPaymentId,
+                    paidAt: new Date(),
+                  },
+                });
 
-              await prisma.transaction.create({
-                data: {
-                  paymentId: payment.id,
-                  type: "PAYMENT",
-                  amount: target.amount,
-                  status: "PAID",
-                  providerReference: plink.id,
-                  rawResponse: event,
-                },
+                await tx.transaction.create({
+                  data: {
+                    paymentId: payment.id,
+                    type: "PAYMENT",
+                    amount: target.amount,
+                    status: "PAID",
+                    providerReference: plink.id,
+                    rawResponse: event,
+                  },
+                });
               });
-              }
             }
           }
         }
@@ -101,20 +116,19 @@ export async function POST(req: Request) {
           });
 
           const amountInr = (paymentEntity.amount || 0) / 100;
-          const alreadyCaptured = await prisma.payment.findFirst({
-            where: { bookingId: booking.id, providerPaymentId: paymentEntity.id },
-          });
-          if (!alreadyCaptured) await prisma.payment.create({
-            data: {
-              bookingId: booking.id,
-              provider: "RAZORPAY",
-              paymentType: Number(booking.pricingSnapshot?.grandTotal ?? 0) > amountInr ? "ADVANCE" : "FULL",
-              amount: amountInr,
-              status: "PAID",
-              providerPaymentId: paymentEntity.id,
-              providerOrderId: paymentEntity.order_id,
-              paidAt: new Date(),
-            },
+          await recordPaymentOnce(booking.id, paymentEntity.id, async (tx) => {
+            await tx.payment.create({
+              data: {
+                bookingId: booking.id,
+                provider: "RAZORPAY",
+                paymentType: Number(booking.pricingSnapshot?.grandTotal ?? 0) > amountInr ? "ADVANCE" : "FULL",
+                amount: amountInr,
+                status: "PAID",
+                providerPaymentId: paymentEntity.id,
+                providerOrderId: paymentEntity.order_id,
+                paidAt: new Date(),
+              },
+            });
           });
         }
       }

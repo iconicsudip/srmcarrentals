@@ -55,7 +55,7 @@ const DEFAULT_SEO_CONFIG: DynamicPageSeoPayload = {
   metaDescription:
     "Rent premium luxury cars, SUVs, and chauffeur-driven vehicles in India. Transparent rates, airport delivery, and 24/7 support.",
   metaKeywords: "car rental india, luxury self drive, airport car hire",
-  canonicalUrl: "https://srmcarrentals.in",
+  canonicalUrl: "https://srmcarrentals.com",
   robotsMeta: "INDEX_FOLLOW",
   ogTitle: "SRM Car Rentals",
   ogDescription: "The premier car rental and chauffeur service across India.",
@@ -136,7 +136,7 @@ export const GET = withErrorHandling(async (req) => {
     metaTitle: existingMeta?.metaTitle || `${path} | SRM Car Rentals`,
     metaDescription: existingMeta?.metaDescription || DEFAULT_SEO_CONFIG.metaDescription,
     metaKeywords: existingMeta?.metaKeywords || DEFAULT_SEO_CONFIG.metaKeywords,
-    canonicalUrl: existingMeta?.canonicalUrl || `https://srmcarrentals.in${path === "/" ? "" : path}`,
+    canonicalUrl: existingMeta?.canonicalUrl || `https://srmcarrentals.com${path === "/" ? "" : path}`,
     robotsMeta: existingMeta?.robotsMeta || "INDEX_FOLLOW",
     ogTitle: existingMeta?.ogTitle || existingMeta?.metaTitle || "SRM Car Rentals",
     ogDescription: existingMeta?.ogDescription || existingMeta?.metaDescription || DEFAULT_SEO_CONFIG.ogDescription,

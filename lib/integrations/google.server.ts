@@ -7,7 +7,7 @@ import { prisma } from "@/lib/prisma";
 export const GOOGLE_SETTING_KEY = "integrations.google";
 
 interface GoogleIntegration {
-  siteUrl: string; // the Search Console property, e.g. "https://srmcarrentals.in/" or "sc-domain:srmcarrentals.in"
+  siteUrl: string; // the Search Console property, e.g. "https://srmcarrentals.com/" or "sc-domain:srmcarrentals.com"
   clientEmail: string;
   privateKey: string;
 }

@@ -321,7 +321,7 @@ export default function IntegrationsPage() {
             <div className="grid gap-3 lg:grid-cols-2">
               <div className="space-y-1.5">
                 <Label htmlFor="gsc-site">Search Console property</Label>
-                <Input id="gsc-site" value={siteUrl} onChange={(e) => setSiteUrl(e.target.value)} placeholder="https://srmcarrentals.in/  or  sc-domain:srmcarrentals.in" />
+                <Input id="gsc-site" value={siteUrl} onChange={(e) => setSiteUrl(e.target.value)} placeholder="https://srmcarrentals.com/  or  sc-domain:srmcarrentals.com" />
                 <p className="text-muted-foreground text-xs">Exactly as it appears in the Search Console property picker.</p>
               </div>
               <div className="space-y-1.5">

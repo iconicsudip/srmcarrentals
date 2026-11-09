@@ -96,7 +96,7 @@ export default function LocationsSeoPage() {
         existing?.metaKeywords ||
         `car rental in ${loc.city.toLowerCase()}, self drive ${loc.name.toLowerCase()}, hire car ${loc.city.toLowerCase()}`,
       canonicalUrl:
-        existing?.canonicalUrl || `https://srmcarrentals.in/locations/${loc.slug}`,
+        existing?.canonicalUrl || `https://srmcarrentals.com/locations/${loc.slug}`,
       robotsMeta: existing?.robotsMeta || "INDEX_FOLLOW",
     });
   };

@@ -210,7 +210,7 @@ export default function SitemapManagementPage() {
                 </a>
               </div>
               <p className="text-xs text-muted-foreground font-mono bg-background p-2 rounded border border-border">
-                https://srmcarrentals.in/sitemap.xml
+                https://srmcarrentals.com/sitemap.xml
               </p>
             </div>
 
@@ -228,7 +228,7 @@ export default function SitemapManagementPage() {
                 </a>
               </div>
               <p className="text-xs text-muted-foreground font-mono bg-background p-2 rounded border border-border">
-                https://srmcarrentals.in/robots.txt
+                https://srmcarrentals.com/robots.txt
               </p>
             </div>
 

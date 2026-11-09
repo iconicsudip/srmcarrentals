@@ -2,7 +2,7 @@ import { PrismaClient, SeoEntityType } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://srmcarrentals.in";
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://srmcarrentals.com";
 
 interface DynamicSeoItem {
   path: string;

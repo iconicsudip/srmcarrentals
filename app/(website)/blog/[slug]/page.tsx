@@ -67,7 +67,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
   }
 
   const relatedBlogs = await getRelatedPublicBlogs(blog.slug, blog.categoryId, 3);
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://srmcarrentals.in";
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://srmcarrentals.com";
   const canonicalUrl = `${appUrl}/blog/${blog.slug}`;
 
   // Article JSON-LD Schema

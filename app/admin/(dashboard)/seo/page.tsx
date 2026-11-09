@@ -623,7 +623,7 @@ export default function DynamicSeoCommandCenter() {
                       id="canonicalUrl"
                       value={form.canonicalUrl}
                       onChange={(e) => setForm({ ...form, canonicalUrl: e.target.value })}
-                      placeholder="https://srmcarrentals.in/path"
+                      placeholder="https://srmcarrentals.com/path"
                     />
                   </div>
 

@@ -100,7 +100,7 @@ export default function CarsSeoPage() {
         existing?.metaDescription ||
         `Hire ${car.name} with best daily and weekly rates. Available for self-drive or chauffeur driven bookings across top cities.`,
       metaKeywords: existing?.metaKeywords || `${car.name.toLowerCase()} rental, hire ${car.name.toLowerCase()}, luxury car rental`,
-      canonicalUrl: existing?.canonicalUrl || `https://srmcarrentals.in/car/${car.slug}`,
+      canonicalUrl: existing?.canonicalUrl || `https://srmcarrentals.com/car/${car.slug}`,
       robotsMeta: existing?.robotsMeta || "INDEX_FOLLOW",
       slug: car.slug,
     });

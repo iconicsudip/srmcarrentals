@@ -36,7 +36,7 @@ export function sanitizeOgType(type?: string): "website" | "article" | "book" | 
 }
 
 export async function getDynamicSeoForPath(path: string, fallback?: Metadata): Promise<ResolvedSeo> {
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://srmcarrentals.in";
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://srmcarrentals.com";
   const canonicalUrl = `${appUrl}${path === "/" ? "" : path}`;
 
   try {

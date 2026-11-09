@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 export const revalidate = 600;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://srmcarrentals.in";
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://srmcarrentals.com";
 
   try {
     const [cars, categories, locations, airports, blogs, pages, pageSettings, customPagesSetting] =

@@ -96,7 +96,7 @@ export default function AirportsSeoPage() {
         `${airport.code.toLowerCase()} car rental, airport taxi ${airport.city.toLowerCase()}, ${airport.name.toLowerCase()} cab hire`,
       canonicalUrl:
         existing?.canonicalUrl ||
-        `https://srmcarrentals.in/airports/${airport.code.toLowerCase()}`,
+        `https://srmcarrentals.com/airports/${airport.code.toLowerCase()}`,
       robotsMeta: existing?.robotsMeta || "INDEX_FOLLOW",
     });
   };
