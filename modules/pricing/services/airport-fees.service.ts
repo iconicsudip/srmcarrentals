@@ -18,9 +18,11 @@ export async function findAirportCharge(airportId: string, locationId: string | 
     include: { location: { select: { city: true } } },
     orderBy: { createdAt: "asc" },
   });
+  // City names can be compound ("Navsari / Surat"): two cities match when they share any name part.
+  const parts = (v: string | null | undefined) => (v ?? "").toLowerCase().split(/[\/,&]/).map((x) => x.trim()).filter(Boolean);
   const inCity = (city: string | null | undefined) => {
-    const c = (city ?? "").trim().toLowerCase();
-    return c ? rows.find((r) => (r.location.city ?? "").trim().toLowerCase() === c) : undefined;
+    const want = parts(city);
+    return want.length ? rows.find((r) => parts(r.location.city).some((c) => want.includes(c))) : undefined;
   };
   // 1) a fee for the other end's city, else 2) the airport's own city — so e.g. Jaipur airport still uses its Jaipur fee
   //    when the trip's other end is a branch in another city (that leg's own distance charge is separate).
