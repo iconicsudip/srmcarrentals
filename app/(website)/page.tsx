@@ -44,7 +44,7 @@ import { maybeRunWeeklyGoogleReviewsSync } from "@/lib/google-reviews/sync";
 import { getInstagramFeed } from "@/lib/instagram/feed";
 import { getDynamicSeoForPath, DynamicJsonLd } from "@/lib/seo/dynamic-seo";
 
-export const revalidate = 60;
+export const revalidate = 0;
 
 export async function generateMetadata(): Promise<Metadata> {
   const company = await getCompanyContent();

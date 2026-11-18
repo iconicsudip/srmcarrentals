@@ -51,7 +51,7 @@ interface CarDetailPageProps {
 import { getDynamicSeoForPath, DynamicJsonLd } from "@/lib/seo/dynamic-seo";
 
 // ISR: render once, then serve from cache and refresh in the background.
-export const revalidate = 300;
+export const revalidate = 0;
 
 // No pages are pre-built; each is rendered on first request, then cached (ISR).
 export function generateStaticParams() {

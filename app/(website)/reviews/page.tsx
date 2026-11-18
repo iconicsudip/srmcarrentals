@@ -6,7 +6,7 @@ import { GoogleLogo, TestimonialCard, type TestimonialData } from "@/components/
 import { prisma } from "@/lib/prisma";
 import { getDynamicSeoForPath } from "@/lib/seo/dynamic-seo";
 
-export const revalidate = 300;
+export const revalidate = 0;
 
 const PAGE_SIZE = 24;
 const ORDER = [{ sortOrder: "asc" as const }, { createdAt: "desc" as const }, { id: "asc" as const }];

@@ -1,4 +1,3 @@
-import { unstable_cache } from "next/cache";
 
 import { makeT } from "@/lib/copy/translate";
 import { toSlug } from "@/lib/slug";
@@ -355,14 +354,13 @@ const FALLBACK_TERMS: TermsPageContent = {
  * data layer: Decimal -> string, Date -> ISO string, both still safe inputs
  * to the `Number(...)` / `new Date(...)` calls used throughout the UI.
  */
-/** Public pages share one Neon round-trip per cache window instead of one per
- * request. Only JSON-safe readers are wrapped (cache serialises to JSON). */
-const PUBLIC_REVALIDATE_SECONDS = 60;
-function cached<A extends unknown[], R>(name: string, fn: (...args: A) => Promise<R>) {
-  return unstable_cache(fn, ["public-content", name], {
-    revalidate: PUBLIC_REVALIDATE_SECONDS,
-    tags: ["public-content"],
-  });
+/**
+ * Caching is switched off: every page reads the database each time, so a change (from the admin or straight in the
+ * database) shows on the very next page load. Wrapped readers keep the same call signature, so caching can be added
+ * back here later if the site gets slow.
+ */
+function cached<A extends unknown[], R>(_name: string, fn: (...args: A) => Promise<R>) {
+  return fn;
 }
 
 /** Adds each car's 3 KM plans (admin prices, else calculated) so cards and pages show identical numbers. */

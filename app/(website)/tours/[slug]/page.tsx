@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { getCompanyContent, getPublicTourBySlug } from "@/modules/website/public-content.service";
 
 // ISR: render once, then serve from cache and refresh in the background.
-export const revalidate = 300;
+export const revalidate = 0;
 
 // No pages are pre-built; each is rendered on first request, then cached (ISR).
 export function generateStaticParams() {

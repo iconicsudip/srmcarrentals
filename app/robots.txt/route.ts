@@ -12,6 +12,6 @@ export async function GET(req: Request) {
     content = "User-agent: *\nAllow: /\nDisallow: /admin\nDisallow: /api\n\nSitemap: {SITE_URL}/sitemap.xml\n"; // database unavailable
   }
   return new Response(renderRobotsTxt(content, siteUrl), {
-    headers: { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "public, max-age=0, s-maxage=300" },
+    headers: { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "no-store" },
   });
 }

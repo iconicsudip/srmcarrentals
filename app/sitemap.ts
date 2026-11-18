@@ -1,8 +1,8 @@
 import type { MetadataRoute } from "next";
 import { prisma } from "@/lib/prisma";
 
-// Rebuilt at most every 10 minutes so new cars, posts and SEO changes appear without a redeploy
-export const revalidate = 600;
+// Built on every request so new cars, posts and SEO changes appear at once
+export const revalidate = 0;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://srmcarrentals.com";
