@@ -4,7 +4,11 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   compress: true,
   poweredByHeader: false,
+  // No caching, whichever service hosts the app: nothing is kept in memory between requests ...
+  cacheMaxMemorySize: 0,
   experimental: {
+    // ... and the browser's in-app navigation cache is switched off for dynamic pages
+    staleTimes: { dynamic: 0 },
     authInterrupts: true,
     optimizePackageImports: ["lucide-react", "date-fns", "recharts", "@radix-ui/react-select"],
   },
@@ -24,6 +28,11 @@ const nextConfig: NextConfig = {
   },
   async headers() {
     return [
+      {
+        // Pages and API responses are never stored by browsers, CDNs or proxies (hashed /_next/static files are exempt)
+        source: "/((?!_next/static|_next/image).*)",
+        headers: [{ key: "Cache-Control", value: "no-store, no-cache, must-revalidate, max-age=0" }],
+      },
       {
         source: "/:path*",
         headers: [
