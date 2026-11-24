@@ -8,6 +8,9 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 export function HeroCarousel({ images, intervalMs = 6500 }: { images: string[]; intervalMs?: number }) {
   const [index, setIndex] = React.useState(0);
   const [paused, setPaused] = React.useState(false);
+  // Start auto-advance and Ken Burns zoom after first user interaction so the hero settles immediately on initial load
+  // (prevents mid-load full-bleed slide swaps from inflating Speed Index while keeping the carousel lively for visitors).
+  const [engaged, setEngaged] = React.useState(false);
   // Only mount slide 0 on initial paint so hidden hero slides don't compete with LCP or flood /_next/image.
   const [mountedSlides, setMountedSlides] = React.useState<Set<number>>(() => new Set([0]));
   const count = images.length;
@@ -24,6 +27,7 @@ export function HeroCarousel({ images, intervalMs = 6500 }: { images: string[]; 
   const go = React.useCallback(
     (next: number) => {
       const target = ((next % count) + count) % count;
+      setEngaged(true);
       ensureMounted(target);
       setIndex(target);
     },
@@ -31,7 +35,25 @@ export function HeroCarousel({ images, intervalMs = 6500 }: { images: string[]; 
   );
 
   React.useEffect(() => {
-    if (count < 2 || paused) return;
+    if (engaged || count < 2) return;
+    const activate = () => setEngaged(true);
+    const opts: AddEventListenerOptions = { once: true, passive: true };
+    window.addEventListener("pointerdown", activate, opts);
+    window.addEventListener("touchstart", activate, opts);
+    window.addEventListener("wheel", activate, opts);
+    window.addEventListener("scroll", activate, opts);
+    window.addEventListener("keydown", activate, { once: true });
+    return () => {
+      window.removeEventListener("pointerdown", activate);
+      window.removeEventListener("touchstart", activate);
+      window.removeEventListener("wheel", activate);
+      window.removeEventListener("scroll", activate);
+      window.removeEventListener("keydown", activate);
+    };
+  }, [engaged, count]);
+
+  React.useEffect(() => {
+    if (!engaged || count < 2 || paused) return;
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const nextSlide = (index + 1) % count;
     // Pre-mount the upcoming slide 1.5s before crossfade so transitions stay smooth without spiking initial load.
@@ -44,7 +66,7 @@ export function HeroCarousel({ images, intervalMs = 6500 }: { images: string[]; 
       window.clearTimeout(preloadTimer);
       window.clearTimeout(advanceTimer);
     };
-  }, [count, paused, intervalMs, index, ensureMounted]);
+  }, [engaged, count, paused, intervalMs, index, ensureMounted]);
 
   // Don't burn cycles (or advance slides) while the tab is hidden.
   React.useEffect(() => {
@@ -73,7 +95,7 @@ export function HeroCarousel({ images, intervalMs = 6500 }: { images: string[]; 
             quality={60}
             sizes="100vw"
             className={`object-cover object-[62%_50%] transition-opacity duration-[1400ms] ease-in-out ${
-              i === index ? "hero-kenburns opacity-100" : "opacity-0"
+              i === index ? (engaged ? "hero-kenburns opacity-100" : "opacity-100") : "opacity-0"
             }`}
           />
         ) : null,

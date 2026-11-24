@@ -20,6 +20,7 @@ export function HeroSection({
   cityCount,
   text,
   widgetText,
+  phone,
 }: {
   content: HomepageContent["hero"];
   locations: { id: string; name: string }[];
@@ -29,6 +30,7 @@ export function HeroSection({
   cityCount?: number;
   text: SiteText["hero"];
   widgetText: SiteText["bookingWidget"];
+  phone?: string;
 }) {
   const cleanTitle = stripTrailingPunctuation(content.title);
   // Highlight only a word that is really part of the title (case-insensitive), so a stale highlight never shows.
@@ -207,7 +209,7 @@ export function HeroSection({
       </div>
 
       <div className="relative mx-auto max-w-[1520px] px-4 sm:px-6 lg:px-8">
-        <BookingWidget locations={locations} services={services} text={widgetText} />
+        <BookingWidget locations={locations} services={services} text={widgetText} phone={phone} />
       </div>
     </section>
   );

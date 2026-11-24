@@ -21,6 +21,8 @@ interface BookingWidgetProps {
   defaultMode?: "self-drive" | "chauffeur";
   services?: AvailableServicesConfig;
   text?: SiteText["bookingWidget"];
+  /** Server-resolved support helpline; when provided, skips the extra client-side settings fetch. */
+  phone?: string;
 }
 
 /** Fallback copy for pages that don't pass admin-managed text. */
@@ -51,6 +53,7 @@ export function BookingWidget({
   defaultMode = "self-drive",
   services = { cars: true, taxi: true, tours: true },
   text = DEFAULT_WIDGET_TEXT,
+  phone: initialPhone,
 }: BookingWidgetProps) {
   const router = useRouter();
 
@@ -74,10 +77,10 @@ export function BookingWidget({
   }, []);
 
   // Dynamically fetched company phone and support details
-  const [phone, setPhone] = React.useState("+91 9414551250");
+  const [phone, setPhone] = React.useState(initialPhone || "+91 9414551250");
   const [isSearching, setIsSearching] = React.useState(false);
 
-  // Load locations and company settings dynamically from server
+  // Load locations and company settings dynamically from server only if not provided via props
   React.useEffect(() => {
     let cancelled = false;
 
@@ -99,19 +102,21 @@ export function BookingWidget({
         .catch(() => {});
     }
 
-    // Fetch dynamic company support helpline
-    apiFetch<CompanyContent>("/settings/homepage.company", { skipAuthRedirect: true })
-      .then((data) => {
-        if (!cancelled && data?.phone) {
-          setPhone(data.phone);
-        }
-      })
-      .catch(() => {});
+    // Fetch dynamic company support helpline only when not already supplied by SSR
+    if (!initialPhone) {
+      apiFetch<CompanyContent>("/settings/homepage.company", { skipAuthRedirect: true })
+        .then((data) => {
+          if (!cancelled && data?.phone) {
+            setPhone(data.phone);
+          }
+        })
+        .catch(() => {});
+    }
 
     return () => {
       cancelled = true;
     };
-  }, [initialLocations, locationId]);
+  }, [initialLocations, initialPhone, locationId]);
 
   // Group locations dynamically by City
   const locationsByCity = React.useMemo(() => {
