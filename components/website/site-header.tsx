@@ -71,7 +71,9 @@ export function SiteHeader({
             alt={companyName}
             width={477}
             height={199}
-            priority
+            unoptimized
+            loading="eager"
+            fetchPriority="high"
             className={cn("w-auto transition-[height] duration-300", scrolled ? "h-9" : "h-11")}
           />
         </Link>

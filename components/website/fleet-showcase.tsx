@@ -126,8 +126,7 @@ export function FleetShowcase({
             alt={car.images[0]?.altText ?? car.name}
             fill
             sizes="(max-width: 1024px) 100vw, 780px"
-            quality={80}
-            priority={index === 0}
+            quality={75}
             onError={() => setFailed((f) => ({ ...f, [car.id]: true }))}
             className="hero-kenburns animate-in fade-in object-cover duration-700"
           />

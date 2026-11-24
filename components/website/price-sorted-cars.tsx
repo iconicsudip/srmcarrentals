@@ -6,6 +6,9 @@ import { ArrowLeft, ArrowRight } from "lucide-react";
 
 import { CarCard, type CarCardData } from "@/components/website/car-card";
 
+const INITIAL_VISIBLE = 6;
+const LOAD_STEP = 8;
+
 /** Every car from the lowest to the highest 24-hour price, in a swipeable row. */
 export function PriceSortedCars({
   cars,
@@ -18,6 +21,20 @@ export function PriceSortedCars({
   text: { badge: string; title: string; subtitle: string };
 }) {
   const ref = React.useRef<HTMLDivElement>(null);
+  const [visibleCount, setVisibleCount] = React.useState(() => Math.min(INITIAL_VISIBLE, cars.length));
+
+  const revealMore = React.useCallback(() => {
+    setVisibleCount((prev) => (prev < cars.length ? Math.min(cars.length, prev + LOAD_STEP) : prev));
+  }, [cars.length]);
+
+  const handleScroll = React.useCallback(() => {
+    const el = ref.current;
+    if (!el || visibleCount >= cars.length) return;
+    if (el.scrollLeft + el.clientWidth >= el.scrollWidth - 450) {
+      revealMore();
+    }
+  }, [visibleCount, cars.length, revealMore]);
+
   if (cars.length === 0) return null;
 
   const priceOf = (c: CarCardData) => c.kmPlans?.[0]?.dailyPrice ?? Number(c.pricing?.dailyPrice ?? 0);
@@ -29,11 +46,14 @@ export function PriceSortedCars({
   const subtitle = text.subtitle.replace("{count}", String(total)).replace("{low}", inr(low)).replace("{high}", inr(high));
 
   const scrollBy = (dir: 1 | -1) => {
+    if (dir === 1 && visibleCount < cars.length) revealMore();
     const el = ref.current;
     if (!el) return;
     const card = el.firstElementChild as HTMLElement | null;
     el.scrollBy({ left: dir * ((card?.offsetWidth ?? 300) + 20) * 2, behavior: "smooth" });
   };
+
+  const visibleCars = cars.slice(0, visibleCount);
 
   return (
     <section className="mx-auto max-w-[1520px] px-4 pt-14 sm:px-6 lg:px-8">
@@ -59,8 +79,8 @@ export function PriceSortedCars({
         </div>
       </div>
 
-      <div ref={ref} className="mt-6 flex gap-5 overflow-x-auto scroll-smooth pb-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" style={{ scrollSnapType: "x mandatory", WebkitOverflowScrolling: "touch" }}>
-        {cars.map((car) => (
+      <div ref={ref} onScroll={handleScroll} className="mt-6 flex gap-5 overflow-x-auto scroll-smooth pb-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" style={{ scrollSnapType: "x mandatory", WebkitOverflowScrolling: "touch" }}>
+        {visibleCars.map((car) => (
           <div key={car.id} className="w-[82vw] shrink-0 sm:w-[310px]" style={{ scrollSnapAlign: "start" }}>
             <CarCard car={car} variant="compact" showBasePriceOnly />
           </div>

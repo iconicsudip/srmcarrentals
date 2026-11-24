@@ -8,16 +8,43 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 export function HeroCarousel({ images, intervalMs = 6500 }: { images: string[]; intervalMs?: number }) {
   const [index, setIndex] = React.useState(0);
   const [paused, setPaused] = React.useState(false);
+  // Only mount slide 0 on initial paint so hidden hero slides don't compete with LCP or flood /_next/image.
+  const [mountedSlides, setMountedSlides] = React.useState<Set<number>>(() => new Set([0]));
   const count = images.length;
 
-  const go = React.useCallback((next: number) => setIndex(((next % count) + count) % count), [count]);
+  const ensureMounted = React.useCallback((slideIdx: number) => {
+    setMountedSlides((prev) => {
+      if (prev.has(slideIdx)) return prev;
+      const next = new Set(prev);
+      next.add(slideIdx);
+      return next;
+    });
+  }, []);
+
+  const go = React.useCallback(
+    (next: number) => {
+      const target = ((next % count) + count) % count;
+      ensureMounted(target);
+      setIndex(target);
+    },
+    [count, ensureMounted],
+  );
 
   React.useEffect(() => {
     if (count < 2 || paused) return;
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    const id = window.setInterval(() => setIndex((i) => (i + 1) % count), intervalMs);
-    return () => window.clearInterval(id);
-  }, [count, paused, intervalMs, index]);
+    const nextSlide = (index + 1) % count;
+    // Pre-mount the upcoming slide 1.5s before crossfade so transitions stay smooth without spiking initial load.
+    const preloadTimer = window.setTimeout(() => ensureMounted(nextSlide), Math.max(1500, intervalMs - 1500));
+    const advanceTimer = window.setTimeout(() => {
+      ensureMounted(nextSlide);
+      setIndex(nextSlide);
+    }, intervalMs);
+    return () => {
+      window.clearTimeout(preloadTimer);
+      window.clearTimeout(advanceTimer);
+    };
+  }, [count, paused, intervalMs, index, ensureMounted]);
 
   // Don't burn cycles (or advance slides) while the tab is hidden.
   React.useEffect(() => {
@@ -32,23 +59,24 @@ export function HeroCarousel({ images, intervalMs = 6500 }: { images: string[]; 
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
-      {images.map((src, i) => (
-        <Image
-          key={src}
-          src={src}
-          alt={i === index ? "Premium fleet — hero slide" : ""}
-          aria-hidden={i !== index}
-          fill
-          priority={i === 0}
-          fetchPriority={i === 0 ? "high" : "low"}
-          loading={i === 0 ? "eager" : "lazy"}
-          quality={70}
-          sizes="100vw"
-          className={`object-cover object-[62%_50%] transition-opacity duration-[1400ms] ease-in-out ${
-            i === index ? "hero-kenburns opacity-100" : "opacity-0"
-          }`}
-        />
-      ))}
+      {images.map((src, i) =>
+        mountedSlides.has(i) ? (
+          <Image
+            key={src}
+            src={src}
+            alt={i === index ? "Premium fleet — hero slide" : ""}
+            aria-hidden={i !== index}
+            fill
+            fetchPriority={i === 0 ? "high" : "low"}
+            loading={i === 0 ? "eager" : "lazy"}
+            quality={75}
+            sizes="100vw"
+            className={`object-cover object-[62%_50%] transition-opacity duration-[1400ms] ease-in-out ${
+              i === index ? "hero-kenburns opacity-100" : "opacity-0"
+            }`}
+          />
+        ) : null,
+      )}
 
       {count > 1 && (
         <div className="absolute top-1/2 right-3 z-20 hidden -translate-y-1/2 flex-col items-center gap-3 sm:flex lg:right-6">
