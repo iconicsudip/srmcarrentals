@@ -30,9 +30,12 @@ export function SiteHeader({
 
   React.useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
-    onScroll();
+    const raf = window.requestAnimationFrame(onScroll);
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    return () => {
+      window.cancelAnimationFrame(raf);
+      window.removeEventListener("scroll", onScroll);
+    };
   }, []);
 
   const isActive = (href: string) => (href === "/" ? pathname === "/" : pathname?.startsWith(href));
@@ -69,8 +72,8 @@ export function SiteHeader({
           <Image
             src="/images/srm-logo.webp"
             alt={companyName}
-            width={477}
-            height={199}
+            width={280}
+            height={117}
             unoptimized
             loading="eager"
             fetchPriority="high"

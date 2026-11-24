@@ -56,7 +56,7 @@ export function LoginForm() {
       <div className="w-full max-w-sm">
         <div className="mb-6 flex flex-col items-center gap-2">
           <div className="rounded-2xl bg-white px-4 py-2 shadow-md ring-1 ring-black/5">
-            <Image src="/images/srm-logo.webp" alt="SRM Car Rentals" width={477} height={199} priority className="h-16 w-auto" />
+            <Image src="/images/srm-logo.webp" alt="SRM Car Rentals" width={280} height={117} unoptimized loading="eager" className="h-16 w-auto" />
           </div>
           <h1 className="text-xl font-semibold">SRM Car Rentals</h1>
           <p className="text-muted-foreground text-sm">Sign in to the admin console</p>

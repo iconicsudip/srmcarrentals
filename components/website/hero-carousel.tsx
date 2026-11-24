@@ -67,9 +67,10 @@ export function HeroCarousel({ images, intervalMs = 6500 }: { images: string[]; 
             alt={i === index ? "Premium fleet — hero slide" : ""}
             aria-hidden={i !== index}
             fill
+            preload={i === 0}
             fetchPriority={i === 0 ? "high" : "low"}
-            loading={i === 0 ? "eager" : "lazy"}
-            quality={75}
+            loading={i === 0 ? undefined : "lazy"}
+            quality={60}
             sizes="100vw"
             className={`object-cover object-[62%_50%] transition-opacity duration-[1400ms] ease-in-out ${
               i === index ? "hero-kenburns opacity-100" : "opacity-0"

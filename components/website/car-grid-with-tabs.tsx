@@ -85,9 +85,12 @@ export function CarGridWithTabs<T extends CarCardData & { tabId: string }>({
   }, []);
 
   React.useEffect(() => {
-    updateVisibleCount();
-    window.addEventListener("resize", updateVisibleCount);
-    return () => window.removeEventListener("resize", updateVisibleCount);
+    const raf = window.requestAnimationFrame(updateVisibleCount);
+    window.addEventListener("resize", updateVisibleCount, { passive: true });
+    return () => {
+      window.cancelAnimationFrame(raf);
+      window.removeEventListener("resize", updateVisibleCount);
+    };
   }, [updateVisibleCount, totalItems, activeTab]);
 
   // Dots count is properly calculated based on: total cards / visible cards per view

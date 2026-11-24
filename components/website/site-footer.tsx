@@ -107,7 +107,7 @@ export function SiteFooter({
               aria-label={`${company.name} — home`}
               className="inline-flex items-center rounded-2xl bg-white px-4 py-2 shadow-xl shadow-black/30 ring-1 ring-amber-300/60"
             >
-              <Image src="/images/srm-logo.webp" alt={company.name} width={477} height={199} unoptimized className="h-14 w-auto" />
+              <Image src="/images/srm-logo.webp" alt={company.name} width={280} height={117} unoptimized className="h-14 w-auto" />
             </Link>
             {company.description && <p className="mt-5 max-w-sm text-sm leading-relaxed text-white/60">{company.description}</p>}
             {socials.length > 0 && (

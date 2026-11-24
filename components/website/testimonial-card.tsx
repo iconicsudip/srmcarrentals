@@ -55,15 +55,9 @@ export function GoogleLogo({ className }: { className?: string }) {
 
 export function TestimonialCard({ t }: { t: TestimonialData }) {
   const isGoogle = t.source === "google";
-  const quoteRef = React.useRef<HTMLQuoteElement>(null);
-  const [truncated, setTruncated] = React.useState(false);
   const [open, setOpen] = React.useState(false);
-
-  // Show "… View" only when the clamped text really overflows
-  React.useLayoutEffect(() => {
-    const el = quoteRef.current;
-    if (el) setTruncated(el.scrollHeight > el.clientHeight + 1);
-  }, [t.quote]);
+  // Avoid measuring scrollHeight in useLayoutEffect on dozens of marquee cards (causes forced reflows on hydration).
+  const truncated = t.quote.length > 140;
 
   return (
     <figure className="group relative flex h-full flex-col gap-3 overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-white/[0.09] to-white/[0.02] p-4 shadow-xl shadow-black/30 backdrop-blur-sm transition-all duration-500 hover:-translate-y-1 hover:border-amber-400/40 hover:shadow-orange-500/10">
@@ -101,7 +95,7 @@ export function TestimonialCard({ t }: { t: TestimonialData }) {
 
       <StarRow rating={t.rating} />
 
-      <blockquote ref={quoteRef} className="relative min-h-0 flex-1 overflow-hidden text-[13px] leading-relaxed text-white/75 [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:4]">
+      <blockquote className="relative min-h-0 flex-1 overflow-hidden text-[13px] leading-relaxed text-white/75 [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:4]">
         {t.quote}
       </blockquote>
 
@@ -128,33 +122,35 @@ export function TestimonialCard({ t }: { t: TestimonialData }) {
         )}
       </div>
 
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-h-[85svh] overflow-y-auto border-white/10 bg-neutral-950 text-white sm:max-w-lg">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-3 text-white">
-              <span className="relative size-10 shrink-0 overflow-hidden rounded-full bg-neutral-800 ring-2 ring-amber-400/50">
-                {t.avatarUrl ? (
-                  <Image src={t.avatarUrl} alt={t.customerName} fill sizes="40px" unoptimized className="object-cover" referrerPolicy="no-referrer" />
-                ) : (
-                  <User className="m-2.5 size-5 text-amber-300/70" />
-                )}
+      {open && (
+        <Dialog open={open} onOpenChange={setOpen}>
+          <DialogContent className="max-h-[85svh] overflow-y-auto border-white/10 bg-neutral-950 text-white sm:max-w-lg">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-3 text-white">
+                <span className="relative size-10 shrink-0 overflow-hidden rounded-full bg-neutral-800 ring-2 ring-amber-400/50">
+                  {t.avatarUrl ? (
+                    <Image src={t.avatarUrl} alt={t.customerName} fill sizes="40px" unoptimized className="object-cover" referrerPolicy="no-referrer" />
+                  ) : (
+                    <User className="m-2.5 size-5 text-amber-300/70" />
+                  )}
+                </span>
+                <span>
+                  <span className="block text-base font-black">{t.customerName}</span>
+                  {t.location && <span className="block text-[11px] font-semibold tracking-widest text-amber-300/80 uppercase">{t.location}</span>}
+                </span>
+              </DialogTitle>
+              <DialogDescription className="sr-only">Full review by {t.customerName}</DialogDescription>
+            </DialogHeader>
+            <StarRow rating={t.rating} />
+            <p className="text-sm leading-relaxed whitespace-pre-line text-white/85">{t.quote}</p>
+            {isGoogle && (
+              <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-white/60">
+                <GoogleLogo className="size-4" /> Posted on Google
               </span>
-              <span>
-                <span className="block text-base font-black">{t.customerName}</span>
-                {t.location && <span className="block text-[11px] font-semibold tracking-widest text-amber-300/80 uppercase">{t.location}</span>}
-              </span>
-            </DialogTitle>
-            <DialogDescription className="sr-only">Full review by {t.customerName}</DialogDescription>
-          </DialogHeader>
-          <StarRow rating={t.rating} />
-          <p className="text-sm leading-relaxed whitespace-pre-line text-white/85">{t.quote}</p>
-          {isGoogle && (
-            <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-white/60">
-              <GoogleLogo className="size-4" /> Posted on Google
-            </span>
-          )}
-        </DialogContent>
-      </Dialog>
+            )}
+          </DialogContent>
+        </Dialog>
+      )}
     </figure>
   );
 }

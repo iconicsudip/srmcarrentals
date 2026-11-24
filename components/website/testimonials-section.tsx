@@ -88,9 +88,9 @@ export function TestimonialsSection({
           </div>
         </div>
 
-        {/* All reviews: swipeable, auto-advancing row (loads more as you scroll) */}
+        {/* Curated subset for the homepage marquee (full list lives on /reviews) to keep DOM size lean */}
         <div className="mt-14">
-          <ReviewsCarousel initial={testimonials.slice(0, 48)} total={total} />
+          <ReviewsCarousel initial={testimonials.slice(0, 16)} total={total} />
         </div>
 
         <div className="mt-10 flex justify-center">

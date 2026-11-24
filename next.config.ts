@@ -15,6 +15,8 @@ const nextConfig: NextConfig = {
     imgOptConcurrency: 1,
     imgOptOperationCache: false,
     imgOptSequentialRead: true,
+    // Inline the small (~31 KB) Tailwind stylesheet into <head> to eliminate the render-blocking CSS round-trip.
+    inlineCss: true,
   },
   typescript: {
     ignoreBuildErrors: true,
@@ -41,11 +43,11 @@ const nextConfig: NextConfig = {
       },
       {
         source: "/images/:path*",
-        headers: [{ key: "Cache-Control", value: "public, max-age=86400, stale-while-revalidate=604800" }],
+        headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }],
       },
       {
         source: "/:icon(icon\\.png|apple-icon\\.png|favicon\\.ico)",
-        headers: [{ key: "Cache-Control", value: "public, max-age=86400, stale-while-revalidate=604800" }],
+        headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }],
       },
       {
         source: "/:path*",
