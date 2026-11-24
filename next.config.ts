@@ -37,9 +37,21 @@ const nextConfig: NextConfig = {
     return [
       {
         // Pages and API responses are never stored by browsers, CDNs or proxies. Exempt: hashed /_next/static files, resized /_next/image
-        // copies, static /images assets, app icons and uploaded photos — they can safely be cached (and must be, to load fast and avoid Render 429 bursts)
-        source: "/((?!_next/static|_next/image|api/v1/uploads/images|images/|icon\\.png|apple-icon\\.png|favicon\\.ico).*)",
+        // copies, static /images assets, app icons, .well-known manifests and uploaded photos — they can safely be cached (and must be, to load fast and avoid Render 429 bursts)
+        source: "/((?!_next/static|_next/image|api/v1/uploads/images|images/|\\.well-known/|icon\\.png|apple-icon\\.png|favicon\\.ico).*)",
         headers: [{ key: "Cache-Control", value: "no-store, no-cache, must-revalidate, max-age=0" }],
+      },
+      {
+        source: "/.well-known/ard.json",
+        headers: [
+          { key: "Content-Type", value: "application/json; charset=utf-8" },
+          { key: "Cache-Control", value: "public, max-age=3600" },
+          { key: "Access-Control-Allow-Origin", value: "*" },
+        ],
+      },
+      {
+        source: "/",
+        headers: [{ key: "Link", value: "</.well-known/ard.json>; rel=\"ard\"; type=\"application/json\"" }],
       },
       {
         source: "/images/:path*",

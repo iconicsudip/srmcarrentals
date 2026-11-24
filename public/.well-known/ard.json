@@ -1,0 +1,33 @@
+{
+  "specVersion": "0.91",
+  "host": {
+    "displayName": "SRM Car Rentals",
+    "identifier": "srmcarrentals.com"
+  },
+  "entries": [
+    {
+      "identifier": "urn:air:srmcarrentals.com:docs:llms-guide",
+      "displayName": "SRM Car Rentals AI Overview & Navigation Guide",
+      "type": "text/markdown",
+      "url": "https://srmcarrentals.com/llms.txt",
+      "description": "Concise Markdown overview of SRM Car Rentals self-drive cars, chauffeur taxis, airport transfers, tour packages, locations, and booking policies.",
+      "representativeQueries": [
+        "What self-drive car rental and taxi services does SRM Car Rentals offer?",
+        "Which cities and airports can I rent a car from with SRM Car Rentals?",
+        "Where can I find SRM Car Rentals pricing, FAQs, and contact details?"
+      ]
+    },
+    {
+      "identifier": "urn:air:srmcarrentals.com:catalog:sitemap",
+      "displayName": "SRM Car Rentals Fleet & Pages Sitemap",
+      "type": "application/xml",
+      "url": "https://srmcarrentals.com/sitemap.xml",
+      "description": "XML sitemap indexing all active self-drive vehicles, car categories, tour packages, travel guides, and policy pages on SRM Car Rentals.",
+      "representativeQueries": [
+        "List all available self-drive car pages on SRM Car Rentals",
+        "Find tour packages and car rental categories on srmcarrentals.com",
+        "Locate blog guides and service pages on SRM Car Rentals"
+      ]
+    }
+  ]
+}
