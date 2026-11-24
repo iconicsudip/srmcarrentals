@@ -41,8 +41,18 @@ export function FleetShowcase({
   const [activeTab, setActiveTab] = React.useState("all");
   const [activeId, setActiveId] = React.useState(cars[0]?.id ?? "");
   const [playing, setPlaying] = React.useState(true);
+  const [inView, setInView] = React.useState(false);
   const [failed, setFailed] = React.useState<Record<string, boolean>>({});
+  const rootRef = React.useRef<HTMLDivElement>(null);
   const stripRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    const el = rootRef.current;
+    if (!el || typeof IntersectionObserver === "undefined") return;
+    const io = new IntersectionObserver(([entry]) => setInView(Boolean(entry?.isIntersecting)), { threshold: 0.15 });
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
 
   const list = React.useMemo(() => (activeTab === "all" ? cars : cars.filter((c) => c.tabId === activeTab)).slice(0, 20), [cars, activeTab]);
   const index = Math.max(0, list.findIndex((c) => c.id === activeId));
@@ -61,13 +71,13 @@ export function FleetShowcase({
     [list, index],
   );
 
-  // auto-advance (restarts whenever the selection changes)
+  // auto-advance only while the section is visible on screen
   React.useEffect(() => {
-    if (!playing || list.length < 2) return;
+    if (!playing || !inView || list.length < 2) return;
     if (typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const t = window.setTimeout(() => go(1), AUTO_MS);
     return () => window.clearTimeout(t);
-  }, [playing, activeId, list.length, go]);
+  }, [playing, inView, activeId, list.length, go]);
 
   // keep the active thumbnail in view (without scrolling the page)
   React.useEffect(() => {
@@ -94,6 +104,7 @@ export function FleetShowcase({
 
   return (
     <div
+      ref={rootRef}
       className="flex w-full flex-col gap-8"
       onMouseEnter={() => setPlaying(false)}
       onMouseLeave={() => setPlaying(true)}
@@ -128,7 +139,7 @@ export function FleetShowcase({
             sizes="(max-width: 1024px) 100vw, 780px"
             quality={75}
             onError={() => setFailed((f) => ({ ...f, [car.id]: true }))}
-            className="hero-kenburns animate-in fade-in object-cover duration-700"
+            className="object-cover transition-opacity duration-500"
           />
           <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/20" />
           <span
@@ -171,7 +182,7 @@ export function FleetShowcase({
         </div>
 
         {/* Details */}
-        <div key={car.id} className="animate-in fade-in slide-in-from-right-4 flex flex-col justify-between gap-6 rounded-[28px] border border-white/10 bg-gradient-to-br from-white/[0.08] to-white/[0.02] p-6 backdrop-blur-sm duration-500 sm:p-8">
+        <div key={car.id} className="flex flex-col justify-between gap-6 rounded-[28px] border border-white/10 bg-gradient-to-br from-white/[0.08] to-white/[0.02] p-6 backdrop-blur-sm sm:p-8">
           <div>
             <span className="text-[11px] font-bold tracking-[0.25em] text-amber-300 uppercase">
               {car.category?.name ?? car.brand.name} class

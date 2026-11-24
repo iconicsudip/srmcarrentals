@@ -1,4 +1,6 @@
 
+import { cache } from "react";
+
 import { makeT } from "@/lib/copy/translate";
 import { toSlug } from "@/lib/slug";
 import { getKmPlansConfigForPickup } from "@/lib/pricing/km-plans.server";
@@ -355,12 +357,11 @@ const FALLBACK_TERMS: TermsPageContent = {
  * to the `Number(...)` / `new Date(...)` calls used throughout the UI.
  */
 /**
- * Caching is switched off: every page reads the database each time, so a change (from the admin or straight in the
- * database) shows on the very next page load. Wrapped readers keep the same call signature, so caching can be added
- * back here later if the site gets slow.
+ * Cross-request caching is switched off so every page load sees the latest DB values immediately,
+ * while React's `cache()` deduplicates identical calls within a single request (e.g. layout + metadata + page).
  */
 function cached<A extends unknown[], R>(_name: string, fn: (...args: A) => Promise<R>) {
-  return fn;
+  return cache(fn);
 }
 
 /** Adds each car's 3 KM plans (admin prices, else calculated) so cards and pages show identical numbers. */
@@ -566,6 +567,53 @@ export async function listActiveTestimonials() {
     return list.length > 0 ? list : DEFAULT_TESTIMONIALS;
   } catch {
     return DEFAULT_TESTIMONIALS;
+  }
+}
+
+/** Lean homepage payload: fetches only the preview cards + aggregate stats instead of serializing hundreds of reviews into RSC HTML. */
+export async function getHomepageTestimonialsSummary(limit = 16) {
+  try {
+    const [items, agg, fiveStar, googleCount] = await Promise.all([
+      prisma.testimonial.findMany({
+        where: { status: "ACTIVE" },
+        orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }, { id: "asc" }],
+        take: limit,
+        select: {
+          id: true,
+          customerName: true,
+          location: true,
+          avatarUrl: true,
+          rating: true,
+          quote: true,
+          bookedItem: true,
+          source: true,
+        },
+      }),
+      prisma.testimonial.aggregate({
+        where: { status: "ACTIVE" },
+        _count: { _all: true },
+        _avg: { rating: true },
+      }),
+      prisma.testimonial.count({ where: { status: "ACTIVE", rating: { gte: 5 } } }),
+      prisma.testimonial.count({ where: { status: "ACTIVE", source: "google" } }),
+    ]);
+
+    if (items.length === 0) {
+      const total = DEFAULT_TESTIMONIALS.length;
+      const average = DEFAULT_TESTIMONIALS.reduce((s, t) => s + (t.rating || 0), 0) / total;
+      const fivePct = Math.round((DEFAULT_TESTIMONIALS.filter((t) => t.rating >= 5).length / total) * 100);
+      return { items: DEFAULT_TESTIMONIALS.slice(0, limit), stats: { total, average, fivePct, googleCount: 0 } };
+    }
+
+    const total = agg._count._all;
+    const average = agg._avg.rating ?? 5;
+    const fivePct = total > 0 ? Math.round((fiveStar / total) * 100) : 100;
+    return { items, stats: { total, average, fivePct, googleCount } };
+  } catch {
+    const total = DEFAULT_TESTIMONIALS.length;
+    const average = DEFAULT_TESTIMONIALS.reduce((s, t) => s + (t.rating || 0), 0) / total;
+    const fivePct = Math.round((DEFAULT_TESTIMONIALS.filter((t) => t.rating >= 5).length / total) * 100);
+    return { items: DEFAULT_TESTIMONIALS.slice(0, limit), stats: { total, average, fivePct, googleCount: 0 } };
   }
 }
 

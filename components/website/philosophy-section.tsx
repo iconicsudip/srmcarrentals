@@ -54,7 +54,7 @@ export function PhilosophySection({ content, text }: { content: HomepageContent[
             </div>
           )}
 
-          <Button asChild size="lg" className="mt-8 bg-orange-500 font-bold text-white shadow-lg shadow-orange-500/25 hover:bg-orange-600 hover:shadow-orange-500/40 hover:-translate-y-0.5 transition-all">
+          <Button asChild size="lg" className="mt-8 bg-orange-700 font-bold text-white shadow-lg shadow-orange-700/25 hover:bg-orange-800 hover:shadow-orange-700/40 hover:-translate-y-0.5 transition-all">
             <Link href={text.ctaHref}>{text.ctaLabel}</Link>
           </Button>
         </div>

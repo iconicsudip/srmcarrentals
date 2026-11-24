@@ -72,8 +72,8 @@ export function SiteHeader({
           <Image
             src="/images/srm-logo.webp"
             alt={companyName}
-            width={280}
-            height={117}
+            width={200}
+            height={83}
             unoptimized
             loading="eager"
             fetchPriority="high"

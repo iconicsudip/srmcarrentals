@@ -566,7 +566,7 @@ export default function CheckoutPage() {
               {showLogin && !currentUser && (
                 <div className="rounded-2xl border border-orange-200 bg-orange-50/60 p-5 animate-in fade-in">
                   <div className="flex items-center gap-2 text-xs font-bold text-orange-600">
-                    <Image src="/images/srm-logo.webp" alt="SRM Car Rentals" width={280} height={117} unoptimized className="mr-1 h-9 w-auto rounded-md bg-white px-1.5 py-0.5 shadow-sm" />
+                    <Image src="/images/srm-logo.webp" alt="SRM Car Rentals" width={200} height={83} unoptimized className="mr-1 h-9 w-auto rounded-md bg-white px-1.5 py-0.5 shadow-sm" />
                     <LogIn className="size-4" /> {t("checkout.sign-in-to-your")}
                   </div>
                   <form onSubmit={handleInlineLogin} className="mt-4 space-y-3">

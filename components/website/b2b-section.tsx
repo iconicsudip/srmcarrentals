@@ -48,7 +48,7 @@ export function B2bSection({ content: saved, phone }: { content: HomepageContent
             {content.subtitle && <p className="mt-4 max-w-xl text-neutral-600 leading-relaxed">{content.subtitle}</p>}
 
             <div className="mt-8 flex flex-wrap gap-3">
-              <Button asChild size="lg" className="bg-orange-500 font-bold text-white shadow-lg shadow-orange-500/25 hover:bg-orange-600 hover:shadow-orange-500/40 hover:-translate-y-0.5 transition-all">
+              <Button asChild size="lg" className="bg-orange-700 font-bold text-white shadow-lg shadow-orange-700/25 hover:bg-orange-800 hover:shadow-orange-700/40 hover:-translate-y-0.5 transition-all">
                 <Link href={content.ctaHref}>
                   {content.ctaLabel} <ArrowRight className="size-4" />
                 </Link>

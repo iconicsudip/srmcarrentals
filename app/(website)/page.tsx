@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { postalAddressFrom } from "@/lib/seo/schema";
 import type { Metadata } from "next";
 import dynamic from "next/dynamic";
@@ -21,6 +22,7 @@ import {
   getFaqPageContent,
   getFleetCounts,
   getHomepageContent,
+  getHomepageTestimonialsSummary,
   getSiteText,
   getAvailableServices,
   listActiveBrandsWithCarCounts,
@@ -31,7 +33,6 @@ import {
   listActiveChauffeurServices,
   listActiveGalleryImages,
   listActiveLocations,
-  listActiveTestimonials,
   listActiveTours,
 } from "@/modules/website/public-content.service";
 
@@ -59,28 +60,93 @@ export async function generateMetadata(): Promise<Metadata> {
   return resolved.metadata;
 }
 
-export default async function HomePage() {
-  // Weekly Saturday refresh of Google reviews (runs after the response; a no-op the rest of the week)
-  after(() => maybeRunWeeklyGoogleReviewsSync());
-  const [content, company, faqContent, cars, categories, brands, chauffeurServices, tours, testimonials, gallery, locations, counts, services, siteText, circleCategories, sortedCars] =
+/** Strip fields not rendered on homepage cards to keep the SSR RSC payload and client hydration lean. */
+function trimCarForHomepage<T extends {
+  images?: { url: string; altText?: string | null }[];
+  features?: { feature: { id: string; name: string; icon?: string | null } }[];
+  safetyFeatures?: unknown;
+  kmPlans?: { plan: number; km: number; dailyPrice: number; hourlyPrice: number | null; isPopular?: boolean }[];
+  kmPlansByLocation?: unknown;
+  locations?: { locationId: string; location: { id: string; name: string; slug?: string; city?: string | null } }[];
+}>(car: T, opts: { keepLocations?: boolean; maxFeatures?: number } = {}): T {
+  const { safetyFeatures: _sf, kmPlansByLocation: _kml, ...rest } = car;
+  return {
+    ...rest,
+    images: car.images?.slice(0, 1) ?? [],
+    features: car.features?.slice(0, opts.maxFeatures ?? 1) ?? [],
+    kmPlans: car.kmPlans?.slice(0, 1),
+    locations: opts.keepLocations ? car.locations : undefined,
+  } as T;
+}
+
+async function BelowFoldHome({
+  content,
+  company,
+  counts,
+  services,
+  siteText,
+}: {
+  content: Awaited<ReturnType<typeof getHomepageContent>>;
+  company: Awaited<ReturnType<typeof getCompanyContent>>;
+  counts: Awaited<ReturnType<typeof getFleetCounts>>;
+  services: Awaited<ReturnType<typeof getAvailableServices>>;
+  siteText: Awaited<ReturnType<typeof getSiteText>>;
+}) {
+  const [faqContent, rawCars, categories, brands, chauffeurServices, tours, testimonialSummary, gallery, circleCategories, sortedCars, instagramPosts] =
     await Promise.all([
-      getHomepageContent(),
-      getCompanyContent(),
       getFaqPageContent(),
-      listActiveCars(24),
+      listActiveCars(20),
       listActiveCategories(),
       listActiveBrandsWithCarCounts(),
       listActiveChauffeurServices(),
       listActiveTours(6),
-      listActiveTestimonials(),
+      getHomepageTestimonialsSummary(16),
       listActiveGalleryImages(8),
-      listActiveLocations(),
-      getFleetCounts(),
-      getAvailableServices(),
-      getSiteText(),
       listCategoriesWithCounts(),
-      listPublicCars({ sort: "price-asc", pageSize: 60 }),
+      listPublicCars({ sort: "price-asc", pageSize: 24 }),
+      getInstagramFeed(),
     ]);
+
+  const fleetCars = rawCars.map((c) => trimCarForHomepage(c, { keepLocations: true, maxFeatures: 4 }));
+  const brandCars = rawCars.map((c) => trimCarForHomepage(c, { keepLocations: false, maxFeatures: 1 }));
+  const priceSorted = sortedCars.cars.map((c) => trimCarForHomepage(c, { keepLocations: false, maxFeatures: 1 }));
+
+  return (
+    <>
+      {services.cars && (
+        <>
+          <CategoryCircles categories={circleCategories} />
+          <PriceSortedCars cars={priceSorted} total={sortedCars.total} text={siteText.sections.priceSorted} />
+        </>
+      )}
+      <div className="defer-render"><CategoryCardsSection counts={counts} services={services} cards={siteText.categoryCards} heading={siteText.sections.categories} /></div>
+      <div className="defer-render">{services.cars && <FleetSection cars={fleetCars} categories={categories} totalCount={counts.carCount} heading={siteText.sections.fleet} text={siteText.fleet} />}</div>
+      <div className="defer-render">{services.taxi && <ChauffeurSection services={chauffeurServices} phone={company.phone} heading={siteText.sections.chauffeur} />}</div>
+      <div className="defer-render">{services.cars && <BrandFleetSection cars={brandCars} brands={brands} totalCount={counts.carCount} heading={siteText.sections.brands} />}</div>
+      <div className="defer-render">{services.tours && <ToursSection tours={tours} heading={siteText.sections.tours} />}</div>
+      <div className="defer-render"><PhilosophySection content={content.philosophy} text={siteText.philosophy} /></div>
+      <div className="defer-render"><VideoShowcaseSection content={content.videoShowcase} /></div>
+      <div className="defer-render"><WhyChooseUsSection content={content.whyChooseUs} /></div>
+      <div className="defer-render"><FaqSection data={faqContent} phone={company.phone} /></div>
+      <div className="defer-render"><TestimonialsSection testimonials={testimonialSummary.items} stats={testimonialSummary.stats} heading={siteText.sections.testimonials} /></div>
+      <div className="defer-render"><GallerySection images={gallery} company={company} instagramPosts={instagramPosts} /></div>
+      <div className="defer-render"><B2bSection content={content.b2b} phone={company.phone} /></div>
+    </>
+  );
+}
+
+export default async function HomePage() {
+  // Weekly Saturday refresh of Google reviews (runs after the response; a no-op the rest of the week)
+  after(() => maybeRunWeeklyGoogleReviewsSync());
+  // Only await above-the-fold data before flushing the hero (most of these are already deduplicated with WebsiteLayout).
+  const [content, company, locations, counts, services, siteText] = await Promise.all([
+    getHomepageContent(),
+    getCompanyContent(),
+    listActiveLocations(),
+    getFleetCounts(),
+    getAvailableServices(),
+    getSiteText(),
+  ]);
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -100,24 +166,9 @@ export default async function HomePage() {
 
       <HeroSection content={content.hero} locations={locations} services={services} carCount={counts.carCount} cityCount={new Set((locations as { city?: string }[]).map((l) => l.city?.trim().toLowerCase()).filter(Boolean)).size} text={siteText.hero} widgetText={siteText.bookingWidget} phone={company.phone} />
       <TrustBadgeRow badges={content.trustBadges} />
-      {services.cars && (
-        <>
-          <CategoryCircles categories={circleCategories} />
-          <PriceSortedCars cars={sortedCars.cars} total={sortedCars.total} text={siteText.sections.priceSorted} />
-        </>
-      )}
-      <div className="defer-render"><CategoryCardsSection counts={counts} services={services} cards={siteText.categoryCards} heading={siteText.sections.categories} /></div>
-      <div className="defer-render">{services.cars && <FleetSection cars={cars} categories={categories} totalCount={counts.carCount} heading={siteText.sections.fleet} text={siteText.fleet} />}</div>
-      <div className="defer-render">{services.taxi && <ChauffeurSection services={chauffeurServices} phone={company.phone} heading={siteText.sections.chauffeur} />}</div>
-      <div className="defer-render">{services.cars && <BrandFleetSection cars={cars} brands={brands} totalCount={counts.carCount} heading={siteText.sections.brands} />}</div>
-      <div className="defer-render">{services.tours && <ToursSection tours={tours} heading={siteText.sections.tours} />}</div>
-      <div className="defer-render"><PhilosophySection content={content.philosophy} text={siteText.philosophy} /></div>
-      <div className="defer-render"><VideoShowcaseSection content={content.videoShowcase} /></div>
-      <div className="defer-render"><WhyChooseUsSection content={content.whyChooseUs} /></div>
-      <div className="defer-render"><FaqSection data={faqContent} phone={company.phone} /></div>
-      <div className="defer-render"><TestimonialsSection testimonials={testimonials} heading={siteText.sections.testimonials} /></div>
-      <div className="defer-render"><GallerySection images={gallery} company={company} instagramPosts={await getInstagramFeed()} /></div>
-      <div className="defer-render"><B2bSection content={content.b2b} phone={company.phone} /></div>
+      <Suspense fallback={<div className="min-h-screen" />}>
+        <BelowFoldHome content={content} company={company} counts={counts} services={services} siteText={siteText} />
+      </Suspense>
     </>
   );
 }

@@ -46,14 +46,14 @@ export function WhyChooseUsSection({ content }: { content: HomepageContent["whyC
                 className="group rounded-2xl border border-neutral-200/90 bg-white p-6 shadow-sm hover:border-orange-500/40 hover:shadow-xl hover:shadow-orange-500/10 transition-all duration-300"
               >
                 <div className="flex items-center justify-between">
-                  <span className="text-3xl font-black text-neutral-200 group-hover:text-orange-500/30 transition-colors">{String(i + 1).padStart(2, "0")}</span>
-                  <span className="flex size-10 items-center justify-center rounded-xl bg-orange-500/10 text-orange-600 transition-all group-hover:bg-orange-500 group-hover:text-white shadow-xs">
+                  <span className="text-3xl font-black text-neutral-500 group-hover:text-orange-700 transition-colors">{String(i + 1).padStart(2, "0")}</span>
+                  <span className="flex size-10 items-center justify-center rounded-xl bg-orange-500/10 text-orange-700 transition-all group-hover:bg-orange-700 group-hover:text-white shadow-xs">
                     <Icon className="size-5" />
                   </span>
                 </div>
                 <h3 className="mt-4 text-lg font-bold text-neutral-950">{item.title}</h3>
                 <p className="mt-2 text-sm text-neutral-600 leading-relaxed">{item.description}</p>
-                <div className="mt-5 flex items-center justify-between border-t border-neutral-100 pt-3 text-[11px] tracking-widest text-neutral-400 uppercase font-semibold">
+                <div className="mt-5 flex items-center justify-between border-t border-neutral-100 pt-3 text-[11px] tracking-widest text-neutral-600 uppercase font-semibold">
                   SRM Standard <span className="size-1.5 rounded-full bg-orange-500" />
                 </div>
               </div>

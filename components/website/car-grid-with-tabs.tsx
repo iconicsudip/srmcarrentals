@@ -49,8 +49,17 @@ export function CarGridWithTabs<T extends CarCardData & { tabId: string }>({
   const [activeTab, setActiveTab] = React.useState("all");
   const [activeIdx, setActiveIdx] = React.useState(0);
   const [playing, setPlaying] = React.useState(true);
+  const [inView, setInView] = React.useState(false);
   const scrollRef = React.useRef<HTMLDivElement>(null);
   const timerRef = React.useRef<ReturnType<typeof setInterval> | null>(null);
+
+  React.useEffect(() => {
+    const el = scrollRef.current;
+    if (!el || typeof IntersectionObserver === "undefined") return;
+    const io = new IntersectionObserver(([entry]) => setInView(Boolean(entry?.isIntersecting)), { threshold: 0.15 });
+    io.observe(el);
+    return () => io.disconnect();
+  }, [twoRows, scrollRow]);
 
   const effectiveLimit = initialLimit ?? (twoRows ? 16 : 8);
   const filtered = activeTab === "all" ? cars : cars.filter((c) => c.tabId === activeTab);
@@ -121,9 +130,9 @@ export function CarGridWithTabs<T extends CarCardData & { tabId: string }>({
     [dotCount, visibleCount],
   );
 
-  // Auto-play timer
+  // Auto-play timer (only while scrolled into view)
   React.useEffect(() => {
-    if ((!scrollRow && !twoRows) || !playing || dotCount <= 1) return;
+    if ((!scrollRow && !twoRows) || !playing || !inView || dotCount <= 1) return;
     timerRef.current = setInterval(() => {
       setActiveIdx((prev) => {
         const next = prev >= dotCount - 1 ? 0 : prev + 1;
@@ -134,7 +143,7 @@ export function CarGridWithTabs<T extends CarCardData & { tabId: string }>({
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, [scrollRow, twoRows, playing, dotCount, scrollTo]);
+  }, [scrollRow, twoRows, playing, inView, dotCount, scrollTo]);
 
   // Reset on tab change
   React.useEffect(() => {

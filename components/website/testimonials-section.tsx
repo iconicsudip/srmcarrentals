@@ -12,6 +12,7 @@ export type { TestimonialData };
 
 export function TestimonialsSection({
   testimonials,
+  stats,
   heading = {
     badge: "VERIFIED EXPERIENCES",
     title: "DRIVEN BY TRUST.",
@@ -19,15 +20,15 @@ export function TestimonialsSection({
   },
 }: {
   testimonials: TestimonialData[];
+  stats?: { total: number; average: number; fivePct: number; googleCount: number };
   heading?: { badge: string; title: string; subtitle?: string };
 }) {
   if (testimonials.length === 0) return null;
 
-  const total = testimonials.length;
-  const average = testimonials.reduce((sum, t) => sum + (t.rating || 0), 0) / total;
-  const fiveStar = testimonials.filter((t) => t.rating >= 5).length;
-  const fivePct = Math.round((fiveStar / total) * 100);
-  const googleCount = testimonials.filter((t) => t.source === "google").length;
+  const total = stats?.total ?? testimonials.length;
+  const average = stats?.average ?? testimonials.reduce((sum, t) => sum + (t.rating || 0), 0) / total;
+  const fivePct = stats?.fivePct ?? Math.round((testimonials.filter((t) => t.rating >= 5).length / total) * 100);
+  const googleCount = stats?.googleCount ?? testimonials.filter((t) => t.source === "google").length;
 
   return (
     <section className="relative overflow-hidden bg-neutral-950 text-white">

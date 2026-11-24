@@ -34,7 +34,7 @@ export async function fetchInstagramPosts(token: string, limit = MAX_POSTS): Pro
   const posts: InstagramPost[] = [];
 
   while (url && posts.length < limit) {
-    const res: Response = await fetch(url, { cache: "no-store" });
+    const res: Response = await fetch(url, { cache: "no-store", signal: AbortSignal.timeout(3000) });
     const json = (await res.json()) as { data?: GraphMedia[]; paging?: { next?: string }; error?: { message?: string } };
     if (!res.ok || json.error) throw new Error(json.error?.message || `Instagram API error (${res.status})`);
     for (const m of json.data ?? []) {

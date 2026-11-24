@@ -281,7 +281,8 @@ function CarCardInner({
           </div>
           <Link
             href={getBookHref()}
-            className="shimmer-sheen flex items-center gap-1 rounded-xl bg-orange-500 px-4 py-2 text-xs font-bold text-white shadow-md shadow-orange-500/25 hover:bg-orange-600 hover:shadow-orange-500/40 hover:-translate-y-0.5 active:translate-y-0 transition-all"
+            aria-label={`Book ${car.name}`}
+            className="shimmer-sheen flex items-center gap-1 rounded-xl bg-orange-700 px-4 py-2 text-xs font-bold text-white shadow-md shadow-orange-700/25 hover:bg-orange-800 hover:shadow-orange-700/40 hover:-translate-y-0.5 active:translate-y-0 transition-all"
           >
             Book →
           </Link>
@@ -465,9 +466,10 @@ function CarCardInner({
               {/* Book Now Button */}
               <Link
                 href={getBookHref(pkg.kmLimit, pkg.price, pkg.plan)}
+                aria-label={`Book ${car.name} — ${pkg.kmLimit} KM plan`}
                 onClick={() => setBookingKey(`${pkg.kmLimit}-${pkg.price}`)}
                 aria-busy={bookingKey === `${pkg.kmLimit}-${pkg.price}`}
-                className="shimmer-sheen w-full mt-1 flex items-center justify-center gap-1 rounded-lg sm:rounded-xl bg-orange-500 hover:bg-orange-600 text-white text-[11px] sm:text-xs font-bold py-2 sm:py-2.5 px-1.5 sm:px-3 shadow-md shadow-orange-500/25 hover:shadow-orange-500/40 hover:-translate-y-0.5 active:translate-y-0 transition-all"
+                className="shimmer-sheen w-full mt-1 flex items-center justify-center gap-1 rounded-lg sm:rounded-xl bg-orange-700 hover:bg-orange-800 text-white text-[11px] sm:text-xs font-bold py-2 sm:py-2.5 px-1.5 sm:px-3 shadow-md shadow-orange-700/25 hover:shadow-orange-700/40 hover:-translate-y-0.5 active:translate-y-0 transition-all"
               >
                 {bookingKey === `${pkg.kmLimit}-${pkg.price}` ? (
                   <>
