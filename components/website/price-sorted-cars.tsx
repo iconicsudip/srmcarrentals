@@ -39,7 +39,7 @@ export function PriceSortedCars({
     <section className="mx-auto max-w-[1520px] px-4 pt-14 sm:px-6 lg:px-8">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <span className="text-[11px] font-bold tracking-[0.25em] text-orange-600 uppercase">{text.badge}</span>
+          <span className="text-[11px] font-bold tracking-[0.25em] text-orange-700 uppercase">{text.badge}</span>
           <h2 className="mt-1 text-2xl font-black tracking-tight text-neutral-950 uppercase sm:text-3xl">
             {title}
             <span className="text-orange-500">.</span>

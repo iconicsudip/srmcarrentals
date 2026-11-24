@@ -354,7 +354,7 @@ function CarCardInner({
         <div>
           <div className="flex items-start justify-between gap-3">
             <div>
-              <h3 className="text-xl md:text-2xl font-black text-neutral-950 tracking-tight uppercase group-hover:text-orange-600 transition-colors">
+              <h3 className="text-xl md:text-2xl font-black text-neutral-950 tracking-tight uppercase group-hover:text-orange-700 transition-colors">
                 {car.name}
               </h3>
               <p className="mt-0.5 text-xs text-neutral-500 font-medium">
@@ -497,7 +497,7 @@ function CarCardInner({
           locations={car.locations?.map((l) => ({ id: l.location.id, name: l.location.name, slug: l.location.slug })) ?? []}
           defaultLocationId={locationId}
           label="Book on WhatsApp"
-          className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#25D366] py-3 text-xs font-black text-white shadow-md shadow-emerald-500/25 transition hover:bg-[#1ebe5a] active:scale-[0.99] cursor-pointer"
+          className="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-700 py-3 text-xs font-black text-white shadow-md shadow-emerald-500/25 transition hover:bg-emerald-800 active:scale-[0.99] cursor-pointer"
         />
       </div>
     </div>

@@ -25,6 +25,7 @@ import { CarGallery } from "@/components/website/car-gallery";
 import { TrackOnMount } from "@/components/website/track-on-mount";
 import { BookingEngine } from "@/components/website/booking-engine";
 import { getRouteCharges } from "@/lib/pricing/location-routes.server";
+import { carRentalProduct } from "@/lib/seo/schema";
 import { pickupPointsOnly } from "@/lib/location-points";
 import { RichText } from "@/components/website/rich-text";
 import { resolveCarKmPlans, type CarKmPlan } from "@/lib/pricing/km-plans";
@@ -188,22 +189,18 @@ export default async function CarDetailPage({ params }: CarDetailPageProps) {
     },
   ];
 
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "Car",
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://srmcarrentals.com";
+  const jsonLd = carRentalProduct({
+    url: `${appUrl}/car/${car.slug}`,
     name: car.name,
-    brand: car.brand.name,
-    model: car.model.name,
-    vehicleModelDate: car.year,
-    image: car.images[0]?.url,
-    offers: car.pricing
-      ? {
-        "@type": "Offer",
-        price: basePlan.dailyPrice,
-        priceCurrency: "INR",
-      }
-      : undefined,
-  };
+    brand: car.brand?.name,
+    model: car.model?.name,
+    year: car.year,
+    description: car.shortDescription,
+    images: car.images.slice(0, 5).map((im: { url: string }) => (im.url.startsWith("http") ? im.url : `${appUrl}${im.url}`)),
+    pricePerDay: car.pricing ? basePlan.dailyPrice : null,
+    sku: car.slug,
+  });
 
   return (
     <div className="min-h-screen bg-[#FAFAFC] pb-24 text-neutral-900 lg:pb-0">

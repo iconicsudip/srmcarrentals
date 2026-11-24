@@ -105,7 +105,7 @@ export function WhatsAppFloat({ cities, text }: { cities: string[]; text: SiteTe
         type="button"
         onClick={() => setOpen(true)}
         aria-label="Chat on WhatsApp"
-        className="fixed right-4 bottom-24 z-40 flex size-14 items-center justify-center rounded-full bg-[#25D366] text-white shadow-2xl shadow-emerald-500/40 transition hover:scale-105 active:scale-95 lg:right-6 lg:bottom-6"
+        className="fixed right-4 bottom-24 z-40 flex size-14 items-center justify-center rounded-full bg-emerald-700 text-white shadow-2xl shadow-emerald-500/40 transition hover:scale-105 active:scale-95 lg:right-6 lg:bottom-6"
       >
         <span className="absolute inset-0 -z-10 animate-ping rounded-full bg-[#25D366]/40" aria-hidden />
         <MessageCircle className="size-7" />
@@ -154,7 +154,7 @@ export function WhatsAppFloat({ cities, text }: { cities: string[]; text: SiteTe
                             type="button"
                             onClick={() => setV((p) => ({ ...p, city: c }))}
                             className={`rounded-full border px-4 py-2 text-xs font-bold transition ${
-                              v.city === c ? "border-[#25D366] bg-[#25D366] text-white shadow-md shadow-emerald-500/25" : "border-neutral-200 bg-white text-neutral-700 hover:border-[#25D366]/60"
+                              v.city === c ? "border-[#25D366] bg-emerald-700 text-white shadow-md shadow-emerald-500/25" : "border-neutral-200 bg-white text-neutral-700 hover:border-[#25D366]/60"
                             }`}
                           >
                             {c}
@@ -199,7 +199,7 @@ export function WhatsAppFloat({ cities, text }: { cities: string[]; text: SiteTe
                   <button
                     type="submit"
                     disabled={submitting || !v.city}
-                    className="flex items-center justify-center gap-2 rounded-2xl bg-[#25D366] py-3.5 text-sm font-black text-white shadow-lg shadow-emerald-500/25 transition hover:bg-[#1ebe5a] active:scale-[0.99] disabled:opacity-60"
+                    className="flex items-center justify-center gap-2 rounded-2xl bg-emerald-700 py-3.5 text-sm font-black text-white shadow-lg shadow-emerald-500/25 transition hover:bg-emerald-800 active:scale-[0.99] disabled:opacity-60"
                   >
                     {submitting ? (
                       <>

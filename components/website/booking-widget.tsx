@@ -64,8 +64,14 @@ export function BookingWidget({
   const [dropAddress, setDropAddress] = React.useState("Doorstep Delivery (Hotel / Airport / Home)");
 
   // Dynamically calculated default dates
-  const [pickupDateTime, setPickupDateTime] = React.useState(defaultDateTimeStr(24));
-  const [dropDateTime, setDropDateTime] = React.useState(defaultDateTimeStr(48));
+  // Set after the page loads: computing "now" while rendering gives the server and the browser different times
+  // (a React hydration mismatch, error #418)
+  const [pickupDateTime, setPickupDateTime] = React.useState("");
+  const [dropDateTime, setDropDateTime] = React.useState("");
+  React.useEffect(() => {
+    setPickupDateTime((v) => v || defaultDateTimeStr(24));
+    setDropDateTime((v) => v || defaultDateTimeStr(48));
+  }, []);
 
   // Dynamically fetched company phone and support details
   const [phone, setPhone] = React.useState("+91 9414551250");
@@ -167,7 +173,7 @@ export function BookingWidget({
               onClick={() => setMode("self-drive")}
               className={`rounded-full px-5 py-2 text-xs font-bold tracking-wide transition-all cursor-pointer ${
                 mode === "self-drive"
-                  ? "bg-orange-500 text-white shadow-md shadow-orange-500/30"
+                  ? "bg-orange-700 text-white shadow-md shadow-orange-700/30"
                   : "text-neutral-600 hover:text-neutral-950"
               }`}
             >
@@ -181,7 +187,7 @@ export function BookingWidget({
               onClick={() => setMode("chauffeur")}
               className={`rounded-full px-5 py-2 text-xs font-bold tracking-wide transition-all cursor-pointer ${
                 mode === "chauffeur"
-                  ? "bg-orange-500 text-white shadow-md shadow-orange-500/30"
+                  ? "bg-orange-700 text-white shadow-md shadow-orange-700/30"
                   : "text-neutral-600 hover:text-neutral-950"
               }`}
             >
@@ -190,7 +196,7 @@ export function BookingWidget({
           )}
         </div>
 
-        <span className="hidden items-center gap-1.5 text-xs text-neutral-500 sm:flex font-medium">
+        <span className="hidden items-center gap-1.5 text-xs text-neutral-600 sm:flex font-medium">
           <Sparkles className="size-3.5 text-orange-500" />
           {text.hint}
         </span>
@@ -213,6 +219,7 @@ export function BookingWidget({
                 <MapPin className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-orange-500" />
                 <select
                   id="booking-widget-location-select"
+                  aria-label="Pickup city"
                   value={activeCity}
                   onChange={(e) => setCityValue(e.target.value)}
                   className="h-11 sm:h-12 w-full appearance-none rounded-xl border border-neutral-200 bg-white pl-10 pr-9 text-xs sm:text-sm font-semibold text-neutral-900 outline-none transition hover:border-orange-500/50 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 cursor-pointer shadow-xs"
@@ -235,6 +242,7 @@ export function BookingWidget({
               <MapPin className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-orange-500" />
               <select
                 id="booking-widget-location-select"
+                aria-label="Pickup location"
                 value={locationId}
                 onChange={(e) => setLocationId(e.target.value)}
                 className="h-11 sm:h-12 w-full appearance-none rounded-xl border border-neutral-200 bg-white pl-10 pr-9 text-xs sm:text-sm font-semibold text-neutral-900 outline-none transition hover:border-orange-500/50 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 cursor-pointer shadow-xs"
@@ -312,7 +320,7 @@ export function BookingWidget({
               type="submit"
               id="booking-widget-search-btn"
               disabled={isSearching}
-              className="flex h-11 sm:h-12 items-center justify-center gap-2 rounded-xl bg-orange-500 px-7 text-sm font-black text-white shadow-lg shadow-orange-500/25 transition-all hover:bg-orange-600 hover:shadow-orange-500/40 active:scale-95 cursor-pointer whitespace-nowrap disabled:opacity-80 disabled:cursor-not-allowed"
+              className="flex h-11 sm:h-12 items-center justify-center gap-2 rounded-xl bg-orange-700 px-7 text-sm font-black text-white shadow-lg shadow-orange-500/25 transition-all hover:bg-orange-600 hover:shadow-orange-500/40 active:scale-95 cursor-pointer whitespace-nowrap disabled:opacity-80 disabled:cursor-not-allowed"
             >
               {isSearching ? (
                 <>
@@ -345,21 +353,21 @@ export function BookingWidget({
           <CheckCircle2 className="size-3.5 shrink-0 text-orange-500" />
           <span>
             <span className="font-semibold text-neutral-900">{text.trust1Title}</span>{" "}
-            <span className="text-neutral-500">{text.trust1Detail}</span>
+            <span className="text-neutral-600">{text.trust1Detail}</span>
           </span>
         </span>
         <span className="flex items-center gap-1.5 text-[11px] text-neutral-600">
           <Tag className="size-3.5 shrink-0 text-orange-500" />
           <span>
             <span className="font-semibold text-neutral-900">{text.trust2Title}</span>{" "}
-            <span className="text-neutral-500">{text.trust2Detail}</span>
+            <span className="text-neutral-600">{text.trust2Detail}</span>
           </span>
         </span>
         <span className="flex items-center gap-1.5 text-[11px] text-neutral-600">
           <Headphones className="size-3.5 shrink-0 text-orange-500" />
           <span>
             <span className="font-semibold text-neutral-900">{text.trust3Title}</span>{" "}
-            <span className="text-neutral-500">({phone})</span>
+            <span className="text-neutral-600">({phone})</span>
           </span>
         </span>
       </div>

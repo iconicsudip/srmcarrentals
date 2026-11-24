@@ -226,7 +226,7 @@ export function FleetShowcase({
                 car={{ id: car.id, slug: car.slug, name: car.name, priceLabel: `From ₹${price.toLocaleString("en-IN")} / day` }}
                 locations={car.locations?.map((l) => ({ id: l.location.id, name: l.location.name })) ?? []}
                 label="WhatsApp"
-                className="flex items-center justify-center gap-2 rounded-2xl bg-[#25D366] px-5 py-3.5 text-sm font-black text-white shadow-lg shadow-emerald-500/25 transition hover:bg-[#1ebe5a] active:scale-[0.98] cursor-pointer"
+                className="flex items-center justify-center gap-2 rounded-2xl bg-emerald-700 px-5 py-3.5 text-sm font-black text-white shadow-lg shadow-emerald-500/25 transition hover:bg-emerald-800 active:scale-[0.98] cursor-pointer"
               />
             </div>
           </div>

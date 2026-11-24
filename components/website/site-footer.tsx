@@ -91,7 +91,7 @@ export function SiteFooter({
                 href={whatsappHref}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center justify-center gap-2.5 rounded-full border border-[#25D366]/50 bg-[#25D366]/15 px-7 py-3.5 text-sm font-black text-[#5be28d] transition hover:bg-[#25D366] hover:text-white"
+                className="inline-flex items-center justify-center gap-2.5 rounded-full border border-[#25D366]/50 bg-[#25D366]/15 px-7 py-3.5 text-sm font-black text-[#5be28d] transition hover:bg-emerald-700 hover:text-white"
               >
                 <MessageCircle className="size-4" /> {text.whatsappLabel}
               </a>
@@ -130,10 +130,10 @@ export function SiteFooter({
 
           {columns.map((col) => (
             <div key={col.title} className="lg:col-span-2">
-              <h4 className="mb-5 flex items-center gap-2 text-[11px] font-bold tracking-[0.25em] text-amber-300 uppercase">
+              <h3 className="mb-5 flex items-center gap-2 text-[11px] font-bold tracking-[0.25em] text-amber-300 uppercase">
                 <span className="h-px w-5 bg-amber-400/70" />
                 {col.title}
-              </h4>
+              </h3>
               <ul className="flex flex-col gap-3">
                 {col.links.map((link) => (
                   <li key={link.label}>
@@ -154,10 +154,10 @@ export function SiteFooter({
           ))}
 
           <div className="col-span-2 lg:col-span-2">
-            <h4 className="mb-5 flex items-center gap-2 text-[11px] font-bold tracking-[0.25em] text-amber-300 uppercase">
+            <h3 className="mb-5 flex items-center gap-2 text-[11px] font-bold tracking-[0.25em] text-amber-300 uppercase">
               <span className="h-px w-5 bg-amber-400/70" />
               {text.conciergeTitle}
-            </h4>
+            </h3>
             <ul className="flex flex-col gap-4 text-sm text-white/65">
               {company.phone && (
                 <li>
@@ -194,10 +194,10 @@ export function SiteFooter({
         {/* ── Offices ── */}
         {branches.length > 0 && (
           <div className="mt-14">
-            <h4 className="mb-5 flex items-center gap-2 text-[11px] font-bold tracking-[0.25em] text-amber-300 uppercase">
+            <h3 className="mb-5 flex items-center gap-2 text-[11px] font-bold tracking-[0.25em] text-amber-300 uppercase">
               <span className="h-px w-5 bg-amber-400/70" />
               {text.officesTitle}
-            </h4>
+            </h3>
             <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
               {branches.slice(0, 3).map((b) => (
                 <div

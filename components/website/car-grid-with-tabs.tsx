@@ -168,7 +168,7 @@ export function CarGridWithTabs<T extends CarCardData & { tabId: string }>({
           onClick={() => setActiveTab("all")}
           className={`flex items-center gap-2 rounded-full px-4 py-2 text-xs font-bold tracking-wide transition-all cursor-pointer ${
             activeTab === "all"
-              ? "bg-orange-500 text-white shadow-lg shadow-orange-500/30"
+              ? "bg-orange-700 text-white shadow-lg shadow-orange-700/30"
               : "border border-neutral-200 bg-white text-neutral-700 hover:border-neutral-300 hover:text-neutral-950 shadow-xs"
           }`}
         >
@@ -186,7 +186,7 @@ export function CarGridWithTabs<T extends CarCardData & { tabId: string }>({
             onClick={() => setActiveTab(tab.id)}
             className={`flex items-center gap-2 rounded-full px-4 py-2 text-xs font-bold tracking-wide transition-all cursor-pointer ${
               activeTab === tab.id
-                ? "bg-orange-500 text-white shadow-lg shadow-orange-500/30"
+                ? "bg-orange-700 text-white shadow-lg shadow-orange-700/30"
                 : "border border-neutral-200 bg-white text-neutral-700 hover:border-neutral-300 hover:text-neutral-950 shadow-xs"
             }`}
           >
@@ -240,10 +240,14 @@ export function CarGridWithTabs<T extends CarCardData & { tabId: string }>({
                   type="button"
                   onClick={() => scrollTo(i)}
                   aria-label={`Go to slide ${i + 1} of ${dotCount}`}
-                  className={`rounded-full transition-all duration-300 cursor-pointer ${
-                    i === activeIdx ? "w-6 h-2 bg-orange-500" : "w-2 h-2 bg-neutral-300 hover:bg-neutral-400"
-                  }`}
-                />
+                  className="flex h-6 min-w-6 cursor-pointer items-center justify-center"
+                >
+                  <span
+                    className={`block rounded-full transition-all duration-300 ${
+                      i === activeIdx ? "w-6 h-2 bg-orange-500" : "w-2 h-2 bg-neutral-300 hover:bg-neutral-400"
+                    }`}
+                  />
+                </button>
               ))}
             </div>
 
@@ -316,12 +320,14 @@ export function CarGridWithTabs<T extends CarCardData & { tabId: string }>({
                   type="button"
                   onClick={() => scrollTo(i)}
                   aria-label={`Go to slide ${i + 1} of ${dotCount}`}
-                  className={`rounded-full transition-all duration-300 cursor-pointer ${
-                    i === activeIdx
-                      ? "w-6 h-2 bg-orange-500"
-                      : "w-2 h-2 bg-neutral-300 hover:bg-neutral-400"
-                  }`}
-                />
+                  className="flex h-6 min-w-6 cursor-pointer items-center justify-center"
+                >
+                  <span
+                    className={`block rounded-full transition-all duration-300 ${
+                      i === activeIdx ? "w-6 h-2 bg-orange-500" : "w-2 h-2 bg-neutral-300 hover:bg-neutral-400"
+                    }`}
+                  />
+                </button>
               ))}
             </div>
 

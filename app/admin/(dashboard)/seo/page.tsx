@@ -795,27 +795,57 @@ export default function DynamicSeoCommandCenter() {
                   </div>
                 </div>
 
-                {form.schemaType === "Custom" ? (
-                  <div className="space-y-1.5">
-                    <Label htmlFor="customSchema">Custom JSON-LD Markup</Label>
-                    <Textarea
-                      id="customSchema"
-                      rows={10}
-                      font-mono
-                      className="font-mono text-xs"
-                      placeholder='{ "@context": "https://schema.org", "@type": "AutoRental", ... }'
-                      value={form.customSchemaJson || ""}
-                      onChange={(e) => setForm({ ...form, customSchemaJson: e.target.value })}
-                    />
-                  </div>
-                ) : (
-                  <div className="space-y-2">
-                    <Label className="text-xs text-muted-foreground">Generated JSON-LD Payload Preview</Label>
-                    <pre className="p-4 rounded-lg bg-zinc-950 text-emerald-400 font-mono text-[11px] overflow-x-auto max-h-72 border border-zinc-800">
-                      {generatedJsonLd}
-                    </pre>
-                  </div>
-                )}
+                {(() => {
+                  // One editor for every type: it starts from the generated JSON-LD, and any edit turns the type into "Custom"
+                  const isCustom = form.schemaType === "Custom";
+                  const text = isCustom ? (form.customSchemaJson ?? "") : generatedJsonLd;
+                  let validity: "ok" | "bad" | "empty" = "empty";
+                  if (text.trim()) {
+                    try {
+                      JSON.parse(text);
+                      validity = "ok";
+                    } catch {
+                      validity = "bad";
+                    }
+                  }
+                  return (
+                    <div className="space-y-1.5">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <Label htmlFor="customSchema">
+                          {isCustom ? "Custom JSON-LD Markup" : `${form.schemaType} JSON-LD — edit it to customise`}
+                        </Label>
+                        <div className="flex items-center gap-2">
+                          {validity === "ok" && <span className="text-[11px] font-semibold text-emerald-600">Valid JSON</span>}
+                          {validity === "bad" && <span className="text-[11px] font-semibold text-red-600">Invalid JSON — fix before saving</span>}
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            className="h-7 text-xs"
+                            disabled={validity !== "ok"}
+                            onClick={() => setForm({ ...form, schemaType: "Custom", customSchemaJson: JSON.stringify(JSON.parse(text), null, 2) })}
+                          >
+                            Format
+                          </Button>
+                        </div>
+                      </div>
+                      <Textarea
+                        id="customSchema"
+                        rows={14}
+                        spellCheck={false}
+                        className={`font-mono text-xs ${validity === "bad" ? "border-red-400" : ""}`}
+                        placeholder='{ "@context": "https://schema.org", "@type": "AutoRental", ... }'
+                        value={text}
+                        onChange={(e) => setForm({ ...form, schemaType: "Custom", customSchemaJson: e.target.value })}
+                      />
+                      {!isCustom && (
+                        <p className="text-[11px] text-muted-foreground">
+                          Typing here switches the type to Custom and saves your version. Pick another type above to go back to a generated one.
+                        </p>
+                      )}
+                    </div>
+                  );
+                })()}
               </CardContent>
             </Card>
           </TabsContent>

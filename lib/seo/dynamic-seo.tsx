@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { richTextToPlain } from "@/lib/rich-text";
 import { prisma } from "@/lib/prisma";
+import { getCompanyForSchema } from "@/lib/seo/schema";
 
 export interface ResolvedSeo {
   metadata: Metadata;
@@ -81,13 +82,32 @@ export async function getDynamicSeoForPath(path: string, fallback?: Metadata): P
       // Generate Schema.org JSON-LD
       let jsonLd: Record<string, any> | null = null;
       if (cfg.enableStructuredData) {
+        // "Custom" with no usable JSON falls back to a sensible default for the page instead of emitting nothing
+        let customOk = false;
         if (cfg.schemaType === "Custom" && cfg.customSchemaJson) {
           try {
             jsonLd = JSON.parse(cfg.customSchemaJson);
+            customOk = true;
           } catch {
             // invalid json fallback
           }
-        } else if (cfg.schemaType === "FAQPage" && Array.isArray(cfg.faqPairs) && cfg.faqPairs.length > 0) {
+        }
+        const effectiveType: string =
+          cfg.schemaType === "Custom" ? (path === "/" ? "LocalBusiness" : "Organization") : cfg.schemaType === "BlogPosting" ? "Article" : cfg.schemaType;
+        if (customOk) {
+          // keep the admin's own JSON-LD exactly as written
+        } else if (effectiveType === "Product") {
+          // the car page writes its own, complete Product markup (price, availability…) — adding a second one would conflict
+          jsonLd = null;
+        } else if (effectiveType === "CollectionPage") {
+          jsonLd = {
+            "@context": "https://schema.org",
+            "@type": "CollectionPage",
+            name: cfg.metaTitle,
+            description: cfg.metaDescription,
+            url: cfg.canonicalUrl || canonicalUrl,
+          };
+        } else if (effectiveType === "FAQPage" && Array.isArray(cfg.faqPairs) && cfg.faqPairs.length > 0) {
           jsonLd = {
             "@context": "https://schema.org",
             "@type": "FAQPage",
@@ -100,31 +120,25 @@ export async function getDynamicSeoForPath(path: string, fallback?: Metadata): P
               },
             })),
           };
-        } else if (cfg.schemaType === "AutoRental") {
+        } else if (effectiveType === "AutoRental" || effectiveType === "LocalBusiness") {
+          // Business details come from Admin → Homepage → Company, so nothing here is a made-up placeholder
+          const biz = await getCompanyForSchema(appUrl);
           jsonLd = {
             "@context": "https://schema.org",
-            "@type": "AutoRental",
-            name: cfg.metaTitle || "SRM Car Rentals",
-            description: cfg.metaDescription,
+            "@type": effectiveType === "AutoRental" ? "AutoRental" : "AutomotiveBusiness",
+            name: biz.name,
+            description: cfg.metaDescription || biz.description,
             url: cfg.canonicalUrl || canonicalUrl,
-            image: cfg.ogImage,
+            image: cfg.ogImage || biz.logo,
+            logo: biz.logo,
+            telephone: biz.telephone,
+            email: biz.email,
+            address: biz.address,
             priceRange: "₹₹",
-            telephone: "+91-9876543210",
+            areaServed: ["Udaipur", "Jaipur", "Navsari"],
+            sameAs: biz.sameAs,
           };
-        } else if (cfg.schemaType === "LocalBusiness") {
-          jsonLd = {
-            "@context": "https://schema.org",
-            "@type": "AutomotiveBusiness",
-            name: cfg.metaTitle || "SRM Car Rentals",
-            description: cfg.metaDescription,
-            url: cfg.canonicalUrl || canonicalUrl,
-            telephone: "+91-9876543210",
-            address: {
-              "@type": "PostalAddress",
-              addressCountry: "IN",
-            },
-          };
-        } else if (cfg.schemaType === "Article") {
+        } else if (effectiveType === "Article") {
           jsonLd = {
             "@context": "https://schema.org",
             "@type": "Article",
@@ -142,12 +156,18 @@ export async function getDynamicSeoForPath(path: string, fallback?: Metadata): P
           };
         } else {
           // Organization fallback
+          const biz = await getCompanyForSchema(appUrl);
           jsonLd = {
             "@context": "https://schema.org",
             "@type": "Organization",
-            name: "SRM Car Rentals",
+            name: biz.name,
             url: appUrl,
-            description: cfg.metaDescription,
+            logo: biz.logo,
+            description: cfg.metaDescription || biz.description,
+            telephone: biz.telephone,
+            email: biz.email,
+            address: biz.address,
+            sameAs: biz.sameAs,
           };
         }
       }

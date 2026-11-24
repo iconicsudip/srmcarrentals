@@ -133,7 +133,7 @@ export function CarWhatsAppBook({
         onClick={() => setOpen(true)}
         className={
           className ??
-          "inline-flex items-center justify-center gap-2 rounded-full bg-[#25D366] px-4 py-2 text-xs font-black text-white shadow-md shadow-emerald-500/25 transition hover:bg-[#1ebe5a] active:scale-95 cursor-pointer whitespace-nowrap"
+          "inline-flex items-center justify-center gap-2 rounded-full bg-emerald-700 px-4 py-2 text-xs font-black text-white shadow-md shadow-emerald-500/25 transition hover:bg-emerald-800 active:scale-95 cursor-pointer whitespace-nowrap"
         }
       >
         <MessageCircle className="size-4" />
@@ -234,7 +234,7 @@ export function CarWhatsAppBook({
               <button
                 type="submit"
                 disabled={submitting}
-                className="sm:col-span-2 flex items-center justify-center gap-2 rounded-2xl bg-[#25D366] px-5 py-3.5 text-xs font-black uppercase tracking-wider text-white shadow-xl shadow-emerald-500/25 transition hover:bg-[#1ebe5a] active:scale-[0.99] disabled:opacity-60 cursor-pointer"
+                className="sm:col-span-2 flex items-center justify-center gap-2 rounded-2xl bg-emerald-700 px-5 py-3.5 text-xs font-black uppercase tracking-wider text-white shadow-xl shadow-emerald-500/25 transition hover:bg-emerald-800 active:scale-[0.99] disabled:opacity-60 cursor-pointer"
               >
                 {submitting ? (
                   <>

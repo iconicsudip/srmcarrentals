@@ -12,7 +12,7 @@ export function SectionHeading({ badge, title, subtitle, center, className }: Se
   return (
     <div className={cn("flex flex-col gap-3", center && "items-center text-center", className)}>
       {badge && (
-        <span className="inline-flex w-fit items-center rounded-full border border-orange-500/25 bg-orange-500/10 px-3.5 py-1 text-[11px] font-bold tracking-widest text-orange-600 uppercase">
+        <span className="inline-flex w-fit items-center rounded-full border border-orange-500/25 bg-orange-500/10 px-3.5 py-1 text-[11px] font-bold tracking-widest text-orange-700 uppercase">
           {badge}
         </span>
       )}

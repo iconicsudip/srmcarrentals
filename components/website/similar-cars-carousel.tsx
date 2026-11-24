@@ -110,7 +110,7 @@ export function SimilarCarsCarousel({ cars }: SimilarCarsCarouselProps) {
     <section className="w-full flex flex-col gap-6">
       {/* ── Section Heading ── */}
       <div>
-        <span className="inline-flex rounded-full border border-orange-500/30 bg-orange-500/10 px-3 py-1 text-[11px] font-bold tracking-widest text-orange-600 uppercase">
+        <span className="inline-flex rounded-full border border-orange-500/30 bg-orange-500/10 px-3 py-1 text-[11px] font-bold tracking-widest text-orange-700 uppercase">
           RECOMMENDED FLEET
         </span>
         <h2 className="mt-3 text-2xl sm:text-4xl font-black text-neutral-950 tracking-tight uppercase">
@@ -157,12 +157,14 @@ export function SimilarCarsCarousel({ cars }: SimilarCarsCarouselProps) {
                 type="button"
                 onClick={() => scrollTo(i)}
                 aria-label={`Go to slide ${i + 1} of ${dotCount}`}
-                className={`rounded-full transition-all duration-300 ${
-                  i === activeIdx
-                    ? "w-6 h-2 bg-orange-500"
-                    : "w-2 h-2 bg-neutral-300 hover:bg-neutral-400"
-                }`}
-              />
+                className="flex h-6 min-w-6 items-center justify-center"
+              >
+                <span
+                  className={`block rounded-full transition-all duration-300 ${
+                    i === activeIdx ? "w-6 h-2 bg-orange-500" : "w-2 h-2 bg-neutral-300 hover:bg-neutral-400"
+                  }`}
+                />
+              </button>
             ))}
           </div>
 

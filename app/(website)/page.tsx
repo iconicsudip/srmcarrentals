@@ -1,3 +1,4 @@
+import { postalAddressFrom } from "@/lib/seo/schema";
 import type { Metadata } from "next";
 import dynamic from "next/dynamic";
 
@@ -87,8 +88,9 @@ export default async function HomePage() {
     name: company.name,
     telephone: company.phone || undefined,
     email: company.email || undefined,
-    address: company.address || undefined,
-    url: process.env.NEXT_PUBLIC_APP_URL,
+    address: company.address ? postalAddressFrom(company.address) : undefined,
+    logo: `${process.env.NEXT_PUBLIC_APP_URL ?? "https://srmcarrentals.com"}/images/srm-logo.webp`,
+    url: process.env.NEXT_PUBLIC_APP_URL ?? "https://srmcarrentals.com",
   };
 
   return (
@@ -104,18 +106,18 @@ export default async function HomePage() {
           <PriceSortedCars cars={sortedCars.cars} total={sortedCars.total} text={siteText.sections.priceSorted} />
         </>
       )}
-      <CategoryCardsSection counts={counts} services={services} cards={siteText.categoryCards} heading={siteText.sections.categories} />
-      {services.cars && <FleetSection cars={cars} categories={categories} totalCount={counts.carCount} heading={siteText.sections.fleet} text={siteText.fleet} />}
-      {services.taxi && <ChauffeurSection services={chauffeurServices} phone={company.phone} heading={siteText.sections.chauffeur} />}
-      {services.cars && <BrandFleetSection cars={cars} brands={brands} totalCount={counts.carCount} heading={siteText.sections.brands} />}
-      {services.tours && <ToursSection tours={tours} heading={siteText.sections.tours} />}
-      <PhilosophySection content={content.philosophy} text={siteText.philosophy} />
-      <VideoShowcaseSection content={content.videoShowcase} />
-      <WhyChooseUsSection content={content.whyChooseUs} />
-      <FaqSection data={faqContent} phone={company.phone} />
-      <TestimonialsSection testimonials={testimonials} heading={siteText.sections.testimonials} />
-      <GallerySection images={gallery} company={company} instagramPosts={await getInstagramFeed()} />
-      <B2bSection content={content.b2b} phone={company.phone} />
+      <div className="defer-render"><CategoryCardsSection counts={counts} services={services} cards={siteText.categoryCards} heading={siteText.sections.categories} /></div>
+      <div className="defer-render">{services.cars && <FleetSection cars={cars} categories={categories} totalCount={counts.carCount} heading={siteText.sections.fleet} text={siteText.fleet} />}</div>
+      <div className="defer-render">{services.taxi && <ChauffeurSection services={chauffeurServices} phone={company.phone} heading={siteText.sections.chauffeur} />}</div>
+      <div className="defer-render">{services.cars && <BrandFleetSection cars={cars} brands={brands} totalCount={counts.carCount} heading={siteText.sections.brands} />}</div>
+      <div className="defer-render">{services.tours && <ToursSection tours={tours} heading={siteText.sections.tours} />}</div>
+      <div className="defer-render"><PhilosophySection content={content.philosophy} text={siteText.philosophy} /></div>
+      <div className="defer-render"><VideoShowcaseSection content={content.videoShowcase} /></div>
+      <div className="defer-render"><WhyChooseUsSection content={content.whyChooseUs} /></div>
+      <div className="defer-render"><FaqSection data={faqContent} phone={company.phone} /></div>
+      <div className="defer-render"><TestimonialsSection testimonials={testimonials} heading={siteText.sections.testimonials} /></div>
+      <div className="defer-render"><GallerySection images={gallery} company={company} instagramPosts={await getInstagramFeed()} /></div>
+      <div className="defer-render"><B2bSection content={content.b2b} phone={company.phone} /></div>
     </>
   );
 }

@@ -32,7 +32,7 @@ export function CategoryCircles({ categories }: { categories: CategoryCircle[] }
               )}
             </span>
             <span>
-              <span className="block text-sm font-black tracking-wide text-neutral-900 uppercase transition-colors group-hover:text-orange-600">{c.name}</span>
+              <span className="block text-sm font-black tracking-wide text-neutral-900 uppercase transition-colors group-hover:text-orange-700">{c.name}</span>
               <span className="block text-[11px] font-medium text-neutral-500">
                 {c.carCount} {c.carCount === 1 ? "car" : "cars"}
               </span>

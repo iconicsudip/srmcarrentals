@@ -40,8 +40,9 @@ export function HeroCarousel({ images, intervalMs = 6500 }: { images: string[]; 
           aria-hidden={i !== index}
           fill
           priority={i === 0}
+          fetchPriority={i === 0 ? "high" : "low"}
           loading={i === 0 ? "eager" : "lazy"}
-          quality={80}
+          quality={70}
           sizes="100vw"
           className={`object-cover object-[62%_50%] transition-opacity duration-[1400ms] ease-in-out ${
             i === index ? "hero-kenburns opacity-100" : "opacity-0"
@@ -67,7 +68,7 @@ export function HeroCarousel({ images, intervalMs = 6500 }: { images: string[]; 
                 aria-label={`Go to slide ${i + 1}`}
                 aria-current={i === index}
                 onClick={() => go(i)}
-                className="group flex h-6 w-3 items-center justify-center"
+                className="group flex h-6 w-6 items-center justify-center"
               >
                 <span
                   className={`block w-[3px] rounded-full transition-all duration-500 ${
@@ -100,8 +101,10 @@ export function HeroCarousel({ images, intervalMs = 6500 }: { images: string[]; 
               type="button"
               aria-label={`Go to slide ${i + 1}`}
               onClick={() => go(i)}
-              className={`h-1 rounded-full transition-all duration-500 ${i === index ? "w-6 bg-amber-400" : "w-2 bg-white/40"}`}
-            />
+              className="flex h-6 min-w-6 items-center justify-center"
+            >
+              <span className={`block h-1 rounded-full transition-all duration-500 ${i === index ? "w-6 bg-amber-400" : "w-2 bg-white/40"}`} />
+            </button>
           ))}
         </div>
       )}

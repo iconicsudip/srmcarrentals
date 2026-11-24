@@ -342,7 +342,7 @@ export function DateTimePicker({ label, value, onChange, minDateTime, maxDate }:
                 "inline-flex size-7 items-center justify-center rounded-lg border border-neutral-200 bg-neutral-50 text-neutral-700 hover:bg-neutral-100 hover:text-neutral-950 transition",
               month_grid: "w-full border-collapse",
               weekdays: "flex",
-              weekday: "flex-1 text-center text-[10px] font-bold text-neutral-400 pb-1",
+              weekday: "flex-1 text-center text-[10px] font-bold text-neutral-600 pb-1",
               week: "flex mt-1",
               day: "flex-1 relative",
               day_button:
@@ -374,7 +374,7 @@ export function DateTimePicker({ label, value, onChange, minDateTime, maxDate }:
 
           {/* Constraint hint */}
           {(minDT || maxDateObj) && (
-            <div className="px-3 pt-1 text-[10px] text-neutral-400 text-center">
+            <div className="px-3 pt-1 text-[10px] text-neutral-600 text-center">
               {minDT && maxDateObj
                 ? `From ${format(minDT, "d MMM, h:mm a")} · max ${maxDate ? format(maxDateObj, "d MMM") : ""}`
                 : minDT
@@ -636,12 +636,12 @@ export function TripSchedulePicker({
             <Calendar className="size-4 shrink-0 text-orange-500" />
             <div className="min-w-0 flex flex-col gap-0.5 sm:flex-row sm:items-center sm:gap-2">
               <span className="text-xs sm:text-sm font-semibold text-neutral-900 sm:truncate">
-                <span className="mr-1.5 inline-block w-9 text-[9px] font-bold tracking-wider text-neutral-400 uppercase sm:hidden">Pickup</span>
+                <span className="mr-1.5 inline-block w-9 text-[10px] font-bold tracking-wider text-neutral-600 uppercase sm:hidden">Pickup</span>
                 {pickupDispDate} <span className="text-neutral-500 font-normal">({pickupDispTime})</span>
               </span>
               <span className="hidden text-orange-500 text-xs shrink-0 font-bold sm:inline">→</span>
               <span className="text-xs sm:text-sm font-semibold text-neutral-900 sm:truncate">
-                <span className="mr-1.5 inline-block w-9 text-[9px] font-bold tracking-wider text-neutral-400 uppercase sm:hidden">Drop</span>
+                <span className="mr-1.5 inline-block w-9 text-[10px] font-bold tracking-wider text-neutral-600 uppercase sm:hidden">Drop</span>
                 {dropDispDate} <span className="text-neutral-500 font-normal">({dropDispTime})</span>
               </span>
             </div>
@@ -678,7 +678,7 @@ export function TripSchedulePicker({
           <div className="mt-3.5 grid grid-cols-2 gap-3 divide-x divide-neutral-200">
             {/* Pickup */}
             <div className="min-w-0">
-              <span className="text-[10px] font-bold tracking-wider text-orange-600 uppercase whitespace-nowrap block">
+              <span className="text-[10px] font-bold tracking-wider text-orange-700 uppercase whitespace-nowrap block">
                 Pickup
               </span>
               <div className="mt-1 text-sm font-black text-neutral-950 truncate">{pickupDispDate}</div>
@@ -690,7 +690,7 @@ export function TripSchedulePicker({
 
             {/* Drop */}
             <div className="pl-3 min-w-0">
-              <span className="text-[10px] font-bold tracking-wider text-orange-600 uppercase whitespace-nowrap block">
+              <span className="text-[10px] font-bold tracking-wider text-orange-700 uppercase whitespace-nowrap block">
                 Drop-off
               </span>
               <div className="mt-1 text-sm font-black text-neutral-950 truncate">{dropDispDate}</div>
@@ -816,7 +816,7 @@ export function TripSchedulePicker({
                       "inline-flex size-6 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-600 hover:bg-neutral-100 hover:text-neutral-950 transition",
                     month_grid: "w-full border-collapse",
                     weekdays: "flex",
-                    weekday: "flex-1 text-center text-[10px] font-bold text-neutral-400 pb-1",
+                    weekday: "flex-1 text-center text-[10px] font-bold text-neutral-600 pb-1",
                     week: "flex mt-0.5",
                     day: "flex-1 relative p-0 text-center",
                     day_button:

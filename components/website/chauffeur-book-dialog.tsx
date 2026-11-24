@@ -287,7 +287,7 @@ export function ChauffeurBookButton({ service, phone }: { service: TaxiBookingTa
           href={`https://wa.me/${digits}?text=${waMsg}`}
           target="_blank"
           rel="noopener noreferrer"
-          className={`${base} bg-[#25D366] shadow-emerald-500/25 hover:bg-[#1ebe5a]`}
+          className={`${base} bg-emerald-700 shadow-emerald-500/25 hover:bg-emerald-800`}
         >
           <MessageCircle className="size-4" />
           <span>WhatsApp</span>

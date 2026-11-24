@@ -76,7 +76,7 @@ export function MobileQuickBook({
               href={wa}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center justify-center gap-2 rounded-2xl bg-[#25D366] py-3 text-xs font-black text-white"
+              className="flex items-center justify-center gap-2 rounded-2xl bg-emerald-700 py-3 text-xs font-black text-white"
             >
               <MessageCircle className="size-4" /> {t("quickbook.whatsapp")}
             </a>

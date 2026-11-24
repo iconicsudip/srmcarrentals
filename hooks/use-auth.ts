@@ -10,7 +10,7 @@ export const AUTH_ME_QUERY_KEY = ["auth", "me"] as const;
 export function useCurrentUser() {
   return useQuery({
     queryKey: AUTH_ME_QUERY_KEY,
-    queryFn: () => api.get<AuthenticatedUser>("/auth/me", { skipAuthRedirect: true }),
+    queryFn: () => api.get<AuthenticatedUser | null>("/auth/me?optional=1", { skipAuthRedirect: true }),
     retry: false,
     staleTime: 60_000,
   });

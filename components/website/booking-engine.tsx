@@ -1073,7 +1073,7 @@ export function BookingEngine({
           type="button"
           onClick={handleWhatsAppBook}
           disabled={availLoading || isAvailable === false}
-          className="w-full rounded-2xl bg-[#25D366] py-3.5 text-sm font-black text-white shadow-lg shadow-emerald-500/25 transition-all hover:bg-[#1ebe5a] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
+          className="w-full rounded-2xl bg-emerald-700 py-3.5 text-sm font-black text-white shadow-lg shadow-emerald-500/25 transition-all hover:bg-emerald-800 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
         >
           <span className="flex items-center justify-center gap-2">
             <MessageCircle className="size-4" /> {t("booking.book-on-whatsapp")}

@@ -397,3 +397,9 @@
 .rich-text blockquote { border-left: 3px solid #fb923c; padding-left: 1em; font-style: italic; color: #525252; }
 .rich-text strong, .rich-text b { font-weight: 700; color: inherit; }
 .rich-text hr { border-color: #e5e5e5; margin: 1.25em 0; }
+
+/* Below-the-fold sections are only laid out once they get close to the screen (big win on long pages) */
+.defer-render {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 900px;
+}
