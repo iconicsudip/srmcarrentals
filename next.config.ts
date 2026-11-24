@@ -35,12 +35,16 @@ const nextConfig: NextConfig = {
     return [
       {
         // Pages and API responses are never stored by browsers, CDNs or proxies. Exempt: hashed /_next/static files, resized /_next/image
-        // copies, static /images assets and uploaded photos — each upload has its own permanent address, so they can safely be cached (and must be, to load fast)
-        source: "/((?!_next/static|_next/image|api/v1/uploads/images|images/).*)",
+        // copies, static /images assets, app icons and uploaded photos — they can safely be cached (and must be, to load fast and avoid Render 429 bursts)
+        source: "/((?!_next/static|_next/image|api/v1/uploads/images|images/|icon\\.png|apple-icon\\.png|favicon\\.ico).*)",
         headers: [{ key: "Cache-Control", value: "no-store, no-cache, must-revalidate, max-age=0" }],
       },
       {
         source: "/images/:path*",
+        headers: [{ key: "Cache-Control", value: "public, max-age=86400, stale-while-revalidate=604800" }],
+      },
+      {
+        source: "/:icon(icon\\.png|apple-icon\\.png|favicon\\.ico)",
         headers: [{ key: "Cache-Control", value: "public, max-age=86400, stale-while-revalidate=604800" }],
       },
       {
