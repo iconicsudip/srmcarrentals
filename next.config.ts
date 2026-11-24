@@ -26,8 +26,9 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
-        // Pages and API responses are never stored by browsers, CDNs or proxies (hashed /_next/static files are exempt)
-        source: "/((?!_next/static|_next/image).*)",
+        // Pages and API responses are never stored by browsers, CDNs or proxies. Exempt: hashed /_next/static files, resized /_next/image
+        // copies and uploaded photos — each upload has its own permanent address, so they can safely be cached (and must be, to load fast)
+        source: "/((?!_next/static|_next/image|api/v1/uploads/images).*)",
         headers: [{ key: "Cache-Control", value: "no-store, no-cache, must-revalidate, max-age=0" }],
       },
       {
