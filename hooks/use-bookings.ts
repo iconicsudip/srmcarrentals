@@ -64,6 +64,7 @@ export interface BookingListParams {
   dateFrom?: string;
   dateTo?: string;
   locationId?: string;
+  city?: string;
   paymentStatus?: string;
 }
 
@@ -78,6 +79,7 @@ export function useBookingList(params: BookingListParams) {
       if (params.dateFrom) q.set("dateFrom", params.dateFrom);
       if (params.dateTo) q.set("dateTo", params.dateTo);
       if (params.locationId) q.set("locationId", params.locationId);
+      if (params.city) q.set("city", params.city);
       if (params.paymentStatus) q.set("paymentStatus", params.paymentStatus);
       return api.get<PaginatedResult<BookingListItem>>(`/bookings?${q.toString()}`);
     },

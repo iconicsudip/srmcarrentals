@@ -15,17 +15,20 @@ export interface AdminUserDto {
   lastLoginAt: string | null;
   createdAt: string;
   role: { id: string; name: string; label: string };
+  restrictToLocations?: boolean;
+  locations?: { location: { id: string; name: string; city: string | null; kind: "CITY" | "POINT" } }[];
 }
 
 const KEY = ["admin-users"] as const;
 
-export function useAdminUsers(params: { page: number; limit: number; search?: string; roles?: string[] }) {
+export function useAdminUsers(params: { page: number; limit: number; search?: string; roles?: string[]; excludeRoles?: string[] }) {
   return useQuery({
     queryKey: [...KEY, params],
     queryFn: () => {
       const q = new URLSearchParams({ page: String(params.page), limit: String(params.limit) });
       if (params.search) q.set("search", params.search);
       if (params.roles?.length) q.set("roles", params.roles.join(","));
+      if (params.excludeRoles?.length) q.set("excludeRoles", params.excludeRoles.join(","));
       return api.get<PaginatedResult<AdminUserDto>>(`/users?${q.toString()}`);
     },
     placeholderData: (prev) => prev,

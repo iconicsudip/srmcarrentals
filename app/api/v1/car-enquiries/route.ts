@@ -1,3 +1,4 @@
+import { validateIndianMobile } from "@/lib/phone";
 import { requirePermission } from "@/lib/auth/rbac";
 import { BadRequestError } from "@/lib/http/errors";
 import { created, ok } from "@/lib/http/api-response";
@@ -38,7 +39,8 @@ export const POST = withErrorHandling(async (req) => {
   const isGeneral = clean(body.source, 30) === "FLOATING_WIDGET";
   if (!isGeneral && (!carId || !carName)) throw new BadRequestError("Invalid enquiry payload");
   if (!name) throw new BadRequestError("Full name is required");
-  if (phone.length !== 10) throw new BadRequestError("Enter a valid 10-digit mobile number");
+  const phoneCheck = validateIndianMobile(phone);
+  if (!phoneCheck.valid) throw new BadRequestError(phoneCheck.error ?? "Enter a valid 10-digit mobile number");
   if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new BadRequestError("Email is not valid");
 
   // Resolve the city of the chosen location (drives which WhatsApp number is used).

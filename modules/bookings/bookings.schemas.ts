@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { phoneSchema } from "@/lib/phone";
+
 export const createBookingSchema = z
   .object({
     carId: z.string().min(1),
@@ -11,7 +13,7 @@ export const createBookingSchema = z
         firstName: z.string().min(1),
         lastName: z.string().min(1),
         email: z.string().email(),
-        phone: z.string().min(1),
+        phone: phoneSchema,
         userId: z.string().optional(),
       })
       .optional(),

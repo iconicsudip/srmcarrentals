@@ -20,15 +20,6 @@ datasource db {
 // ENUMS — kept in sync with packages/types/src/enums.ts
 // ============================================================================
 
-enum RoleName {
-  SUPER_ADMIN
-  ADMIN
-  BOOKING_MANAGER
-  STAFF
-  DRIVER
-  CUSTOMER
-}
-
 enum Status {
   ACTIVE
   INACTIVE
@@ -202,6 +193,8 @@ model User {
   roleId       String
   role         Role      @relation(fields: [roleId], references: [id])
   isActive     Boolean   @default(true)
+  /** When on, this user only sees bookings (and dashboard figures) for the locations assigned below */
+  restrictToLocations Boolean @default(false)
   lastLoginAt  DateTime?
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
@@ -212,6 +205,7 @@ model User {
   customer      Customer?
   driver        Driver?
   blogs         Blog[]
+  locations     UserLocation[]
 
   @@index([roleId])
   @@map("users")
@@ -235,7 +229,8 @@ model RefreshToken {
 
 model Role {
   id          String   @id @default(cuid())
-  name        RoleName @unique
+  // A free-form key (SUPER_ADMIN, ADMIN … or one made in the admin), so new roles can be created without a migration
+  name        String   @unique
   label       String
   description String?
   isSystem    Boolean  @default(false)
@@ -253,6 +248,8 @@ model Permission {
   key         String   @unique // e.g. "cars.create"
   group       String // e.g. "cars"
   description String?
+  /** Built-in permissions are enforced by the code and cannot be deleted; custom ones are made in the admin */
+  isSystem    Boolean  @default(true)
   createdAt   DateTime @default(now())
 
   roles RolePermission[]
@@ -712,7 +709,21 @@ model Location {
   @@index([status])
   @@index([city])
   @@index([kind])
+  userLocations UserLocation[]
+
   @@map("locations")
+}
+
+/// A city or pickup point a staff member is responsible for (see User.restrictToLocations).
+model UserLocation {
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  locationId String
+  location   Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
+
+  @@id([userId, locationId])
+  @@index([locationId])
+  @@map("user_locations")
 }
 
 model Airport {

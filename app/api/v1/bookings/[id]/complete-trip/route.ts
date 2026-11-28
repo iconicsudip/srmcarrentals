@@ -1,3 +1,4 @@
+import { assertBookingInScope } from "@/lib/auth/location-scope";
 import { z } from "zod";
 
 import { requirePermission } from "@/lib/auth/rbac";
@@ -18,8 +19,9 @@ const schema = z.object({ actualKm: z.coerce.number().nonnegative().optional() }
  *     responses: { 200: { description: Updated booking. } }
  */
 export const POST = withErrorHandling<Ctx>(async (req, { params }) => {
-  await requirePermission("bookings.update");
+  const session = await requirePermission("bookings.update");
   const { id } = await params;
+  await assertBookingInScope(session, id);
   const { actualKm } = schema.parse(await req.json().catch(() => ({})));
   return ok(await completeTrip(id, actualKm));
 });

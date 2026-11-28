@@ -1,3 +1,4 @@
+import { bookingScopeWhere, type LocationScope } from "@/lib/auth/location-scope";
 import type { Prisma } from "@prisma/client";
 import { BookingStatus } from "@srm/types";
 import { roundCurrency } from "@srm/utils";
@@ -44,8 +45,10 @@ const BOOKING_DETAIL_INCLUDE = {
 
 async function upsertGuestCustomer(
   tx: Prisma.TransactionClient,
-  details: { firstName: string; lastName: string; email: string; phone: string; userId?: string },
+  details: { firstName: string; lastName: string; email: string; phone?: string; userId?: string },
 ) {
+  if (!details.phone) throw new BadRequestError("Mobile number is required");
+  const phone = details.phone;
   const existingUser = details.userId
     ? await tx.user.findUnique({ where: { id: details.userId } })
     : await tx.user.findUnique({ where: { email: details.email.toLowerCase() } });
@@ -55,14 +58,14 @@ async function upsertGuestCustomer(
     update: {
       firstName: details.firstName,
       lastName: details.lastName,
-      phone: details.phone,
+      phone,
       ...(existingUser ? { userId: existingUser.id } : {}),
     },
     create: {
       firstName: details.firstName,
       lastName: details.lastName,
       email: details.email.toLowerCase(),
-      phone: details.phone,
+      phone,
       ...(existingUser ? { userId: existingUser.id } : {}),
     },
   });
@@ -366,7 +369,11 @@ export interface BookingListFilters {
   dateTo?: string;
   /** Matches the pickup or drop location. */
   locationId?: string;
+  /** City name: pickup or drop point in that city, or an airport in that city. */
+  city?: string;
   paymentStatus?: "paid" | "unpaid" | "refunded";
+  /** A staff member's location limit (see lib/auth/location-scope) — `null`/missing means everything */
+  scope?: LocationScope | null;
 }
 
 const IST_MS = 5.5 * 3_600_000;
@@ -415,10 +422,24 @@ export async function listBookings(req: Request, filters: BookingListFilters) {
       : {}),
   };
 
+  const city = filters.city?.trim();
+  const cityWhere: Prisma.BookingWhereInput | null = city
+    ? {
+        OR: [
+          { pickupLocation: { city: { equals: city, mode: "insensitive" } } },
+          { dropLocation: { city: { equals: city, mode: "insensitive" } } },
+          { pickupAirport: { city: { contains: city, mode: "insensitive" } } },
+          { dropAirport: { city: { contains: city, mode: "insensitive" } } },
+        ],
+      }
+    : null;
+  const scopedWhere: Prisma.BookingWhereInput =
+    filters.scope || cityWhere ? { AND: [where, ...(filters.scope ? [bookingScopeWhere(filters.scope)] : []), ...(cityWhere ? [cityWhere] : [])] } : where;
+
   const [data, total] = await Promise.all([
     prisma.booking.findMany({
       relationLoadStrategy: "join",
-      where,
+      where: scopedWhere,
       include: {
         car: { include: { brand: true, model: true } },
         customer: true,
@@ -429,7 +450,7 @@ export async function listBookings(req: Request, filters: BookingListFilters) {
       skip,
       take,
     }),
-    prisma.booking.count({ where }),
+    prisma.booking.count({ where: scopedWhere }),
   ]);
 
   return { data, meta: buildPaginationMeta(page, limit, total) };

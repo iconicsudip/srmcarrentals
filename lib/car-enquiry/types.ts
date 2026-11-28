@@ -1,3 +1,4 @@
+import { normalizeIndianMobile } from "@/lib/phone";
 /**
  * Booking enquiries collected from the "Book on WhatsApp" form on car cards.
  * Stored in the `Setting` table (same approach as taxi enquiries), so no migration is needed.
@@ -28,8 +29,5 @@ export interface CarEnquiry {
 
 /** Digits only, capped at 10 (drops a pasted +91 / leading 0 prefix). */
 export function toTenDigits(value: string): string {
-  let digits = value.replace(/[^0-9]/g, "");
-  if (digits.length > 10 && digits.startsWith("91")) digits = digits.slice(2);
-  if (digits.length > 10 && digits.startsWith("0")) digits = digits.slice(1);
-  return digits.slice(0, 10);
+  return normalizeIndianMobile(value);
 }

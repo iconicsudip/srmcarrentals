@@ -17,12 +17,24 @@ export async function getRole(id: string) {
   return role;
 }
 
+const toRoleKey = (v: string) =>
+  v
+    .trim()
+    .toUpperCase()
+    .replace(/[^A-Z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "");
+
 export async function createRole(input: CreateRoleInput) {
   const permissions = await prisma.permission.findMany({ where: { key: { in: input.permissionKeys } } });
 
+  // a unique key: CITY_MANAGER, then CITY_MANAGER_2 …
+  const base = toRoleKey(input.name || input.label) || "ROLE";
+  let name = base;
+  for (let n = 2; await prisma.role.findUnique({ where: { name } }); n++) name = `${base}_${n}`;
+
   return prisma.role.create({
     data: {
-      name: input.name,
+      name,
       label: input.label,
       description: input.description,
       permissions: { create: permissions.map((p) => ({ permissionId: p.id })) },

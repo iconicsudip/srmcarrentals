@@ -18,11 +18,13 @@ export interface BookingFilterValues {
   dateFrom: string;
   dateTo: string;
   carId: string;
+  /** City name, or "ALL" */
+  city: string;
   locationId: string;
   paymentStatus: string;
 }
 
-export const EMPTY_FILTERS: BookingFilterValues = { search: "", status: "ALL", dateFrom: "", dateTo: "", carId: "ALL", locationId: "ALL", paymentStatus: "ALL" };
+export const EMPTY_FILTERS: BookingFilterValues = { search: "", status: "ALL", dateFrom: "", dateTo: "", carId: "ALL", city: "ALL", locationId: "ALL", paymentStatus: "ALL" };
 
 export const BOOKING_STATUSES = ["PENDING", "PAYMENT_PENDING", "CONFIRMED", "DRIVER_ASSIGNED", "OUT_FOR_PICKUP", "ACTIVE", "COMPLETED", "CANCELLED", "REJECTED"];
 
@@ -101,10 +103,13 @@ export function BookingsFilters({ value, onChange, fixedStatus }: { value: Booki
   }, [debounced]);
 
   const cars = useLookupOptions<{ id: string; name: string }>("/cars", "name");
-  const locations = useLookupOptions<{ id: string; name: string }>("/locations", "name", { kind: "POINT" });
+  const cities = useLookupOptions<{ id: string; name: string }>("/locations", "name", { kind: "CITY" });
+  const points = useLookupOptions<{ id: string; name: string; city: string | null }>("/locations", "name", { kind: "POINT" });
+  // locations are chosen under a city: only that city's pickup points are offered
+  const cityPoints = points.rows.filter((p) => (p.city ?? "").trim().toLowerCase() === value.city.trim().toLowerCase());
 
   const set = (patch: Partial<BookingFilterValues>) => onChange({ ...value, ...patch });
-  const activeCount = [value.search, value.status !== "ALL" && !fixedStatus, value.dateFrom, value.carId !== "ALL", value.locationId !== "ALL", value.paymentStatus !== "ALL"].filter(Boolean).length;
+  const activeCount = [value.search, value.status !== "ALL" && !fixedStatus, value.dateFrom, value.carId !== "ALL", value.city !== "ALL", value.locationId !== "ALL", value.paymentStatus !== "ALL"].filter(Boolean).length;
 
   return (
     <div className="flex flex-wrap items-center gap-2">
@@ -137,12 +142,22 @@ export function BookingsFilters({ value, onChange, fixedStatus }: { value: Booki
         </SelectContent>
       </Select>
 
-      <Select value={value.locationId} onValueChange={(v) => set({ locationId: v })}>
-        <SelectTrigger className="w-44"><SelectValue placeholder="Location" /></SelectTrigger>
+      <Select value={value.city} onValueChange={(v) => set({ city: v, locationId: "ALL" })}>
+        <SelectTrigger className="w-40"><SelectValue placeholder="City" /></SelectTrigger>
         <SelectContent>
-          <SelectItem value="ALL">All locations</SelectItem>
-          {locations.options.map((o) => (
-            <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+          <SelectItem value="ALL">All cities</SelectItem>
+          {cities.rows.map((c) => (
+            <SelectItem key={c.id} value={c.name}>{c.name}</SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+
+      <Select value={value.locationId} onValueChange={(v) => set({ locationId: v })} disabled={value.city === "ALL"}>
+        <SelectTrigger className="w-52"><SelectValue placeholder={value.city === "ALL" ? "Pick a city first" : "Location"} /></SelectTrigger>
+        <SelectContent>
+          <SelectItem value="ALL">{value.city === "ALL" ? "All locations" : `All of ${value.city}`}</SelectItem>
+          {cityPoints.map((p) => (
+            <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
           ))}
         </SelectContent>
       </Select>

@@ -36,6 +36,7 @@ export function BookingsList({ title, description, status }: { title: string; de
     search: filters.search || undefined,
     carId: filters.carId !== "ALL" ? filters.carId : undefined,
     locationId: filters.locationId !== "ALL" ? filters.locationId : undefined,
+    city: filters.city !== "ALL" ? filters.city : undefined,
     paymentStatus: filters.paymentStatus !== "ALL" ? filters.paymentStatus : undefined,
     dateFrom: filters.dateFrom || undefined,
     dateTo: filters.dateTo || undefined,

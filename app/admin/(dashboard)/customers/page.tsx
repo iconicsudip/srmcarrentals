@@ -2,6 +2,8 @@
 
 import { z } from "zod";
 
+import { validateIndianMobile } from "@/lib/phone";
+
 import { Badge } from "@/components/ui/badge";
 import { LookupManager, type LookupRow } from "@/components/admin/lookup-manager";
 
@@ -19,7 +21,7 @@ const formSchema = z.object({
   firstName: z.string().min(1, "First name is required").max(80),
   lastName: z.string().min(1, "Last name is required").max(80),
   email: z.string().email(),
-  phone: z.string().min(1, "Phone is required"),
+  phone: z.string().refine((v) => validateIndianMobile(v).valid, { message: "Enter a valid 10-digit Indian mobile number" }),
   accountStatus: z.enum(["ACTIVE", "SUSPENDED", "BANNED"]),
 });
 

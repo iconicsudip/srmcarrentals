@@ -36,7 +36,9 @@ export const GET = withErrorHandling(async (req) => {
   const search = url.searchParams.get("search") ?? undefined;
   const roles = url.searchParams.get("roles")?.split(",").filter(Boolean);
 
-  const { data, total } = await listUsers(pagination, search, roles);
+  const exclude = url.searchParams.get("excludeRoles")?.split(",").filter(Boolean);
+
+  const { data, total } = await listUsers(pagination, search, roles, exclude);
   return paginated(data, buildPaginationMeta(pagination.page, pagination.limit, total));
 });
 

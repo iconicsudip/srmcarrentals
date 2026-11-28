@@ -1,3 +1,4 @@
+import { validateIndianMobile as sharedValidate } from "@/lib/phone";
 export type ValidationRuleType =
   | "none"
   | "name"
@@ -188,22 +189,8 @@ export function sanitizePhone(phone: string): string {
 }
 
 export function validateIndianMobile(phone: string): { valid: boolean; error?: string } {
-  const digits = sanitizePhone(phone);
-  // Accept 10 digits or 12 digits (with 91 country code)
-  if (digits.length === 10) {
-    if (!/^[6-9]\d{9}$/.test(digits)) {
-      return { valid: false, error: "Must start with 6, 7, 8, or 9" };
-    }
-    return { valid: true };
-  }
-  if (digits.length === 12 && digits.startsWith("91")) {
-    const local = digits.slice(2);
-    if (!/^[6-9]\d{9}$/.test(local)) {
-      return { valid: false, error: "Invalid 10-digit mobile number" };
-    }
-    return { valid: true };
-  }
-  return { valid: false, error: "Enter a valid 10-digit Indian mobile number" };
+  const r = sharedValidate(phone);
+  return r.valid ? { valid: true } : { valid: false, error: r.error };
 }
 
 export function validateEmail(email: string): { valid: boolean; error?: string } {

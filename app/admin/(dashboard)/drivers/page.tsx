@@ -2,6 +2,8 @@
 
 import { z } from "zod";
 
+import { validateIndianMobile } from "@/lib/phone";
+
 import { Badge } from "@/components/ui/badge";
 import { LookupManager, type LookupRow } from "@/components/admin/lookup-manager";
 
@@ -17,7 +19,7 @@ interface DriverRow extends LookupRow {
 const formSchema = z.object({
   firstName: z.string().min(1, "First name is required").max(80),
   lastName: z.string().min(1, "Last name is required").max(80),
-  phone: z.string().min(1, "Phone is required"),
+  phone: z.string().refine((v) => validateIndianMobile(v).valid, { message: "Enter a valid 10-digit Indian mobile number" }),
   email: z.string().email().optional().or(z.literal("")),
   licenseNumber: z.string().min(1, "License number is required"),
   licenseExpiry: z.coerce.date(),

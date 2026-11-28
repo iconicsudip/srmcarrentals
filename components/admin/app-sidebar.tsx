@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ChevronRight, CarFront } from "lucide-react";
 
-import { DASHBOARD_ITEM, NAV_GROUPS } from "@/components/admin/nav-config";
+import { visibleNav, type Access } from "@/components/admin/access";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import {
   Sidebar,
@@ -22,8 +22,9 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar";
 
-export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
+export function AppSidebar({ access, ...props }: React.ComponentProps<typeof Sidebar> & { access: Access }) {
   const pathname = usePathname();
+  const { dashboard, groups } = visibleNav(access);
 
   return (
     <Sidebar collapsible="icon" {...props}>
@@ -48,16 +49,18 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
       <SidebarContent>
         <SidebarGroup>
           <SidebarMenu>
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={pathname === DASHBOARD_ITEM.href} tooltip={DASHBOARD_ITEM.title}>
-                <Link href={DASHBOARD_ITEM.href}>
-                  <DASHBOARD_ITEM.icon />
-                  <span>{DASHBOARD_ITEM.title}</span>
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
+            {dashboard && (
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild isActive={pathname === dashboard.href} tooltip={dashboard.title}>
+                  <Link href={dashboard.href}>
+                    <dashboard.icon />
+                    <span>{dashboard.title}</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            )}
 
-            {NAV_GROUPS.map((group) => {
+            {groups.map((group) => {
               const isGroupActive = group.items.some((item) => pathname.startsWith(item.href));
 
               return (

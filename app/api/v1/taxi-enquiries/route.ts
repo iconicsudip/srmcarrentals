@@ -1,3 +1,4 @@
+import { validateIndianMobile } from "@/lib/phone";
 import { requirePermission } from "@/lib/auth/rbac";
 import { BadRequestError } from "@/lib/http/errors";
 import { created, ok } from "@/lib/http/api-response";
@@ -44,8 +45,9 @@ export const POST = withErrorHandling(async (req) => {
     if (field.required && !value) {
       throw new BadRequestError(`${field.label} is required`);
     }
-    if (value && field.type === "tel" && !/^[+()\-\s\d]{7,18}$/.test(value)) {
-      throw new BadRequestError(`${field.label} is not a valid phone number`);
+    if (value && field.type === "tel") {
+      const check = validateIndianMobile(value);
+      if (!check.valid) throw new BadRequestError(`${field.label}: ${check.error ?? "not a valid phone number"}`);
     }
     if (value && field.type === "email" && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
       throw new BadRequestError(`${field.label} is not a valid email`);

@@ -1,3 +1,4 @@
+import { assertBookingInScope } from "@/lib/auth/location-scope";
 import { requirePermission } from "@/lib/auth/rbac";
 import { ok } from "@/lib/http/api-response";
 import { withErrorHandling } from "@/lib/http/with-error-handling";
@@ -14,7 +15,8 @@ type Ctx = { params: Promise<{ id: string }> };
  *     responses: { 200: { description: Updated booking. } }
  */
 export const POST = withErrorHandling<Ctx>(async (_req, { params }) => {
-  await requirePermission("bookings.update");
+  const session = await requirePermission("bookings.update");
   const { id } = await params;
+  await assertBookingInScope(session, id);
   return ok(await startTrip(id));
 });

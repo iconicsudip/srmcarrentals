@@ -1,3 +1,4 @@
+import { getLocationScope } from "@/lib/auth/location-scope";
 import { requirePermission } from "@/lib/auth/rbac";
 import { ok } from "@/lib/http/api-response";
 import { withErrorHandling } from "@/lib/http/with-error-handling";
@@ -13,6 +14,6 @@ import { getDashboardOverview } from "@/modules/analytics/analytics.service";
  *       200: { description: Overview stats. }
  */
 export const GET = withErrorHandling(async () => {
-  await requirePermission("dashboard.view");
-  return ok(await getDashboardOverview());
+  const session = await requirePermission("dashboard.view");
+  return ok(await getDashboardOverview(await getLocationScope(session)));
 });

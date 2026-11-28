@@ -1,7 +1,8 @@
 import { z } from "zod";
 
 export const createRoleSchema = z.object({
-  name: z.enum(["SUPER_ADMIN", "ADMIN", "BOOKING_MANAGER", "STAFF", "DRIVER", "CUSTOMER"]),
+  /** Optional key; made from the label when left out (e.g. "City Manager" → CITY_MANAGER) */
+  name: z.string().min(2).max(60).optional(),
   label: z.string().min(2).max(60),
   description: z.string().max(500).optional(),
   permissionKeys: z.array(z.string()).default([]),

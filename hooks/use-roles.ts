@@ -9,6 +9,7 @@ export interface PermissionDto {
   key: string;
   group: string;
   description: string | null;
+  isSystem?: boolean;
 }
 
 export interface RoleDto {
@@ -55,5 +56,24 @@ export function useDeleteRole() {
   return useMutation({
     mutationFn: (id: string) => api.delete<void>(`/roles/${id}`),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ROLES_KEY }),
+  });
+}
+
+export function useCreatePermission() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: { key: string; group?: string; description?: string }) => api.post<PermissionDto>("/permissions", data),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: PERMISSIONS_KEY }),
+  });
+}
+
+export function useDeletePermission() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => api.delete<void>(`/permissions/${id}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: PERMISSIONS_KEY });
+      queryClient.invalidateQueries({ queryKey: ROLES_KEY });
+    },
   });
 }

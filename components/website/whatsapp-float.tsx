@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { apiFetch } from "@/lib/api-client";
 import type { SiteText } from "@/modules/settings/site-content.schemas";
 import { toTenDigits } from "@/lib/car-enquiry/types";
+import { validateIndianMobile } from "@/lib/phone";
 import { DateTimePicker } from "@/components/website/datetime-picker";
 
 const inputClass =
@@ -53,8 +54,9 @@ export function WhatsAppFloat({ cities, text }: { cities: string[]; text: SiteTe
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (submitting) return;
-    if (v.phone.length !== 10) {
-      toast.error("Enter a valid 10-digit mobile number");
+    const phoneCheck = validateIndianMobile(v.phone);
+    if (!phoneCheck.valid) {
+      toast.error(phoneCheck.error ?? "Enter a valid 10-digit mobile number");
       return;
     }
     setSubmitting(true);

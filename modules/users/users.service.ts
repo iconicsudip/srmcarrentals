@@ -16,10 +16,12 @@ const USER_SELECT = {
   isActive: true,
   lastLoginAt: true,
   createdAt: true,
+  restrictToLocations: true,
   role: { select: { id: true, name: true, label: true } },
+  locations: { select: { location: { select: { id: true, name: true, city: true, kind: true } } } },
 } as const;
 
-export async function listUsers(pagination: PaginationParams, search?: string, roleNames?: string[]) {
+export async function listUsers(pagination: PaginationParams, search?: string, roleNames?: string[], excludeRoleNames?: string[]) {
   const where: Prisma.UserWhereInput = {
     ...(search
       ? {
@@ -30,8 +32,15 @@ export async function listUsers(pagination: PaginationParams, search?: string, r
           ],
         }
       : {}),
-    ...(roleNames && roleNames.length > 0
-      ? { role: { name: { in: roleNames as Prisma.EnumRoleNameFilter["in"] } } }
+    ...(roleNames && roleNames.length > 0 || excludeRoleNames && excludeRoleNames.length > 0
+      ? {
+          role: {
+            name: {
+              ...(roleNames && roleNames.length > 0 ? { in: roleNames } : {}),
+              ...(excludeRoleNames && excludeRoleNames.length > 0 ? { notIn: excludeRoleNames } : {}),
+            },
+          },
+        }
       : {}),
   };
 
@@ -65,6 +74,8 @@ export async function createUser(input: CreateUserInput) {
       lastName: input.lastName,
       phone: input.phone,
       roleId: input.roleId,
+      restrictToLocations: input.restrictToLocations ?? false,
+      locations: input.locationIds?.length ? { create: input.locationIds.map((locationId) => ({ locationId })) } : undefined,
     },
     select: USER_SELECT,
   });
@@ -74,9 +85,17 @@ export async function updateUser(id: string, input: UpdateUserInput) {
   const existing = await prisma.user.findUnique({ where: { id } });
   if (!existing) throw new NotFoundError("User not found");
 
+  if (input.locationIds) {
+    await prisma.userLocation.deleteMany({ where: { userId: id } });
+    if (input.locationIds.length > 0) {
+      await prisma.userLocation.createMany({ data: input.locationIds.map((locationId) => ({ userId: id, locationId })), skipDuplicates: true });
+    }
+  }
+
   return prisma.user.update({
     where: { id },
     data: {
+      restrictToLocations: input.restrictToLocations,
       firstName: input.firstName,
       lastName: input.lastName,
       phone: input.phone,

@@ -1,3 +1,4 @@
+import { getLocationScope } from "@/lib/auth/location-scope";
 import { requirePermission } from "@/lib/auth/rbac";
 import { created, paginated } from "@/lib/http/api-response";
 import { withErrorHandling } from "@/lib/http/with-error-handling";
@@ -19,8 +20,9 @@ import { createBooking, listBookings } from "@/modules/bookings/bookings.service
  *       409: { description: The car is not available for the requested dates. }
  */
 export const GET = withErrorHandling(async (req) => {
-  await requirePermission("bookings.view");
+  const session = await requirePermission("bookings.view");
   const url = new URL(req.url);
+  const scope = await getLocationScope(session);
   const { data, meta } = await listBookings(req, {
     status: url.searchParams.get("status") ?? undefined,
     search: url.searchParams.get("search") ?? undefined,
@@ -29,7 +31,9 @@ export const GET = withErrorHandling(async (req) => {
     dateFrom: url.searchParams.get("dateFrom") ?? undefined,
     dateTo: url.searchParams.get("dateTo") ?? undefined,
     locationId: url.searchParams.get("locationId") ?? undefined,
+    city: url.searchParams.get("city") ?? undefined,
     paymentStatus: (url.searchParams.get("paymentStatus") as "paid" | "unpaid" | "refunded" | null) ?? undefined,
+    scope,
   });
   return paginated(data, meta);
 });

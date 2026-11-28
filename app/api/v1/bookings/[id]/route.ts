@@ -1,3 +1,4 @@
+import { assertBookingInScope } from "@/lib/auth/location-scope";
 import { requirePermission } from "@/lib/auth/rbac";
 import { ok } from "@/lib/http/api-response";
 import { withErrorHandling } from "@/lib/http/with-error-handling";
@@ -13,8 +14,9 @@ type Ctx = { params: Promise<{ id: string }> };
  *   get: { tags: [Bookings], summary: Get full booking detail (including its immutable pricing snapshot), responses: { 200: { description: Booking. } } }
  */
 export const GET = withErrorHandling<Ctx>(async (_req, { params }) => {
-  await requirePermission("bookings.view");
+  const session = await requirePermission("bookings.view");
   const { id } = await params;
+  await assertBookingInScope(session, id);
   const booking = await getBookingById(id);
   const checkoutDetails = await getSetting<BookingCheckoutDetails>(bookingDetailsKey(booking.bookingReference));
   return ok({ ...booking, checkoutDetails });

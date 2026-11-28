@@ -4,12 +4,15 @@ import * as React from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { flexRender, getCoreRowModel, useReactTable, type ColumnDef } from "@tanstack/react-table";
-import { Loader2, Plus, Search, UserX } from "lucide-react";
+import { Loader2, MapPin, Plus, Search, UserX } from "lucide-react";
 import { toast } from "sonner";
+
+import { validateIndianMobile } from "@/lib/phone";
 import { z } from "zod";
 
 import { ApiRequestError } from "@/lib/api-client";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
+import { useLookupOptions } from "@/hooks/use-lookup-options";
 import { useRoles } from "@/hooks/use-roles";
 import {
   useAdminUsers,
@@ -26,6 +29,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -35,21 +39,28 @@ const createSchema = z.object({
   password: z.string().min(8),
   firstName: z.string().min(1),
   lastName: z.string().min(1),
-  phone: z.string().optional(),
+  phone: z.string().optional().refine((v) => !v || validateIndianMobile(v).valid, { message: "Enter a valid 10-digit Indian mobile number" }),
   roleId: z.string().min(1),
 });
-const editSchema = createSchema.extend({ password: z.string().min(8).optional().or(z.literal("")), isActive: z.boolean() });
+const editSchema = createSchema.extend({
+  password: z.string().min(8).optional().or(z.literal("")),
+  isActive: z.boolean(),
+  restrictToLocations: z.boolean(),
+  locationIds: z.array(z.string()),
+});
 type FormValues = z.infer<typeof editSchema>;
 
 interface UsersManagerProps {
   title: string;
   description: string;
-  /** RoleName values this screen is scoped to, e.g. ["SUPER_ADMIN","ADMIN"] for Admin Users. */
-  roleNames: string[];
+  /** Role keys this screen is scoped to, e.g. ["SUPER_ADMIN","ADMIN"] for Admin Users. Leave out to cover every dashboard role. */
+  roleNames?: string[];
+  /** Role keys to leave out (used by the "All Users" screen: customers and drivers are managed elsewhere). */
+  excludeRoleNames?: string[];
   entityLabel: string;
 }
 
-export function UsersManager({ title, description, roleNames, entityLabel }: UsersManagerProps) {
+export function UsersManager({ title, description, roleNames, excludeRoleNames, entityLabel }: UsersManagerProps) {
   const [page, setPage] = React.useState(1);
   const [searchInput, setSearchInput] = React.useState("");
   const search = useDebouncedValue(searchInput, 300);
@@ -57,11 +68,12 @@ export function UsersManager({ title, description, roleNames, entityLabel }: Use
   const [editing, setEditing] = React.useState<AdminUserDto | null>(null);
   const [deactivating, setDeactivating] = React.useState<AdminUserDto | null>(null);
 
-  const { data, isLoading } = useAdminUsers({ page, limit: 10, search: search || undefined, roles: roleNames });
+  const { data, isLoading } = useAdminUsers({ page, limit: 10, search: search || undefined, roles: roleNames, excludeRoles: excludeRoleNames });
   const { data: roles } = useRoles();
   const scopedRoleOptions = (roles ?? [])
-    .filter((r) => roleNames.includes(r.name))
+    .filter((r) => (roleNames ? roleNames.includes(r.name) : true) && !(excludeRoleNames ?? []).includes(r.name))
     .map((r) => ({ label: r.label, value: r.id }));
+  const { rows: locationRows } = useLookupOptions<{ id: string; name: string; city: string | null; kind: "CITY" | "POINT" }>("/locations", "name", { kind: "CITY" });
 
   const createMutation = useCreateAdminUser();
   const updateMutation = useUpdateAdminUser();
@@ -69,12 +81,12 @@ export function UsersManager({ title, description, roleNames, entityLabel }: Use
 
   const form = useForm<FormValues>({
     resolver: zodResolver(editSchema),
-    defaultValues: { email: "", password: "", firstName: "", lastName: "", phone: "", roleId: "", isActive: true },
+    defaultValues: { email: "", password: "", firstName: "", lastName: "", phone: "", roleId: "", isActive: true, restrictToLocations: false, locationIds: [] },
   });
 
   function openCreate() {
     setEditing(null);
-    form.reset({ email: "", password: "", firstName: "", lastName: "", phone: "", roleId: "", isActive: true });
+    form.reset({ email: "", password: "", firstName: "", lastName: "", phone: "", roleId: "", isActive: true, restrictToLocations: false, locationIds: [] });
     setDialogOpen(true);
   }
 
@@ -88,6 +100,8 @@ export function UsersManager({ title, description, roleNames, entityLabel }: Use
       phone: user.phone ?? "",
       roleId: user.role.id,
       isActive: user.isActive,
+      restrictToLocations: Boolean(user.restrictToLocations),
+      locationIds: (user.locations ?? []).map((l) => l.location.id),
     });
     setDialogOpen(true);
   }
@@ -122,6 +136,23 @@ export function UsersManager({ title, description, roleNames, entityLabel }: Use
       ),
     },
     { id: "role", header: "Role", cell: ({ row }) => <Badge variant="outline">{row.original.role.label}</Badge> },
+    {
+      id: "locations",
+      header: "Locations",
+      cell: ({ row }) => {
+        const u = row.original;
+        if (!u.restrictToLocations) return <span className="text-muted-foreground text-xs">All locations</span>;
+        const names = (u.locations ?? []).map((l) => l.location.name);
+        return names.length ? (
+          <span className="flex max-w-[220px] items-center gap-1 text-xs" title={names.join(", ")}>
+            <MapPin className="size-3 shrink-0" />
+            <span className="truncate">{names.join(", ")}</span>
+          </span>
+        ) : (
+          <span className="text-xs text-red-600">None assigned</span>
+        );
+      },
+    },
     {
       id: "status",
       header: "Status",
@@ -328,6 +359,50 @@ export function UsersManager({ title, description, roleNames, entityLabel }: Use
                       <Input type="password" {...field} />
                     </FormControl>
                     <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="restrictToLocations"
+                render={({ field }) => (
+                  <FormItem className="rounded-lg border p-3 sm:col-span-2">
+                    <div className="flex flex-row items-center justify-between">
+                      <div>
+                        <FormLabel>Limit to specific cities</FormLabel>
+                        <p className="text-muted-foreground text-xs">
+                          On: this person only sees and manages bookings for the cities chosen below (including every pickup point and airport in them). Off: all cities.
+                        </p>
+                      </div>
+                      <FormControl>
+                        <Switch checked={field.value} onCheckedChange={field.onChange} />
+                      </FormControl>
+                    </div>
+                    {field.value && (
+                      <FormField
+                        control={form.control}
+                        name="locationIds"
+                        render={({ field: ids }) => {
+                          const toggle = (id: string) =>
+                            ids.onChange(ids.value.includes(id) ? ids.value.filter((x: string) => x !== id) : [...ids.value, id]);
+                          return (
+                            <div className="mt-3 grid max-h-56 gap-3 overflow-y-auto rounded-md border bg-neutral-50/60 p-3">
+                              <div className="grid gap-1.5 sm:grid-cols-2">
+                                {[...locationRows]
+                                  .sort((a, b) => a.name.localeCompare(b.name))
+                                  .map((l) => (
+                                    <label key={l.id} className="flex items-center gap-2 text-sm">
+                                      <Checkbox checked={ids.value.includes(l.id)} onCheckedChange={() => toggle(l.id)} />
+                                      <span>{l.name}</span>
+                                    </label>
+                                  ))}
+                              </div>
+                              {ids.value.length === 0 && <p className="text-xs text-red-600">Nothing chosen yet — this user would see no bookings.</p>}
+                            </div>
+                          );
+                        }}
+                      />
+                    )}
                   </FormItem>
                 )}
               />
